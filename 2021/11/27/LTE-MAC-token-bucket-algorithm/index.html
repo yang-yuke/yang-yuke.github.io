@@ -24,12 +24,12 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="LTE MAC token bucket algorithm">
 <meta property="og:url" content="http://example.com/2021/11/27/LTE-MAC-token-bucket-algorithm/index.html">
-<meta property="og:site_name" content="Yuke&#39;s cabin">
+<meta property="og:site_name" content="Yuke&#39;s world">
 <meta property="og:description" content="PrefaceIn LTE protocol stack, MAC lies in the so-called layer2. One of its main functionalities is managing the UL grant we receive from layer1. In other words, it allocates the UL grant to different">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2021/11/27/LTE-MAC-token-bucket-algorithm/2021-11-28-23-25-32.png">
 <meta property="article:published_time" content="2021-11-27T08:17:38.000Z">
-<meta property="article:modified_time" content="2021-11-28T16:20:34.481Z">
+<meta property="article:modified_time" content="2021-12-04T07:51:50.453Z">
 <meta property="article:author" content="Yuke">
 <meta property="article:tag" content="LTE">
 <meta property="article:tag" content="MAC">
@@ -44,7 +44,7 @@
 <script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://example.com/2021/11/27/LTE-MAC-token-bucket-algorithm/","path":"2021/11/27/LTE-MAC-token-bucket-algorithm/","title":"LTE MAC token bucket algorithm"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>LTE MAC token bucket algorithm | Yuke's cabin</title>
+<title>LTE MAC token bucket algorithm | Yuke's world</title>
   
 
 
@@ -73,7 +73,7 @@
 
     <a href="/" class="brand" rel="start">
       <i class="logo-line"></i>
-      <h1 class="site-title">Yuke's cabin</h1>
+      <h1 class="site-title">Yuke's world</h1>
       <i class="logo-line"></i>
     </a>
   </div>
@@ -142,7 +142,7 @@
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-count">1</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -203,7 +203,7 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Yuke's cabin">
+      <meta itemprop="name" content="Yuke's world">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
@@ -225,7 +225,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-11-29 00:20:34" itemprop="dateModified" datetime="2021-11-29T00:20:34+08:00">2021-11-29</time>
+        <time title="Modified: 2021-12-04 15:51:50" itemprop="dateModified" datetime="2021-12-04T15:51:50+08:00">2021-12-04</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -247,10 +247,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <h1 id="Preface"><a href="#Preface" class="headerlink" title="Preface"></a>Preface</h1><p>In LTE protocol stack, MAC lies in the so-called layer2. One of its main functionalities is managing the UL grant we receive from layer1. In other words, it allocates the UL grant to different logic channels. In this essay, I will briefly talk about how MAC layer allocates the UL grant to different logic channel. It does so by implementing the toket bucket algorithm, which is the official MAC UL sheduling algorithm used by LTE MAC layer, specified in 3GPP specification 36.321.</p>
-<h1 id="Token-bucket-algorithm"><a href="#Token-bucket-algorithm" class="headerlink" title="Token bucket algorithm"></a>Token bucket algorithm</h1><p>Suppose we have below active logic channels.</p>
-
-<p><img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2021-11-28-23-25-32.png" alt="LTE-MAC-token-bucket-algorithm"></p>
+        <h1 id="Preface"><a href="#Preface" class="headerlink" title="Preface"></a>Preface</h1><p>In LTE protocol stack, MAC lies in the so-called layer2. One of its main functionalities is managing the UL grant we receive from layer1. In other words, it allocates the UL grant to different logic channels. In this essay, I will briefly talk about how MAC layer allocates the UL grant to different logic channel. It does so by implementing the toket bucket algorithm, which is the official MAC UL sheduling algorithm used by LTE MAC layer, specified in 3GPP specification 36.321.v</p>
+<h1 id="Token-bucket-algorithm"><a href="#Token-bucket-algorithm" class="headerlink" title="Token bucket algorithm"></a>Token bucket algorithm</h1><p>Suppose we have below active logic channels.<br><img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2021-11-28-23-25-32.png" alt="LTE-MAC-token-bucket-algorithm" title="Token bucket"></p>
 
     </div>
 
@@ -273,8 +271,8 @@
                 </a>
             </div>
             <div class="post-nav-item">
-                <a href="/2021/11/27/Hexo-Github-blog/" rel="next" title="Set up a blog based on Hexo and Github">
-                  Set up a blog based on Hexo and Github <i class="fa fa-chevron-right"></i>
+                <a href="/2021/12/04/ubuntu-install-llvm/" rel="next" title="在Ubuntu20.04安装LLVM">
+                  在Ubuntu20.04安装LLVM <i class="fa fa-chevron-right"></i>
                 </a>
             </div>
           </div>
