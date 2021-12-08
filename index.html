@@ -215,7 +215,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-12-09 01:42:17" itemprop="dateModified" datetime="2021-12-09T01:42:17+08:00">2021-12-09</time>
+        <time title="Modified: 2021-12-09 01:44:42" itemprop="dateModified" datetime="2021-12-09T01:44:42+08:00">2021-12-09</time>
       </span>
 
   
@@ -236,7 +236,7 @@
 <li>方法四：从源码编译安装</li>
 </ul>
 <p>第一种方法最为简单，只需要一条命令，执行一下脚本，就不要进行任何操作了。第二种方法较第一种要麻烦一点点，但是也比较简单。第三种办法要麻烦点，但是会比较快，简单来说就是直接到网上下载预编译好的binary文件，将其下载到ubuntu20.04系统中，然后解压，再把解压后的所有文件全部拷贝到系统的/usr/local文件夹下，然后就可以使用了。第四种方法最为麻烦，而且很慢，简单来说就是从网上下载LLVM工程的源代码到ubuntu系统，然后在本机上编译，编译完成再安装。</p>
-<p>如果只是为了使用LLVM的工具链，个人建议采用方法一或者二和三，简单快捷。如果为了体验一下在本地编译LLVM工程那种更原汁原味的感觉，可以采用方法四，但是这种方法比较麻烦，因为需要安装一些依赖工具，并且在本地编译LLVM耗时严重，整个过程将会相当漫长，所以如果时间预算不是很充足，又或者电脑配置不太好的情况下，我不建议采用方法四。当然，这里四种方法的过程我都会介绍。</p>
+<p>如果只是为了使用LLVM的工具链，个人建议采用方法一或者二和三(我安装的时候使用的是方法三)，简单快捷。如果为了体验一下在本地编译LLVM工程那种更原汁原味的感觉，可以采用方法四，但是这种方法比较麻烦，因为需要安装一些依赖工具，并且在本地编译LLVM耗时严重，整个过程将会相当漫长，所以如果时间预算不是很充足，又或者电脑配置不太好的情况下，我不建议采用方法四。当然，这里四种方法的过程我都会介绍。</p>
 <h1 id="2-使用官方安装脚本安装"><a href="#2-使用官方安装脚本安装" class="headerlink" title="2. 使用官方安装脚本安装"></a>2. 使用官方安装脚本安装</h1><p>首先介绍第一种方法，这种方法又有两个选择，第一个是可以选择安装最新版本的，另外一个就是安装某个特定版本。参考下图，来自<a target="_blank" rel="noopener" href="https://apt.llvm.org/">官网</a>的介绍。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-08-23-55-45.png" alt="2021-12-08-23-55-45"></p>
 <blockquote>
 <p>For convenience there is an automatic installation script available that installs LLVM for you.<br>To install the latest stable version:<br>bash -c “$(wget -O - <a target="_blank" rel="noopener" href="https://apt.llvm.org/llvm.sh)&quot;">https://apt.llvm.org/llvm.sh)&quot;</a></p>
