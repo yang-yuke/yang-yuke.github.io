@@ -197,7 +197,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/12/10/install-latest-gcc/" class="post-title-link" itemprop="url">安装最新版GCC</a>
+          <a href="/2021/12/10/install-latest-gcc/" class="post-title-link" itemprop="url">ubuntu20.04安装最新版GCC</a>
         </h2>
 
         <div class="post-meta-container">
@@ -209,7 +209,7 @@
       <span class="post-meta-item-text">Posted on</span>
       
 
-      <time title="Created: 2021-12-10 19:17:45 / Modified: 23:35:45" itemprop="dateCreated datePublished" datetime="2021-12-10T19:17:45+08:00">2021-12-10</time>
+      <time title="Created: 2021-12-10 19:17:45 / Modified: 23:43:02" itemprop="dateCreated datePublished" datetime="2021-12-10T19:17:45+08:00">2021-12-10</time>
     </span>
 
   
@@ -222,13 +222,13 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="0-前言"><a href="#0-前言" class="headerlink" title="0. 前言"></a>0. 前言</h1><p>在编译LLVM过程中，出现了很多头文件无法解析的错误，根据<a target="_blank" rel="noopener" href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，原因是因为GCC版本过低，将GCC升级至最新版11.2.0就可以解决这个问题了。本文将介绍如何升级GCC到最新版(当前为11.2.0)。<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-23-33-08.png" alt="2021-12-10-23-33-08"></p>
-<h1 id="1-下载gcc最新源码包"><a href="#1-下载gcc最新源码包" class="headerlink" title="1. 下载gcc最新源码包"></a>1. 下载gcc最新源码包</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/gcc/gcc-11.2.0/gcc-11.2.0.tar.gz</span><br></pre></td></tr></table></figure>
+          <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在编译LLVM过程中，出现了很多头文件无法解析的错误，根据<a target="_blank" rel="noopener" href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，原因是因为GCC版本过低，将GCC升级至最新版11.2.0就可以解决这个问题了。本文将介绍如何升级GCC到最新版(当前为11.2.0)。<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-23-33-08.png" alt="2021-12-10-23-33-08"></p>
+<h1 id="下载gcc最新源码包"><a href="#下载gcc最新源码包" class="headerlink" title="下载gcc最新源码包"></a>下载gcc最新源码包</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/gcc/gcc-11.2.0/gcc-11.2.0.tar.gz</span><br></pre></td></tr></table></figure>
 <p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-24-58.png" alt="2021-12-10-19-24-58"></p>
-<h1 id="2-解压缩"><a href="#2-解压缩" class="headerlink" title="2. 解压缩"></a>2. 解压缩</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -xzvf gcc-11.2.0.tar.gz</span><br></pre></td></tr></table></figure>
+<h1 id="解压缩"><a href="#解压缩" class="headerlink" title="解压缩"></a>解压缩</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -xzvf gcc-11.2.0.tar.gz</span><br></pre></td></tr></table></figure>
 <p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-27-42.png" alt="2021-12-10-19-27-42"></p>
-<h1 id="3-进入解压缩目录"><a href="#3-进入解压缩目录" class="headerlink" title="3. 进入解压缩目录"></a>3. 进入解压缩目录</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd gcc-11.2.0</span><br></pre></td></tr></table></figure>
-<h1 id="4-运行download-prerequisites脚本"><a href="#4-运行download-prerequisites脚本" class="headerlink" title="4. 运行download_prerequisites脚本"></a>4. 运行download_prerequisites脚本</h1><p>这个脚本会自动帮你下载所需要的依赖文件和库：</p>
+<h1 id="进入解压缩目录"><a href="#进入解压缩目录" class="headerlink" title="进入解压缩目录"></a>进入解压缩目录</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd gcc-11.2.0</span><br></pre></td></tr></table></figure>
+<h1 id="运行download-prerequisites脚本"><a href="#运行download-prerequisites脚本" class="headerlink" title="运行download_prerequisites脚本"></a>运行download_prerequisites脚本</h1><p>这个脚本会自动帮你下载所需要的依赖文件和库：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
 <p>在运行该脚本时，出现以下错误，无法下载依赖文件库<code>gmp-6.1.0.tar.bz2</code>。<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-37-55.png" alt="2021-12-10-19-37-55"><br>解决办法为改从清华镜像源下载，</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/gmp/gmp-6.1.0.tar.bz2 #从清华镜像源下载gmp-6.1.0.tar.bz2文件</span><br><span class="line">tar xvfj gmp-6.1.0.tar.bz2 #解压缩文件</span><br><span class="line">ln -s gmp-6.1.0 gmp #在当前目录下创建名为gmp的快捷方式，链接到gmp-6.1.0文件夹</span><br></pre></td></tr></table></figure>
@@ -240,22 +240,22 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/mpc/mpc-1.0.3.tar.gz</span><br><span class="line">tar xvfz mpc-1.0.3.tar.gz</span><br><span class="line">ln -s mpc-1.0.3 mpc #在当前目录下创建名为mpc的快捷方式，链接到mpc-1.0.3文件夹</span><br></pre></td></tr></table></figure>
 <p><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-07-46.png" alt="2021-12-10-20-07-46"><br>继续执行下载脚本，</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
-<p>出现以下错误，无法下载<code>isl-0.18.tar.bz2</code>文件，<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-23-02.png" alt="2021-12-10-20-23-02"><br>解决办法为从GNU官网通过http下载</p>
+<p>出现以下错误，无法下载<code>isl-0.18.tar.bz2</code>文件，<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-23-02.png" alt="2021-12-10-20-23-02"><br>因为这个文件在清华镜像源上没有，因此解决办法为从GNU官网通过http下载：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2</span><br><span class="line">tar xvfj isl-0.18.tar.bz2</span><br><span class="line">ln -s isl-0.18 isl</span><br></pre></td></tr></table></figure>
-<h1 id="5-创建编译目录"><a href="#5-创建编译目录" class="headerlink" title="5. 创建编译目录"></a>5. 创建编译目录</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir gcc-build</span><br><span class="line">cd $_</span><br></pre></td></tr></table></figure>
+<h1 id="创建编译目录"><a href="#创建编译目录" class="headerlink" title="创建编译目录"></a>创建编译目录</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir gcc-build</span><br><span class="line">cd $_</span><br></pre></td></tr></table></figure>
 <p><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-30-04.png" alt="2021-12-10-20-30-04"></p>
-<h1 id="6-生成Makefile文件"><a href="#6-生成Makefile文件" class="headerlink" title="6. 生成Makefile文件"></a>6. 生成Makefile文件</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">../configure -enable-checking=release -enable-languages=c,c++ -disable-multilib #../configure表示返回上级目录执行configure命令</span><br></pre></td></tr></table></figure>
+<h1 id="生成Makefile文件"><a href="#生成Makefile文件" class="headerlink" title="生成Makefile文件"></a>生成Makefile文件</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">../configure -enable-checking=release -enable-languages=c,c++ -disable-multilib #../configure表示返回上级目录执行configure命令</span><br></pre></td></tr></table></figure>
 <p><code>–enable-languages</code>表示你要让你的gcc支持那些语言，<code>–disable-multilib</code>不生成编译为其他平台可执行代码的交叉编译器。<code>–disable-checking</code>生成的编译器在编译过程中不做额外检查，也可以使用<code>–enable-checking=xxx</code>来增加一些检查。</p>
-<h1 id="6-编译"><a href="#6-编译" class="headerlink" title="6. 编译"></a>6. 编译</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make -j8</span><br></pre></td></tr></table></figure>
+<h1 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make -j8</span><br></pre></td></tr></table></figure>
 <p>这里-j8表示的是使用8核进行编译，因为我的电脑CPU为8核。因为make默认是serial build的，如果不加-j选项，就不会开启多核parallel build，这样的话速度会慢很多，所以这里我开启了8核编译。即便如此，这一步花费时间也非常长，我在虚拟机里用了将近两个小时完成这一步。而且虚拟机一定要留出至少20GB的空间，不然可能会出现磁盘不足的问题。<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-38-17.png" alt="2021-12-10-20-38-17"></p>
-<h1 id="7-安装"><a href="#7-安装" class="headerlink" title="7. 安装"></a>7. 安装</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo su root #安装GCC需要root权限，这里先切换为root用户</span><br><span class="line">make install #安装</span><br><span class="line">source /etc/profile #安装完成后手动刷新一下profile</span><br><span class="line">gcc -v #检查当前gcc版本</span><br></pre></td></tr></table></figure>
+<h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo su root #安装GCC需要root权限，这里先切换为root用户</span><br><span class="line">make install #安装</span><br><span class="line">source /etc/profile #安装完成后手动刷新一下profile</span><br><span class="line">gcc -v #检查当前gcc版本</span><br></pre></td></tr></table></figure>
 <p>可以看到，当前的gcc版本更新到了11.2.0，至此安装成功。<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-22-35-17.png" alt="2021-12-10-22-35-17"></p>
-<h1 id="8-环境变量设置"><a href="#8-环境变量设置" class="headerlink" title="8. 环境变量设置"></a>8. 环境变量设置</h1><p>在安装GCC完成后，可以将其永久地加入到系统路径中，输入以下命令：</p>
+<h1 id="环境变量设置"><a href="#环境变量设置" class="headerlink" title="环境变量设置"></a>环境变量设置</h1><p>在安装GCC完成后，可以将其永久地加入到系统路径中，输入以下命令：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo su yukeyang #这里yukeyang替换成你的用户名，先从root用户切换回超级用户</span><br><span class="line">cd ~/ #cd进入当前用户(我的是yukeyang)的home目录</span><br><span class="line">code .bashrc #用vscode打开.bashrc文件</span><br></pre></td></tr></table></figure>
 <p><img src="/2021/12/10/install-latest-gcc/2021-12-10-22-46-15.png" alt="2021-12-10-22-46-15"><br>GCC可执行程序所在路径为：<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-23-24-28.png" alt="2021-12-10-23-24-28"><br>因此，将以下两行加入到.bashrc文件中。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export PATH=/usr/local/bin:$PATH #设置GCC可执行程序路径</span><br><span class="line">export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH #设置动态链接库路径</span><br></pre></td></tr></table></figure>
 <p>至此就完成了所有步骤了。<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-23-26-40.png" alt="2021-12-10-23-26-40"></p>
-<h1 id="8-参考文献"><a href="#8-参考文献" class="headerlink" title="8. 参考文献"></a>8. 参考文献</h1><ol>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><ol>
 <li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1532384">centos 编译安装gcc8.1</a></li>
 <li><a target="_blank" rel="noopener" href="https://solarianprogrammer.com/2016/10/07/building-gcc-ubuntu-linux/">Building GCC 10 on Ubuntu Linux</a></li>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/21aspnet/article/details/105708122">安装最新的GCC</a></li>
@@ -317,7 +317,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-12-10 20:14:18" itemprop="dateModified" datetime="2021-12-10T20:14:18+08:00">2021-12-10</time>
+        <time title="Modified: 2021-12-10 23:42:33" itemprop="dateModified" datetime="2021-12-10T23:42:33+08:00">2021-12-10</time>
       </span>
 
   
@@ -330,7 +330,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h1><p>在ubuntu20.04上安装LLVM，主要有四种方法。</p>
+          <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>在ubuntu20.04上安装LLVM，主要有四种方法。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/12/04/ubuntu-install-llvm/#more" rel="contents">
