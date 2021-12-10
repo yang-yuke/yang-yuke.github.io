@@ -20,20 +20,27 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.8.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
-<meta name="description" content="1. 简介在ubuntu20.04上安装LLVM，据我所知有四种方法。  方法一：运行官方的自动安装脚本进行安装 方法二：通过包管理器进行安装 方法三：使用官方预编译二进制文件进行安装 方法四：从源码编译安装  第一种方法最为简单，只需要一条命令，执行一下脚本，就不要进行任何操作了。第二种方法较第一种要麻烦一点点，但是也比较简单。第三种办法要麻烦点，但是会比较快，简单来说就是直接到网上下载预编译好">
+<meta name="description" content="1. 简介在ubuntu20.04上安装LLVM，主要有四种方法。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="在Ubuntu20.04安装LLVM">
 <meta property="og:url" content="http://example.com/2021/12/04/ubuntu-install-llvm/index.html">
 <meta property="og:site_name" content="Yuke&#39;s world">
-<meta property="og:description" content="1. 简介在ubuntu20.04上安装LLVM，据我所知有四种方法。  方法一：运行官方的自动安装脚本进行安装 方法二：通过包管理器进行安装 方法三：使用官方预编译二进制文件进行安装 方法四：从源码编译安装  第一种方法最为简单，只需要一条命令，执行一下脚本，就不要进行任何操作了。第二种方法较第一种要麻烦一点点，但是也比较简单。第三种办法要麻烦点，但是会比较快，简单来说就是直接到网上下载预编译好">
+<meta property="og:description" content="1. 简介在ubuntu20.04上安装LLVM，主要有四种方法。">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-08-23-55-45.png">
 <meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-09-00-15-09.png">
 <meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-09-00-40-49.png">
 <meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-09-00-42-26.png">
 <meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-04-17-16-26.png">
+<meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-10-14-03-12.png">
+<meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-10-14-11-04.png">
+<meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-10-14-17-16.png">
+<meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-10-14-45-31.png">
+<meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-10-15-01-48.png">
+<meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-10-19-07-48.png">
+<meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-10-19-05-59.png">
 <meta property="article:published_time" content="2021-12-04T07:52:41.000Z">
-<meta property="article:modified_time" content="2021-12-08T17:44:42.216Z">
+<meta property="article:modified_time" content="2021-12-10T12:14:18.051Z">
 <meta property="article:author" content="Yuke">
 <meta property="article:tag" content="开发环境">
 <meta property="article:tag" content="工具链">
@@ -127,7 +134,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">1. 简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E4%BD%BF%E7%94%A8%E5%AE%98%E6%96%B9%E5%AE%89%E8%A3%85%E8%84%9A%E6%9C%AC%E5%AE%89%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">2. 使用官方安装脚本安装</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-%E5%AE%89%E8%A3%85%E6%9C%80%E6%96%B0%E7%A8%B3%E5%AE%9A%E7%89%88LLVM"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 安装最新稳定版LLVM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-%E5%AE%89%E8%A3%85%E7%89%B9%E5%AE%9A%E7%89%88LLVM"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 安装特定版LLVM</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E4%BD%BF%E7%94%A8%E5%8C%85%E7%AE%A1%E7%90%86%E5%99%A8%E5%AE%89%E8%A3%85"><span class="nav-number">3.</span> <span class="nav-text">3. 使用包管理器安装</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-%E6%96%B9%E6%B3%95%E4%B8%80"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 方法一</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-%E6%96%B9%E6%B3%95%E4%BA%8C"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 方法二</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-%E6%96%B9%E6%B3%95%E4%B8%89"><span class="nav-number">3.3.</span> <span class="nav-text">3.3 方法三</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E4%BD%BF%E7%94%A8%E9%A2%84%E7%BC%96%E8%AF%91%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6%E5%AE%89%E8%A3%85"><span class="nav-number">4.</span> <span class="nav-text">4. 使用预编译二进制文件安装</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4-1-%E4%B8%8B%E8%BD%BD%E6%96%87%E4%BB%B6"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 下载文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-2-%E5%AE%89%E8%A3%85%E6%96%87%E4%BB%B6"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 安装文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-3-%E5%B0%8F%E7%BB%93"><span class="nav-number">4.3.</span> <span class="nav-text">4.3 小结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-%E6%9C%AC%E5%9C%B0%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85LLVM"><span class="nav-number">5.</span> <span class="nav-text">5. 本地编译安装LLVM</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#5-1-%E5%89%8D%E6%8F%90%E6%9D%A1%E4%BB%B6"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 前提条件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-2-%E4%B8%8B%E8%BD%BDLLVM%E6%BA%90%E6%96%87%E4%BB%B6"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 下载LLVM源文件</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#6-%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">6.</span> <span class="nav-text">6. 参考文献</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">1. 简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E4%BD%BF%E7%94%A8%E5%AE%98%E6%96%B9%E5%AE%89%E8%A3%85%E8%84%9A%E6%9C%AC%E5%AE%89%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">2. 使用官方安装脚本安装</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-%E5%AE%89%E8%A3%85%E6%9C%80%E6%96%B0%E7%A8%B3%E5%AE%9A%E7%89%88LLVM"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 安装最新稳定版LLVM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-%E5%AE%89%E8%A3%85%E7%89%B9%E5%AE%9A%E7%89%88LLVM"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 安装特定版LLVM</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E4%BD%BF%E7%94%A8%E5%8C%85%E7%AE%A1%E7%90%86%E5%99%A8%E5%AE%89%E8%A3%85"><span class="nav-number">3.</span> <span class="nav-text">3. 使用包管理器安装</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-%E6%96%B9%E6%B3%95%E4%B8%80"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 方法一</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-%E6%96%B9%E6%B3%95%E4%BA%8C"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 方法二</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-%E6%96%B9%E6%B3%95%E4%B8%89"><span class="nav-number">3.3.</span> <span class="nav-text">3.3 方法三</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E4%BD%BF%E7%94%A8%E9%A2%84%E7%BC%96%E8%AF%91%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6%E5%AE%89%E8%A3%85"><span class="nav-number">4.</span> <span class="nav-text">4. 使用预编译二进制文件安装</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4-1-%E4%B8%8B%E8%BD%BD%E6%96%87%E4%BB%B6"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 下载文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-2-%E5%AE%89%E8%A3%85%E6%96%87%E4%BB%B6"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 安装文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-3-%E5%B0%8F%E7%BB%93"><span class="nav-number">4.3.</span> <span class="nav-text">4.3 小结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-%E6%9C%AC%E5%9C%B0%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85LLVM"><span class="nav-number">5.</span> <span class="nav-text">5. 本地编译安装LLVM</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#5-1-%E5%89%8D%E6%8F%90%E6%9D%A1%E4%BB%B6"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 前提条件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-2-%E4%B8%8B%E8%BD%BDLLVM%E6%BA%90%E6%96%87%E4%BB%B6"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 下载LLVM源文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-3-%E9%85%8D%E7%BD%AELLVM"><span class="nav-number">5.3.</span> <span class="nav-text">5.3 配置LLVM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-4-%E7%BC%96%E8%AF%91LLVM"><span class="nav-number">5.4.</span> <span class="nav-text">5.4 编译LLVM</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#6-%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">6.</span> <span class="nav-text">6. 参考文献</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -140,7 +147,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-count">4</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -229,7 +236,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-12-09 01:44:42" itemprop="dateModified" datetime="2021-12-09T01:44:42+08:00">2021-12-09</time>
+        <time title="Modified: 2021-12-10 20:14:18" itemprop="dateModified" datetime="2021-12-10T20:14:18+08:00">2021-12-10</time>
       </span>
 
   
@@ -242,7 +249,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <h1 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h1><p>在ubuntu20.04上安装LLVM，据我所知有四种方法。</p>
+        <h1 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h1><p>在ubuntu20.04上安装LLVM，主要有四种方法。</p>
+<span id="more"></span>
 <ul>
 <li>方法一：运行官方的自动安装脚本进行安装</li>
 <li>方法二：通过包管理器进行安装</li>
@@ -287,11 +295,11 @@
 <p><img src="/2021/12/04/ubuntu-install-llvm/2021-12-04-17-16-26.png" alt="2021-12-04-17-16-26"><br>可以看到，我们已经成功安装clang，版本为13.0.0，接下来就可以愉快地使用了。</p>
 <h2 id="4-3-小结"><a href="#4-3-小结" class="headerlink" title="4.3 小结"></a>4.3 小结</h2><p>总结来说，就是执行以下命令,</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sudo mkdir -p /usr/local</span><br><span class="line">cd /usr/local</span><br><span class="line"><span class="meta">#</span><span class="bash">不从Github下载，而是从清华镜像源下载</span></span><br><span class="line"><span class="meta">#</span><span class="bash">sudo wget https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.0/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz</span></span><br><span class="line">sudo wget https://mirrors.tuna.tsinghua.edu.cn/github-release/llvm/llvm-project/LatestRelease/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz</span><br><span class="line">sudo tar xvf clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz</span><br><span class="line">sudo mv clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04 llvm</span><br><span class="line">export PATH=&quot;$PATH:/usr/local/llvm/bin&quot;</span><br></pre></td></tr></table></figure>
-<h1 id="5-本地编译安装LLVM"><a href="#5-本地编译安装LLVM" class="headerlink" title="5. 本地编译安装LLVM"></a>5. 本地编译安装LLVM</h1><h2 id="5-1-前提条件"><a href="#5-1-前提条件" class="headerlink" title="5.1 前提条件"></a>5.1 前提条件</h2><p>下面介绍方法四，在安装前，需要先安装以下工具，这些工具会在编译LLVM工程过程中使用到，</p>
+<h1 id="5-本地编译安装LLVM"><a href="#5-本地编译安装LLVM" class="headerlink" title="5. 本地编译安装LLVM"></a>5. 本地编译安装LLVM</h1><h2 id="5-1-前提条件"><a href="#5-1-前提条件" class="headerlink" title="5.1 前提条件"></a>5.1 前提条件</h2><p>下面介绍方法四，在安装前，需要先安装以下工具，这些工具会在编译LLVM工程过程中使用到，参考<a target="_blank" rel="noopener" href="https://llvm.org/docs/GettingStarted.html">官网</a>说明：<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-03-12.png" alt="2021-12-10-14-03-12"></p>
 <ul>
-<li>CMake &gt;= 3.4.3</li>
+<li>CMake &gt;= 3.13.4</li>
 <li>GCC &gt;= 5.1.0</li>
-<li>Python &gt;= 2.7</li>
+<li>Python &gt;= 3.6</li>
 <li>zlib &gt;= 1.2.3.4</li>
 <li>GNU Make &gt;= 3.79</li>
 <li>Ninja &gt;= 1.10.0</li>
@@ -300,7 +308,19 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install ninja-build</span><br><span class="line">sudo apt install cmake</span><br></pre></td></tr></table></figure>
 <h2 id="5-2-下载LLVM源文件"><a href="#5-2-下载LLVM源文件" class="headerlink" title="5.2 下载LLVM源文件"></a>5.2 下载LLVM源文件</h2><p>下载LLVM工程源文件到本地，然后在本地编译，再安装。首先我们需要下载LLVM工程源代码，这里我们可以选择从官方Github仓库下载或者是从清华镜像源下载，个人建议从清华镜像源下载，因为这样会快很多。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/llvm/llvm-project.git #地址一，从官方Github仓库下载</span><br><span class="line">git clone https://mirrors.tuna.tsinghua.edu.cn/git/llvm-project.git #地址二，从清华镜像源下载</span><br></pre></td></tr></table></figure>
-<p>未完待续…</p>
+<p>下载完成后可以看到llvm-project文件夹了。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-11-04.png" alt="2021-12-10-14-11-04"></p>
+<h2 id="5-3-配置LLVM"><a href="#5-3-配置LLVM" class="headerlink" title="5.3 配置LLVM"></a>5.3 配置LLVM</h2><p>下载完LLVM项目源文件后，下一步就是编译这些源文件了。这里推荐使用Ninja来编译，速度会快很多，当然也可以使用其他编译系统生成工具，比如Unix Makefiles等。在使用Ninja进行编译之前，我们还需要生成编译过程所需编译文件，这些文件会告诉Ninja如何对LLVM-project进行编译。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-17-16.png" alt="2021-12-10-14-17-16"><br>运行以下shell命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd llvm-project #cd进入llvm-project文件夹</span><br><span class="line">mkdir build #在llvm-project文件夹创建build文件夹</span><br><span class="line">cd build #cd进入build文件夹</span><br><span class="line">cmake -G Ninja ../llvm #在当前目录(build)生成Ninja编译过程所需的文件，cmake的源文件目录为llvm-project下的llvm文件夹</span><br></pre></td></tr></table></figure>
+<p>上面的第四条命令，格式为<code>cmake -G &lt;generator&gt; [options] ../llvm</code>,这里的generator我选择的是Ninja。options则表示可选的选项，常用的有<code>-DLLVM_ENABLE_PROJECTS</code>，表示除了LLVM，你还想编译哪些LLVM子项目。比如，如果除了LLVM外，你还想编译Clang，libcxx和libcxxabi，那么你可以使用编译选项<code>-DLLVM_ENABLE_PROJECTS=&quot;clang&quot; -DLLVM_ENABLE_RUNTIMES=&quot;libcxx;libcxxabi&quot;</code>，上述的第四条命令就是：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang&quot; -DLLVM_ENABLE_RUNTIMES=&quot;libcxx;libcxxabi&quot; ../llvm </span><br></pre></td></tr></table></figure>
+<p>也可以不运行上面的shell命令，而是运行下面的shell命令（参考<a target="_blank" rel="noopener" href="https://github.com/llvm/llvm-project">官网指导</a>）：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd llvm-project #cd进入llvm-project文件夹</span><br><span class="line">mkdir build #在llvm-project文件夹创建build文件夹</span><br><span class="line">cmake -S llvm -B build -G Ninja #对llvm文件夹下的源文件进行cmake，生成的文件放在build目录下，生成的文件将在Ninja编译过程使用</span><br></pre></td></tr></table></figure>
+<p>上面的第三条命令，格式为<code>cmake -S llvm -B build -G &lt;generator&gt; [options]</code>,-S表示cmake的源文件所在文件夹，这里是llvm。-B表示cmake后生成的文件所在的文件夹，这里是build文件夹。-G表示将要使用这些生成的cmake文件来编译的工具，这里是Ninja。如果不清楚这些cmake短选项的含义的话，可以<code>cmake -help</code>查看一下帮助。后面的<code>[options]</code>则表示其它的cmake选项，常用的有<code>-DLLVM_ENABLE_PROJECTS=&#39;...&#39;</code>，具体含义如前所述。假如我们除了llvm子项目以外，还想编译其它的子项目，比如Clang，libcxx，libcxxabi，那我们可以使用<code>-DLLVM_ENABLE_PROJECTS=&quot;clang;libcxx;libcxxabi&quot;</code>选项，上面第三条shell命令就是:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;libcxx;libcxxabi&quot;</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-45-31.png" alt="2021-12-10-14-45-31"><br>cmake完成后可以看到编译文件已被写到build文件夹下。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-15-01-48.png" alt="2021-12-10-15-01-48"></p>
+<h2 id="5-4-编译LLVM"><a href="#5-4-编译LLVM" class="headerlink" title="5.4 编译LLVM"></a>5.4 编译LLVM</h2><p>生成Ninja编译LLVM所需的文件后，下一步就是编译llvm了，参考<a target="_blank" rel="noopener" href="https://github.com/llvm/llvm-project">官网</a>，输入以下命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmake --build build</span><br></pre></td></tr></table></figure>
+<p>上述命令的格式为<code>cmake --build build [-- [options] &lt;target&gt;]</code>，–build指明编译后文件写入的文件夹，这里是build文件夹。–target选项指明所使用的编译工具，假如安装了Ninja的话，默认的target是Ninja。在编译到第3257个文件的时候，可能会发生如下错误：<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-19-07-48.png" alt="2021-12-10-19-07-48"><br>原因是因为我的GCC版本太低了，还是9.3.0版本。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-19-05-59.png" alt="2021-12-10-19-05-59"><br>未完待续…</p>
 <h1 id="6-参考文献"><a href="#6-参考文献" class="headerlink" title="6. 参考文献"></a>6. 参考文献</h1><ol>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/zerolord/article/details/116891720">Ubuntu20.04安装llvm</a></li>
 <li><a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/help/llvm-project.git/">LLVM Git 源码仓库镜像使用帮助</a></li>
@@ -308,6 +328,8 @@
 <li><a target="_blank" rel="noopener" href="https://apt.llvm.org/">LLVM Debian/Ubuntu nightly packages</a></li>
 <li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/321882707">Ninja安装和基本使用</a></li>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/lj402159806/article/details/76408597">ubuntu安装CMake的几种方式</a></li>
+<li><a target="_blank" rel="noopener" href="https://llvm.org/docs/GettingStarted.html">Getting Started with the LLVM System</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/llvm/llvm-project">Getting Started with the LLVM System(github)</a></li>
 </ol>
 
     </div>
@@ -331,6 +353,9 @@
                 </a>
             </div>
             <div class="post-nav-item">
+                <a href="/2021/12/10/install-latest-gcc/" rel="next" title="install_latest_gcc">
+                  install_latest_gcc <i class="fa fa-chevron-right"></i>
+                </a>
             </div>
           </div>
     </footer>
