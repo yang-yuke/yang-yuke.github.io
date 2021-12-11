@@ -22,7 +22,7 @@
 <script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.8.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
 <meta name="description" content="简介在ubuntu20.04上安装LLVM，主要有四种方法。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="在Ubuntu20.04安装LLVM">
+<meta property="og:title" content="在ubuntu20.04安装LLVM">
 <meta property="og:url" content="http://example.com/2021/12/04/ubuntu-install-llvm/index.html">
 <meta property="og:site_name" content="Yuke&#39;s world">
 <meta property="og:description" content="简介在ubuntu20.04上安装LLVM，主要有四种方法。">
@@ -37,10 +37,17 @@
 <meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-10-14-17-16.png">
 <meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-10-14-45-31.png">
 <meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-10-15-01-48.png">
+<meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-11-12-39-32.png">
 <meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-10-19-07-48.png">
 <meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-10-19-05-59.png">
+<meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-11-16-24-36.png">
+<meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-11-16-29-07.png">
+<meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-11-16-32-11.png">
+<meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-11-18-38-00.png">
+<meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-11-18-38-29.png">
+<meta property="og:image" content="http://example.com/2021/12/04/ubuntu-install-llvm/2021-12-11-18-42-53.png">
 <meta property="article:published_time" content="2021-12-04T07:52:41.000Z">
-<meta property="article:modified_time" content="2021-12-10T15:54:33.678Z">
+<meta property="article:modified_time" content="2021-12-11T10:59:49.846Z">
 <meta property="article:author" content="Yuke">
 <meta property="article:tag" content="开发环境">
 <meta property="article:tag" content="工具链">
@@ -52,10 +59,10 @@
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://example.com/2021/12/04/ubuntu-install-llvm/","path":"2021/12/04/ubuntu-install-llvm/","title":"在Ubuntu20.04安装LLVM"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://example.com/2021/12/04/ubuntu-install-llvm/","path":"2021/12/04/ubuntu-install-llvm/","title":"在ubuntu20.04安装LLVM"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>在Ubuntu20.04安装LLVM | Yuke's world</title>
+<title>在ubuntu20.04安装LLVM | Yuke's world</title>
   
 
 
@@ -218,7 +225,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          在Ubuntu20.04安装LLVM
+          在ubuntu20.04安装LLVM
         </h1>
 
         <div class="post-meta-container">
@@ -236,7 +243,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2021-12-10 23:54:33" itemprop="dateModified" datetime="2021-12-10T23:54:33+08:00">2021-12-10</time>
+        <time title="Modified: 2021-12-11 18:59:49" itemprop="dateModified" datetime="2021-12-11T18:59:49+08:00">2021-12-11</time>
       </span>
 
   
@@ -320,7 +327,17 @@
 <p><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-45-31.png" alt="2021-12-10-14-45-31"><br>cmake完成后可以看到编译文件已被写到build文件夹下。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-15-01-48.png" alt="2021-12-10-15-01-48"></p>
 <h2 id="编译LLVM"><a href="#编译LLVM" class="headerlink" title="编译LLVM"></a>编译LLVM</h2><p>生成Ninja编译LLVM所需的文件后，下一步就是编译llvm了，参考<a target="_blank" rel="noopener" href="https://github.com/llvm/llvm-project">官网</a>，输入以下命令：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmake --build build</span><br></pre></td></tr></table></figure>
-<p>上述命令的格式为<code>cmake --build build [-- [options] &lt;target&gt;]</code>，–build指明编译后文件写入的文件夹，这里是build文件夹。–target选项指明所使用的编译工具，假如安装了Ninja的话，默认的target是Ninja。在编译到第3257个文件的时候，可能会发生如下错误：<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-19-07-48.png" alt="2021-12-10-19-07-48"><br>原因是因为我的GCC版本太低了，还是9.3.0版本。根据<a target="_blank" rel="noopener" href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，升级到11.2.0版（也是当前的最新版）就可以解决这个问题了，因此，需要<a target="_blank" rel="noopener" href="https://yang-yuke.github.io/2021/12/10/install-latest-gcc/">升级GCC到最新版</a>。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-19-05-59.png" alt="2021-12-10-19-05-59"><br>未完待续…</p>
+<p>上述命令的格式为<code>cmake --build build [-- [options] &lt;target&gt;]</code>，–build指明编译后文件写入的文件夹，这里是build文件夹。–target选项指明所使用的编译工具，假如安装了Ninja的话，默认的target是Ninja。也可以输入以下命令，显式地调用Ninja:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd build</span><br><span class="line">ninja -j 8</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-12-39-32.png" alt="2021-12-11-12-39-32"><br>在编译到第3257个文件的时候，可能会发生如下错误：<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-19-07-48.png" alt="2021-12-10-19-07-48"><br>原因是因为我的GCC版本太低了，还是9.3.0版本。根据<a target="_blank" rel="noopener" href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，升级到11.2.0版（也是当前的最新版）就可以解决这个问题了，因此，需要<a target="_blank" rel="noopener" href="https://yang-yuke.github.io/2021/12/10/install-latest-gcc/">升级GCC到最新版</a>。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-19-05-59.png" alt="2021-12-10-19-05-59"><br>在升级到最新版GCC后，再重复上面的编译命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;libcxx;libcxxabi&quot;</span><br><span class="line">cd build</span><br><span class="line">ninja -j 8</span><br></pre></td></tr></table></figure>
+<p>依然出现了大量以下错误，<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-16-24-36.png" alt="2021-12-11-16-24-36"><br>这些错误是在编译libcxxabi库的cpp文件时出现的，说明有可能是我们在cmake配置编译的时候出了问题，回到<a target="_blank" rel="noopener" href="https://llvm.org/docs/GettingStarted.html">LLVM官网Get started页面</a>，发现与<a target="_blank" rel="noopener" href="https://github.com/llvm/llvm-project">LLVM Github Get started</a>上对<code>DLLVM_ENABLE_PROJECTS</code>编译选项的细节描述有点出入，<code>&quot;libcxx;libcxxabi&quot;</code>应该要放到<code>DLLVM_ENABLE_RUNTIMES</code>编译选项里，而不是<code>DLLVM_ENABLE_PROJECTS</code>里面。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-16-29-07.png" alt="2021-12-11-16-29-07"><br>于是，重新进行cmake配置和编译，命令如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang&quot; -DLLVM_ENABLE_RUNTIMES=&quot;libcxx;libcxxabi&quot;</span><br><span class="line">cd build</span><br><span class="line">ninja -j8</span><br></pre></td></tr></table></figure>
+<p>此时，发现能够继续往下编译了，但是每编译十几个cpp文件后就会出现以下错误“fatal error: ld terminated with signal 9 [Killed]”，然后就停止了。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-16-32-11.png" alt="2021-12-11-16-32-11"><br>查了一下，<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/65633304/not-able-to-build-llvm-from-its-source-code">这里</a>提到有可能是因为内存不足所致的，于是重新配置并编译，命令如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS=&quot;clang&quot; -DLLVM_ENABLE_RUNTIMES=&quot;libcxx;libcxxabi&quot; -DLLVM_PARALLEL_LINK_JOBS=1</span><br><span class="line">cmake --build build</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-18-38-00.png" alt="2021-12-11-18-38-00"><br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-18-38-29.png" alt="2021-12-11-18-38-29"><br>上述命令中，<code>-DCMAKE_BUILD_TYPE=Release</code>表示编译的版本是release版本，release版本要小很多，如果不指明的话编译的就是debug版本。<code>-DLLVM_PARALLEL_LINK_JOBS=1</code>表示不开parallel build。等待一段时间后，可以看到这一次可以完全编译所有的文件了。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-18-42-53.png" alt="2021-12-11-18-42-53"><br>编译完成后，需要切换到root用户进行安装，命令如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd build #cd进入llvm-project/build文件夹</span><br><span class="line">sudo su root #切换到root用户权限</span><br><span class="line">ninja install #安装llvm</span><br></pre></td></tr></table></figure>
+<p>未完待续…</p>
 <h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><ol>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/zerolord/article/details/116891720">Ubuntu20.04安装llvm</a></li>
 <li><a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/help/llvm-project.git/">LLVM Git 源码仓库镜像使用帮助</a></li>
@@ -330,6 +347,7 @@
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/lj402159806/article/details/76408597">ubuntu安装CMake的几种方式</a></li>
 <li><a target="_blank" rel="noopener" href="https://llvm.org/docs/GettingStarted.html">Getting Started with the LLVM System</a></li>
 <li><a target="_blank" rel="noopener" href="https://github.com/llvm/llvm-project">Getting Started with the LLVM System(github)</a></li>
+<li><a target="_blank" rel="noopener" href="https://getting-started-with-llvm-core-libraries-zh-cn.readthedocs.io/zh_CN/latest/ch01.html">第1章 编译和安装LLVM</a></li>
 </ol>
 
     </div>
