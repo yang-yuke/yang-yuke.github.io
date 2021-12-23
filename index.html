@@ -108,6 +108,69 @@
     
     
     <article
+  id="post-compile-and-install-lldb"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/2021/12/16/compile-and-install-lldb/"
+    >在ubuntu20.04编译及安装lldb</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/2021/12/16/compile-and-install-lldb/" class="article-date">
+  <time datetime="2021-12-16T15:50:02.000Z" itemprop="datePublished">2021-12-16</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Technology/">Technology</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在<a target="_blank" rel="noopener" href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>已经介绍了如何在本地编译及安装llvm，但是当时只是编译和安装了<code>llvm;clang;libcxx;libcxxabi</code>这四个库，本文将介绍如何编译及安装lldb。</p>
+<h1 id="配置LLDB"><a href="#配置LLDB" class="headerlink" title="配置LLDB"></a>配置LLDB</h1><p>在进行下面的步骤时，假设你已经下载了llvm整个工程，并且安装了所需的依赖工具。如果你还没进行这些操作，可以参考<a target="_blank" rel="noopener" href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>一文的<code>本地编译安装LLVM</code>一节的<code>前提条件</code>和<code>下载LLVM源文件</code>这两部分内容，先完成这两步。</p>
+<p>完成上述步骤后，输入以下命令。首先cd进入llvm-project工程，然后生成cmake文件。<code>-S llvm</code>表示源文件所在文件夹为当前路径下的llvm文件夹；<code>-B build</code>表示生成的cmake文件将放到当前路径下的build文件夹；<code>-G Ninja</code>表示生成的cmake文件将给Ninja在编译时使用。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure>
+<p>在编译到第[4169/4171]个文件时，会出现以下错误。<br><img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-22-28.png" alt="2021-12-18-17-22-28"><br>参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/Vin_tt/article/details/110421022">这篇文章</a>解决这个问题，输入以下命令:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd llvm-project/build</span><br><span class="line">sudo mkdir swapfile</span><br><span class="line">cd /swapfile</span><br><span class="line">sudo dd if=/dev/zero of=swap bs=1024 count=20000000</span><br><span class="line">sudo mkswap -f swap</span><br><span class="line">sudo swapon swap</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-56-57.png" alt="2021-12-18-17-56-57"><br>可以看到，剩下的三个文件都被成功地编译了。编译出来生成的应用程序位于llvm-project/build/bin路径下。<br><img src="/2021/12/16/compile-and-install-lldb/2021-12-18-18-17-50.png" alt="2021-12-18-18-17-50"></p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://lldb.llvm.org/resources/build.html#building-lldb-with-cmake">Building LLDB with CMake</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/Vin_tt/article/details/110421022">LLVM编译collect2: fatal error: ld terminated with signal 9</a></li>
+</ol>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7%E9%93%BE/" rel="tag">工具链</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/" rel="tag">开发环境</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-install-latest-gcc"
   class="article article-type-post"
   itemscope
