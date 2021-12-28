@@ -108,6 +108,63 @@
     
     
     <article
+  id="post-compile-lldb-mi"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/2021/12/28/compile-lldb-mi/"
+    >编译lldb-mi</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/2021/12/28/compile-lldb-mi/" class="article-date">
+  <time datetime="2021-12-28T15:32:28.000Z" itemprop="datePublished">2021-12-28</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Technology/">Technology</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>lldb-mi(lldb machine interface)是一个C/C++调试器，原来是LLVM项目中lldb的一部分，但是由于长时间没有人维护和更新，于是是从LLVM项目的lldb中分了出去，成为单独的一个工程。在linux环境下，使用vscode对C/C++代码进行调试时，常用的调试器是GDB，除此之外，还有个选择就是lldb-mi。本文将介绍如何在本地对lldb-mi工程源码进行编译，从而生成可执行文件。编译lldb-mi，需要一个C++14编译器以及LLDB，而LLDB又依赖于Clang和LLVM，因此，在编译lldb-mi之前，需要先安装Clang，LLVM和LLDB，可以参考<a target="_blank" rel="noopener" href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">这篇博客</a>进行安装。</p>
+<h1 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h1><p>输入以下命令，</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">cd ~/ #进入home目录</span><br><span class="line">mkdir buildspace #在home目录下建立buildspace目录</span><br><span class="line">cd ~/buildspace #进入buildspace目录</span><br><span class="line">mkdir llvm-inst #创建llvm-inst目录</span><br><span class="line">git clone https://github.com/lldb-tools/lldb-mi #将lldb-mi工程下载到当前目录（即buildspace目录）</span><br><span class="line">cd lldb-mi #进入lldb-mi工程目录里</span><br><span class="line">mkdir build #在当前目录（即lldb-mi目录）建立build目录，用来存放编译后生成的文件</span><br><span class="line">cmake -DCMAKE_PREFIX_PATH=~/buildspace/llvm-inst/ -GNinja .. #在当前目录（即build目录）的上一级目录（即lldb-mi目录）下生成cmake文件</span><br><span class="line">ninja #编译</span><br></pre></td></tr></table></figure>
+<p>执行完以上命令后，可以看到，所生成的lldb-mi可执行文件将位于lldb-mi/build/src目录下，这个就是lldb-mi调试器。然后，我们就可以开始在vscode中使用这个调试器对程序进行调试了。<br><img src="/2021/12/28/compile-lldb-mi/2021-12-29-00-49-15.png" alt="2021-12-29-00-49-15"></p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><p><a target="_blank" rel="noopener" href="https://github.com/lldb-tools/lldb-mi">Building against custom LLDB</a><br><a target="_blank" rel="noopener" href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">在ubuntu20.04安装LLVM</a></p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lldb-mi/" rel="tag">lldb-mi</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7%E9%93%BE/" rel="tag">工具链</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/" rel="tag">开发环境</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%B0%83%E8%AF%95%E5%99%A8/" rel="tag">调试器</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-compile-and-install-lldb"
   class="article article-type-post"
   itemscope
