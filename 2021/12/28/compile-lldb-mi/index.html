@@ -85,7 +85,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-quill-pen-line"></i>
             <span class="post-meta-item-text"> Word count:</span>
-            <span class="post-count">398</span>
+            <span class="post-count">399</span>
         </span>
     </span>
 
@@ -113,7 +113,10 @@
 <h1 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h1><p>输入以下命令，</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">cd ~/ #进入home目录</span><br><span class="line">mkdir buildspace #在home目录下建立buildspace目录</span><br><span class="line">cd ~/buildspace #进入buildspace目录</span><br><span class="line">mkdir llvm-inst #创建llvm-inst目录</span><br><span class="line">git clone https://github.com/lldb-tools/lldb-mi #将lldb-mi工程下载到当前目录（即buildspace目录）</span><br><span class="line">cd lldb-mi #进入lldb-mi工程目录里</span><br><span class="line">mkdir build #在当前目录（即lldb-mi目录）建立build目录，用来存放编译后生成的文件</span><br><span class="line">cmake -DCMAKE_PREFIX_PATH=~/buildspace/llvm-inst/ -GNinja .. #在当前目录（即build目录）的上一级目录（即lldb-mi目录）下生成cmake文件</span><br><span class="line">ninja #编译</span><br></pre></td></tr></table></figure>
 <p>执行完以上命令后，可以看到，所生成的lldb-mi可执行文件将位于lldb-mi/build/src目录下，这个就是lldb-mi调试器。然后，我们就可以开始在vscode中使用这个调试器对程序进行调试了。<br><img src="/2021/12/28/compile-lldb-mi/2021-12-29-00-49-15.png" alt="2021-12-29-00-49-15"></p>
-<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><p><a target="_blank" rel="noopener" href="https://github.com/lldb-tools/lldb-mi">Building against custom LLDB</a><br><a target="_blank" rel="noopener" href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">在ubuntu20.04安装LLVM</a></p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://github.com/lldb-tools/lldb-mi">Building against custom LLDB</a></li>
+<li><a target="_blank" rel="noopener" href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">在ubuntu20.04安装LLVM</a></li>
+</ol>
  
       <!-- reward -->
       
