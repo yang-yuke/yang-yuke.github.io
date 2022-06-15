@@ -20,29 +20,19 @@
     var CONFIG = {"hostname":"yang-yuke.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="前言在在ubuntu20.04安装LLVM已经介绍了如何在本地编译及安装llvm，但是当时只是编译和安装了llvm;clang;libcxx;libcxxabi这四个库，本文将介绍如何编译及安装lldb。">
+  <meta name="description" content="本文将从UE角度对LTE网络RLC层的polling机制进行详细阐述。  前言在LTE网络中，RLC层提供了两种服务模式，一种是保证数据无损传输(lossless)的AM模式(acknowledged mode)，另一种是不保证数据可靠传输的UM模式(unacknowledged mode)。在AM模式下，RLC层要保证数据可靠传输，因此，此时的RLC协议是一种可靠性数据传输协议(reliabl">
 <meta property="og:type" content="article">
-<meta property="og:title" content="在ubuntu20.04编译及安装LLDB">
-<meta property="og:url" content="https://yang-yuke.github.io/2021/12/16/compile-and-install-lldb/index.html">
+<meta property="og:title" content="LTE网络RLC层的polling机制">
+<meta property="og:url" content="https://yang-yuke.github.io/2022/06/16/LTE%E7%BD%91%E7%BB%9CRLC%E5%B1%82%E7%9A%84polling%E6%9C%BA%E5%88%B6/index.html">
 <meta property="og:site_name" content="Yuke&#39;s blog">
-<meta property="og:description" content="前言在在ubuntu20.04安装LLVM已经介绍了如何在本地编译及安装llvm，但是当时只是编译和安装了llvm;clang;libcxx;libcxxabi这四个库，本文将介绍如何编译及安装lldb。">
+<meta property="og:description" content="本文将从UE角度对LTE网络RLC层的polling机制进行详细阐述。  前言在LTE网络中，RLC层提供了两种服务模式，一种是保证数据无损传输(lossless)的AM模式(acknowledged mode)，另一种是不保证数据可靠传输的UM模式(unacknowledged mode)。在AM模式下，RLC层要保证数据可靠传输，因此，此时的RLC协议是一种可靠性数据传输协议(reliabl">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://yang-yuke.github.io/2021/12/16/compile-and-install-lldb/2021-12-18-17-22-28.png">
-<meta property="og:image" content="https://yang-yuke.github.io/2021/12/16/compile-and-install-lldb/2021-12-18-17-56-57.png">
-<meta property="og:image" content="https://yang-yuke.github.io/2021/12/16/compile-and-install-lldb/2021-12-18-18-17-50.png">
-<meta property="og:image" content="https://yang-yuke.github.io/2021/12/16/compile-and-install-lldb/2021-12-21-23-18-01.png">
-<meta property="og:image" content="https://yang-yuke.github.io/2021/12/16/compile-and-install-lldb/2021-12-22-08-27-51.png">
-<meta property="og:image" content="https://yang-yuke.github.io/2021/12/16/compile-and-install-lldb/2021-12-22-08-39-08.png">
-<meta property="og:image" content="https://yang-yuke.github.io/2021/12/16/compile-and-install-lldb/2021-12-22-09-05-29.png">
-<meta property="article:published_time" content="2021-12-16T15:50:02.000Z">
-<meta property="article:modified_time" content="2022-06-15T15:22:45.843Z">
+<meta property="article:published_time" content="2022-06-15T16:21:20.000Z">
+<meta property="article:modified_time" content="2022-06-15T16:26:33.130Z">
 <meta property="article:author" content="Yuke">
-<meta property="article:tag" content="开发环境">
-<meta property="article:tag" content="工具链">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://yang-yuke.github.io/2021/12/16/compile-and-install-lldb/2021-12-18-17-22-28.png">
 
-<link rel="canonical" href="https://yang-yuke.github.io/2021/12/16/compile-and-install-lldb/">
+<link rel="canonical" href="https://yang-yuke.github.io/2022/06/16/LTE%E7%BD%91%E7%BB%9CRLC%E5%B1%82%E7%9A%84polling%E6%9C%BA%E5%88%B6/">
 
 
 <script id="page-configurations">
@@ -55,7 +45,7 @@
   };
 </script>
 
-  <title>在ubuntu20.04编译及安装LLDB | Yuke's blog</title>
+  <title>LTE网络RLC层的polling机制 | Yuke's blog</title>
   
 
 
@@ -203,7 +193,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yang-yuke.github.io/2021/12/16/compile-and-install-lldb/">
+    <link itemprop="mainEntityOfPage" href="https://yang-yuke.github.io/2022/06/16/LTE%E7%BD%91%E7%BB%9CRLC%E5%B1%82%E7%9A%84polling%E6%9C%BA%E5%88%B6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -216,7 +206,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          在ubuntu20.04编译及安装LLDB
+          LTE网络RLC层的polling机制
         </h1>
 
         <div class="post-meta">
@@ -225,24 +215,9 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2021-12-16 23:50:02" itemprop="dateCreated datePublished" datetime="2021-12-16T23:50:02+08:00">2021-12-16</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-06-15 23:22:45" itemprop="dateModified" datetime="2022-06-15T23:22:45+08:00">2022-06-15</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BC%96%E8%AF%91%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">编译器</span></a>
-                </span>
+              <time title="创建时间：2022-06-16 00:21:20 / 修改时间：00:26:33" itemprop="dateCreated datePublished" datetime="2022-06-16T00:21:20+08:00">2022-06-16</time>
             </span>
 
           
@@ -263,24 +238,40 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>已经介绍了如何在本地编译及安装llvm，但是当时只是编译和安装了<code>llvm;clang;libcxx;libcxxabi</code>这四个库，本文将介绍如何编译及安装lldb。</p>
+        <blockquote>
+<p>本文将从UE角度对LTE网络RLC层的polling机制进行详细阐述。</p>
+</blockquote>
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在LTE网络中，RLC层提供了两种服务模式，一种是保证数据无损传输(lossless)的<code>AM模式</code>(acknowledged mode)，另一种是不保证数据可靠传输的<code>UM模式</code>(unacknowledged mode)。在<code>AM模式</code>下，RLC层要保证数据可靠传输，因此，此时的RLC协议是一种<code>可靠性数据传输协议</code>(reliable data transmission protocol, RDP)。</p>
+<p>RDP是网络协议中常用的一种协议，TCP协议就是其中之一。与TCP协议相比，RLC位于无线通信协议栈的更底层，对时延的要求更高。因此，为了更快地实现数据的无损传输，RLC层引入了<code>polling</code>(问询)机制。</p>
 <span id="more"></span>
-<h1 id="配置及安装LLDB"><a href="#配置及安装LLDB" class="headerlink" title="配置及安装LLDB"></a>配置及安装LLDB</h1><p>在进行下面的步骤时，假设你已经下载了llvm整个工程，并且安装了所需的依赖工具。如果你还没进行这些操作，可以参考<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>一文的<code>本地编译安装LLVM</code>一节的<code>前提条件</code>和<code>下载LLVM源文件</code>这两部分内容，先完成这两步。</p>
-<p>完成上述步骤后，输入以下命令。首先cd进入llvm-project工程，然后生成cmake文件。<code>-S llvm</code>表示源文件所在文件夹为当前路径下的llvm文件夹；<code>-B build</code>表示生成的cmake文件将放到当前路径下的build文件夹；<code>-G Ninja</code>表示生成的cmake文件将给Ninja在编译时使用。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure>
-<p>在编译到第[4169/4171]个文件时，会出现以下错误。<br><img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-22-28.png" alt="2021-12-18-17-22-28"><br>参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/Vin_tt/article/details/110421022">这篇文章</a>解决这个问题，输入以下命令:</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd llvm-project/build</span><br><span class="line">sudo mkdir swapfile</span><br><span class="line">cd /swapfile</span><br><span class="line">sudo dd if=/dev/zero of=swap bs=1024 count=20000000</span><br><span class="line">sudo mkswap -f swap</span><br><span class="line">sudo swapon swap</span><br></pre></td></tr></table></figure>
-<p><img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-56-57.png" alt="2021-12-18-17-56-57"><br>可以看到，剩下的三个文件都被成功地编译了。编译出来生成的应用程序位于llvm-project/build/bin路径下，将其拷贝到/usr/local/bin/文件夹下即可。<br><img src="/2021/12/16/compile-and-install-lldb/2021-12-18-18-17-50.png" alt="2021-12-18-18-17-50"></p>
-<h1 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h1><p>这部分讲的是后续的失败经历，以及没有解决的问题。</p>
-<p>上述编译命令在编译lldb过程中会有debug信息，其体积会很大，而且编译出来的文件在llvm-project/build文件夹下面，还需要<code>ninja install</code>命令将其安装至默认路径下，但是由于体积过大，在安装时容易出问题。最好是编译release版本，并且在生成cmake文件的时候指明安装路径，命令如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;clang;lldb&quot;</span> <span class="comment">#1,这条命令与下面这条命令2选1</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;clang;lldb&quot;</span> ./llvm <span class="comment">#2,这条命令与上面的命令2选1</span></span></span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_BUILD_TYPE=&quot;Release&quot; -DLLDB_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=&quot;/usr/local/llvm&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_BUILD_TYPE=&quot;Release&quot; -DLLDB_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=&quot;/usr/local/llvm&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure>
-<p>编译完成后，生成的文件位于llvm-project/build文件夹内，我们要把它们安装到/usr/local/路径下，因此，需要输入以下命令</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ninja install</span><br></pre></td></tr></table></figure>
-<p>然后就会开始将lldb安装到/usr/local/路径下,在安装到第[203/1128]个文件时，出现了<code>fatal error: ld terminated with signal 9 [Killed]</code>错误，参照上面的方法，在build文件夹创建swapfile尝试解决。<br><img src="/2021/12/16/compile-and-install-lldb/2021-12-21-23-18-01.png" alt="2021-12-21-23-18-01"><br>在安装剩下的文件时，安装到[375/927]个文件时仍然出现了以上错误。<br><img src="/2021/12/16/compile-and-install-lldb/2021-12-22-08-27-51.png" alt="2021-12-22-08-27-51"><br>再次尝试用上述方法安装剩下的文件。<br><img src="/2021/12/16/compile-and-install-lldb/2021-12-22-08-39-08.png" alt="2021-12-22-08-39-08"><br>依旧出现以上问题，最终只得作罢。<br><img src="/2021/12/16/compile-and-install-lldb/2021-12-22-09-05-29.png" alt="2021-12-22-09-05-29"></p>
-<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><ol>
-<li><a target="_blank" rel="noopener" href="https://lldb.llvm.org/resources/build.html#building-lldb-with-cmake">Building LLDB with CMake</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/Vin_tt/article/details/110421022">LLVM编译collect2: fatal error: ld terminated with signal 9</a></li>
-</ol>
+<hr>
+<h1 id="Polling的目的"><a href="#Polling的目的" class="headerlink" title="Polling的目的"></a>Polling的目的</h1><p>UE[^1]在向网络发送数据的过程中，由于物理层存在一定的误码率(BLER)，有一些包(packet, 即RLC PDU)有时候可能会在传输过程中发送失败或者丢失。但是，哪一些包发送失败了，从UE侧是无法知道的。因此，为了实现数据的可靠传输，UE需要网络侧的反馈，告诉UE在网络侧哪一些包已经收到，哪一些还没有收到，从而让UE能够重传那些网络还没收到的包，这个反馈就是<code>状态报告</code>(status report)。</p>
+<p>但是网络侧怎么能够知道什么时候给UE发送<code>状态报告</code>呢？如果网络侧频繁不停地给UE发送<code>状态报告</code>，那么虽然UE能够很及时地知道网络侧接收情况，但是这样就浪费了很多下行资源；而如果网络侧周期性地给UE发送<code>状态报告</code>，那么UE侧又无法及时得知网络侧的接收情况。引入<code>Polling</code>就是为了这个目的。UE需要向网络询问，哪一些包收到了，哪一些还没收到，这样网络就会回复<code>状态报告</code>，UE就能及时地重传那些没被网络收到(acknowledged)的包。</p>
+<hr>
+<h1 id="Polling的触发条件"><a href="#Polling的触发条件" class="headerlink" title="Polling的触发条件"></a>Polling的触发条件</h1><p>在每个RLC data PDU的header部分，有一个P位的标志位，这个标志位就代表<code>polling</code>。当P位为1时，表示UE向网络侧发送<code>polling</code>，期望对方回复<code>状态报告</code>，反之亦然。在以下任一条件满足的情况下，UE都会触发<code>polling</code>：</p>
+<ul>
+<li>PDU_WITHOUT_POLL &gt;= <em>pollPDU</em></li>
+<li>BYTE_WITHOUT_POLL &gt;= <em>pollByte</em></li>
+<li>在发送完当前的RLC data PDU后，buffer里不再剩余任何待发送的RLC data PDU</li>
+<li><em>t-PollRetransmit</em> 定时器超时</li>
+</ul>
+<p>UE每发送一个新的RLC data PDU时，PDU_WITHOUT_POLL会加1；BYTE_WITHOUT_POLL也会增加sizeof(RLC PDU payload)。在更新了PDU_WITHOUT_POLL和BYTE_WITHOUT_POLL后，假如PDU_WITHOUT_POLL$\geqslant$_pollPDU_，或者BYTE_WITHOUT_POLL$\geqslant$<em>pollByte_，那么UE需要将该RLC PDU header的P位置1，向网络发送<code>polling</code>。这两个条件保证了UE每向网络发送一部分数据后，都能及时地知道这些数据在网络侧的接收情况。_pollPDU</em> 和 <em>pollByte</em> 由网络配置，通过RRC层向RLC层下发。<br>[^1]: User equipment，在蜂窝网络中指终端设备，大部分场景下是手机，也可能是智能手表，智能仪表等其它无线终端设备。</p>
+<p>当UE发送buffer里最后一个新传RLC data PDU时，也应该置P位为1。这也是符合直觉的。因为在发送完最后一个新传RLC data PDU后，UE有可能很长时间都不会发送新的数据了，这时候前两个条件就无法触发了。因此，这时候需要向网络发送<code>polling</code>，获取网络的接收状态报告，然后及时地将前面还没发送成功的包给发送出去。</p>
+<p>假如在上面的<code>polling</code>触发，并且重传RLC PDU后，网络侧还是有一些包没收到，而此时UE不再有新的包发送了，那么网络侧岂不是再也收不到这些没收到的包了？针对这个问题，RLC层提供了最后一个polling触发条件，保证了在这种场景下，UE还能向网络发送这些丢失的包。UE在RLC层有一个 <em>t-PollRetransmit</em> 定时器，每当UE发送了<code>polling</code>后，都会启动 <em>t-PollRetransmit</em> 定时器(或者重启，假如此时定时器还在运行)。当 <em>t-PollRetransmit</em> 定时器超时时，假如</p>
+<ul>
+<li>buffer(包括RLC data PDU新传队列和重传队列)为空</li>
+<li>或者无法发送新传RLC PDU(比如此时因为收不到给VT(A)的ACK，导致window stall了)</li>
+</ul>
+<p>那么UE需要向网络重传一包RLC data PDU，并将该RLC data PDU的P位置1，向网络发送<code>polling</code>，这样就保证了在无法发送新传的数据时，UE还能收到网络的<code>状态报告</code>，从而重传之前丢失的包，补齐网络侧的接收窗口，而不至于让网络侧长时间无法完全收到这些包。UE在这种场景下向网络侧重传的RLC data PDU，可以选择以下两种之一：</p>
+<ul>
+<li>SN[^2]为VT(S) – 1的RLC data PDU，即发送窗口最右侧的那个RLC data PDU</li>
+<li> 发送窗口中任何一个还没被网络侧确认已经收到的RLC data PDU</li>
+</ul>
+<hr>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文从UE侧角度介绍了LTE网络RLC层的一个基本功能——<code>polling</code>机制。<code>polling</code>机制只在<code>AM模式</code>下才会生效，其目的是为了能及时得知网络侧的接收情况，从而及时地向网络重传丢失的数据包，保证数据的低时延可靠传输。最后介绍了<code>polling</code>的触发条件。</p>
+<hr>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><p>[1] 3GPP协议 36322 section 5.2.2<br>[2] <font color="DodgerBlue">Radio Protocols for LTE and LTE-Advanced (2012)</font> by SeungJune Yi, SungDuck Chun, etl. section 5.4.4<br>[3] 深入理解LTE-A. 温金辉著. section 36.3.3.2</p>
+<p>[^1]: User equipment，在蜂窝网络中指终端设备，大部分场景下是手机，也可能是智能手表，智能仪表等其它无线终端设备。<br>[^2]: Sequence number，每一包RLC data PDU都有一个sequence number，在一段时间内可以唯一标识这包RLC data PDU。</p>
 
     </div>
 
@@ -296,7 +287,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://yang-yuke.github.io/2021/12/16/compile-and-install-lldb/" title="在ubuntu20.04编译及安装LLDB">https://yang-yuke.github.io/2021/12/16/compile-and-install-lldb/</a>
+    <a href="https://yang-yuke.github.io/2022/06/16/LTE%E7%BD%91%E7%BB%9CRLC%E5%B1%82%E7%9A%84polling%E6%9C%BA%E5%88%B6/" title="LTE网络RLC层的polling机制">https://yang-yuke.github.io/2022/06/16/LTE网络RLC层的polling机制/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -306,10 +297,6 @@
 
 
       <footer class="post-footer">
-          <div class="post-tags">
-              <a href="/tags/%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/" rel="tag"># 开发环境</a>
-              <a href="/tags/%E5%B7%A5%E5%85%B7%E9%93%BE/" rel="tag"># 工具链</a>
-          </div>
 
         
 
@@ -317,13 +304,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/12/10/install-latest-gcc/" rel="prev" title="在ubuntu20.04安装最新版GCC">
-      <i class="fa fa-chevron-left"></i> 在ubuntu20.04安装最新版GCC
+    <a href="/2021/12/28/compile-lldb-mi/" rel="prev" title="在ubuntu20.04编译lldb-mi">
+      <i class="fa fa-chevron-left"></i> 在ubuntu20.04编译lldb-mi
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2021/12/28/compile-lldb-mi/" rel="next" title="在ubuntu20.04编译lldb-mi">
-      在ubuntu20.04编译lldb-mi <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -382,7 +366,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E5%8F%8A%E5%AE%89%E8%A3%85LLDB"><span class="nav-number">2.</span> <span class="nav-text">配置及安装LLDB</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number">3.</span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">4.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Polling%E7%9A%84%E7%9B%AE%E7%9A%84"><span class="nav-number">2.</span> <span class="nav-text">Polling的目的</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Polling%E7%9A%84%E8%A7%A6%E5%8F%91%E6%9D%A1%E4%BB%B6"><span class="nav-number">3.</span> <span class="nav-text">Polling的触发条件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">5.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
