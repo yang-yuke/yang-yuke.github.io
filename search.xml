@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>在ubuntu20.04编译及安装LLDB</title>
+    <url>/2021/12/16/compile-and-install-lldb/</url>
+    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>已经介绍了如何在本地编译及安装llvm，但是当时只是编译和安装了<code>llvm;clang;libcxx;libcxxabi</code>这四个库，本文将介绍如何编译及安装lldb。</p>
+<span id="more"></span>
+<h1 id="配置及安装LLDB"><a href="#配置及安装LLDB" class="headerlink" title="配置及安装LLDB"></a>配置及安装LLDB</h1><p>在进行下面的步骤时，假设你已经下载了llvm整个工程，并且安装了所需的依赖工具。如果你还没进行这些操作，可以参考<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>一文的<code>本地编译安装LLVM</code>一节的<code>前提条件</code>和<code>下载LLVM源文件</code>这两部分内容，先完成这两步。</p>
+<p>完成上述步骤后，输入以下命令。首先cd进入llvm-project工程，然后生成cmake文件。<code>-S llvm</code>表示源文件所在文件夹为当前路径下的llvm文件夹；<code>-B build</code>表示生成的cmake文件将放到当前路径下的build文件夹；<code>-G Ninja</code>表示生成的cmake文件将给Ninja在编译时使用。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure>
+<p>在编译到第[4169/4171]个文件时，会出现以下错误。<br><img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-22-28.png" alt="2021-12-18-17-22-28"><br>参考<a href="https://blog.csdn.net/Vin_tt/article/details/110421022">这篇文章</a>解决这个问题，输入以下命令:</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project/build</span><br><span class="line">sudo mkdir swapfile</span><br><span class="line">cd /swapfile</span><br><span class="line">sudo dd if=/dev/zero of=swap bs=1024 count=20000000</span><br><span class="line">sudo mkswap -f swap</span><br><span class="line">sudo swapon swap</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-56-57.png" alt="2021-12-18-17-56-57"><br>可以看到，剩下的三个文件都被成功地编译了。编译出来生成的应用程序位于llvm-project/build/bin路径下，将其拷贝到/usr/local/bin/文件夹下即可。<br><img src="/2021/12/16/compile-and-install-lldb/2021-12-18-18-17-50.png" alt="2021-12-18-18-17-50"></p>
+<h1 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h1><p>这部分讲的是后续的失败经历，以及没有解决的问题。</p>
+<p>上述编译命令在编译lldb过程中会有debug信息，其体积会很大，而且编译出来的文件在llvm-project/build文件夹下面，还需要<code>ninja install</code>命令将其安装至默认路径下，但是由于体积过大，在安装时容易出问题。最好是编译release版本，并且在生成cmake文件的时候指明安装路径，命令如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;clang;lldb&quot;</span> <span class="comment">#1,这条命令与下面这条命令2选1</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;clang;lldb&quot;</span> ./llvm <span class="comment">#2,这条命令与上面的命令2选1</span></span></span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_BUILD_TYPE=&quot;Release&quot; -DLLDB_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=&quot;/usr/local/llvm&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_BUILD_TYPE=&quot;Release&quot; -DLLDB_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=&quot;/usr/local/llvm&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure>
+<p>编译完成后，生成的文件位于llvm-project/build文件夹内，我们要把它们安装到/usr/local/路径下，因此，需要输入以下命令</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ninja install</span><br></pre></td></tr></table></figure>
+<p>然后就会开始将lldb安装到/usr/local/路径下,在安装到第[203/1128]个文件时，出现了<code>fatal error: ld terminated with signal 9 [Killed]</code>错误，参照上面的方法，在build文件夹创建swapfile尝试解决。<br><img src="/2021/12/16/compile-and-install-lldb/2021-12-21-23-18-01.png" alt="2021-12-21-23-18-01"><br>在安装剩下的文件时，安装到[375/927]个文件时仍然出现了以上错误。<br><img src="/2021/12/16/compile-and-install-lldb/2021-12-22-08-27-51.png" alt="2021-12-22-08-27-51"><br>再次尝试用上述方法安装剩下的文件。<br><img src="/2021/12/16/compile-and-install-lldb/2021-12-22-08-39-08.png" alt="2021-12-22-08-39-08"><br>依旧出现以上问题，最终只得作罢。<br><img src="/2021/12/16/compile-and-install-lldb/2021-12-22-09-05-29.png" alt="2021-12-22-09-05-29"></p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><ol>
+<li><a href="https://lldb.llvm.org/resources/build.html#building-lldb-with-cmake">Building LLDB with CMake</a></li>
+<li><a href="https://blog.csdn.net/Vin_tt/article/details/110421022">LLVM编译collect2: fatal error: ld terminated with signal 9</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>编译器</category>
+      </categories>
+      <tags>
+        <tag>开发环境</tag>
+        <tag>工具链</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>在ubuntu20.04编译lldb-mi</title>
+    <url>/2021/12/28/compile-lldb-mi/</url>
+    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>lldb-mi(lldb machine interface)是一个C/C++调试器，原来是LLVM项目中lldb的一部分，但是由于长时间没有人维护和更新，于是是从LLVM项目的lldb中分了出去，成为单独的一个工程。在linux环境下，使用vscode对C/C++代码进行调试时，常用的调试器是GDB，除此之外，还有个选择就是lldb-mi。本文将介绍如何在本地对lldb-mi工程源码进行编译，从而生成可执行文件。编译lldb-mi，需要一个C++14编译器以及LLDB，而LLDB又依赖于Clang和LLVM，因此，在编译lldb-mi之前，需要先安装Clang，LLVM和LLDB，可以参考<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">这篇博客</a>进行安装。</p>
+<span id="more"></span>
+<h1 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h1><p>输入以下命令，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~/ #进入home目录</span><br><span class="line">mkdir buildspace #在home目录下建立buildspace目录</span><br><span class="line">cd ~/buildspace #进入buildspace目录</span><br><span class="line">mkdir llvm-inst #创建llvm-inst目录</span><br><span class="line">git clone https://github.com/lldb-tools/lldb-mi #将lldb-mi工程下载到当前目录（即buildspace目录）</span><br><span class="line">cd lldb-mi #进入lldb-mi工程目录里</span><br><span class="line">mkdir build #在当前目录（即lldb-mi目录）建立build目录，用来存放编译后生成的文件</span><br><span class="line">cmake -DCMAKE_PREFIX_PATH=~/buildspace/llvm-inst/ -GNinja .. #在当前目录（即build目录）的上一级目录（即lldb-mi目录）下生成cmake文件</span><br><span class="line">ninja #编译</span><br></pre></td></tr></table></figure>
+<p>执行完以上命令后，可以看到，所生成的lldb-mi可执行文件将位于lldb-mi/build/src目录下，这个就是lldb-mi调试器。然后，我们就可以开始在vscode中使用这个调试器对程序进行调试了。<br><img src="/2021/12/28/compile-lldb-mi/2021-12-29-00-49-15.png" alt="2021-12-29-00-49-15"></p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><ol>
+<li><a href="https://github.com/lldb-tools/lldb-mi">Building against custom LLDB</a></li>
+<li><a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">在ubuntu20.04安装LLVM</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>编译器</category>
+      </categories>
+      <tags>
+        <tag>开发环境</tag>
+        <tag>工具链</tag>
+        <tag>lldb-mi</tag>
+        <tag>调试器</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hello World</title>
+    <url>/2021/11/27/hello-world/</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<span id="more"></span>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+]]></content>
+  </entry>
+  <entry>
+    <title>LTE MAC token bucket algorithm</title>
+    <url>/2021/11/27/LTE-MAC-token-bucket-algorithm/</url>
+    <content><![CDATA[<h1 id="Abbreviation"><a href="#Abbreviation" class="headerlink" title="Abbreviation"></a>Abbreviation</h1><p>Below are the abbreviation of some jargons that will be used in the essay.</p>
+<p>NW: network<br>UL: uplink<br>WFQ: weighted fair queueing</p>
+<h1 id="Preface"><a href="#Preface" class="headerlink" title="Preface"></a>Preface</h1><p>In LTE protocol stack, MAC lies in the so-called layer2. One of its main functionalities is managing the UL grant we receive from layer1. In other words, it allocates the UL grant to different logic channels. In this essay, I will briefly talk about how MAC layer allocates the UL grant to different logic channel. It does so by implementing the toket bucket algorithm, which is the official MAC UL sheduling algorithm used by LTE MAC layer, specified in 3GPP specification 36.321.</p>
+<span id="more"></span>
+<h1 id="Token-bucket-algorithm"><a href="#Token-bucket-algorithm" class="headerlink" title="Token bucket algorithm"></a>Token bucket algorithm</h1><p>Suppose we have below 3 active logic channels. For each logic channel, there will be a bucket which holds the tokens. The size of token bucket for each logic channel are not neccessarily the same. They may vary, depending on NW’s configuration.</p>
+<p>Each TTI, a certain amount of token will be injected to seperate logic channel’s token bucket. The amount of token injected each TTI is equal to PBR, which is actually the data rate that we want to ensure that the logic channel can achieve at the very least, to avoid that some logic channel of higher priority might hog over the UL grant and hunger those less prioritized logic channels to death. We want to make sure that as long as there is UL grant, each logic channel might relish a share of it, even for those of low priority.<br><img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-22-56-19.png" alt="2022-02-09-22-56-19"></p>
+<p>In actual implementation, the token bucket algorithm is essentially a combination of WFQ algorithm and round-robin queueing algorivthm. When we get an UL grant, how should we allocate them to different logic channels? For the sake of discussion, let’s take the below graph as an example. In below graph, each logic channel’s token bucket has 500bytes of token. And each logic channel’s buffer has 3000bytes of data pending in it. Now, if we get an UL grant of 3000bytes at some point, how should we allocate it? If we allocate all of them to one logic channel, that would be unfair to the other 2 logic channels because they don’t get the chance to send out any bit of data. Then how about sharing it fairly among the logic channels? Well, that doesn’t seem a wise choice as well, because in the real-life scenario, some traffic, such as video or audio data, are obviously more important than other application’s traffic, such as FTP. We can tolerate a slowly downloaded file but we have zero tolerance for a jittering video call or voice call!<br><img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-23-24-07.png" alt="2022-02-09-23-24-07"></p>
+<p>Alright, enough for those non-sense, then what should we do here? Well, after the trade-off of fairness and effectiveness, someone came up with an ingenuous idea that balances both pretty well. In the actual MAC token bucket algorithm, there are 2 rounds of UL grant allocation. The first round is actually somewhat like the WFQ algorithm. In this round, we will start from the highest prioritized logic channel, we allocate a part of the UL grant to it. How many? Depends on the available token bytes and the data pending in the buffer. If there are too much data pending the buffer that the number of token cannot match it, then sorry, we can only allocate the size of the UL grant upto the amount of available token to that particular logic channel at this round. The number of token is the budget. We can’t exceed the budget. If there are not much pending data and the token is enough, then congratulation, we don’t have to consume all the token. Instead, we only need to allocate the size of UL grant that is equal to the number pending data to that logic channel. So, the grant allotment to a logic channel can be summarized with one simple equation as follows. MIN stands for taking the minimum value.<br><code>allotment=MIN(pending_data_size, number_of_token)</code></p>
+<p>After allocating the UL grant to the highest logic channel, we will apply the same logic to allocate the leftover grant to the rest logic channel, one by one, from secondary highest prioritized logic channel all the way down to the least significant logic channel, as long as there is still UL grant left. This is how the first round works. The main purpose of this round is fairness. Regardless it is good or bad, we want to make sure every logic channel can enjoy a piece of the UL grant. The quality of service each logic channel can get depends on the PBR and token bucket size. They work together as the weight in the WFQ algorithm. They defines the weight of each logic channel. Now, let’s take the above graph as an example. How will the situation looks like after the first round of grant allocation? Well, apparently, each logic channel has enough pending data(3000bytes), so all of their available token(500bytes) will be consumed. So the situation will be as follows.<br><img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-10-00-02-20.png" alt="2022-02-10-00-02-20"></p>
+<p>All the logic channels’ token bucket are empty. Each one’s buffer will have 500 bytes less(i.e. the amount the token consumed), so there are now only 2500 bytes pending in each logic channels’ buffer. The leftover grant will be only 1500 bytes now. Now, after this round, seems every body is happy with the result right? Everyone can enjoy a bit of it. Fair enough. Well, is it? Suppose LICD1 is the highest prioritized logic channel here, I’m afraid LCID1 will say no! Because sometimes some traffic are much more important than the others(e.g. video or voice call traffic versus downloaded file traffic), they should be preferred when we allocate the UL grant. Fairness might backfire here if we only consider it. So,in order to achieve effectiveness, we will adopt a round-robin strategy in the second round of grant allocation.</p>
+<p>Let’s continue the analysis of the scenario above. Now we still have 1500 bytes of UL grant left. Each logic channel’s token bucket is already empty. And each logic channel still has 2500 bytes of pending data. What should we do now? You might think that since the token bucket is already empty, we cannot allocate the grant to any of the logic channel and cannot send out any data anymore. But that’s not the case, because in this round token bucket is not involved at all. Remember, the existence of token bucket is to ensure that each logic channel can get a certain amount of UL grant and hence get some service, regardless of good or bad. Since they have all be served in the first round, we have acheived our goal, so there is no need to adhere to such principle in this round anymore. Instead, we should forget it and try a best-effort strategy in order that the most important logic channel can get the best service. Therefore, starting from the highest prioritized logic channel, we will allocate all the leftover UL grant to it as long as there is enough data in its buffer to consume the UL grant. If after its pending data is all consumed, there is still UL grant left, then we will continue to apply the same logic to the secondary highest prioritized logic channel, until the UL grant has all been consumed or all logic channels’ data has been consumed. So, in this round, all the leftover UL grant(1500 bytes) will be allocated to logic channel 1, and logic channel 1 will have 1000 bytes left. LCID3 and LCID5 channels don’t get the chance to be served in this round, but that’s ok since they have been served in the first round. The scenario will be as below after the second round.<br><img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-10-23-37-24.png" alt="2022-02-10-23-37-24"></p>
+<p>There are also might be some minor details skipped here, but that’s the general idea of the token bucket algorithm used in actual implementation.</p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p>[1] Computer Networks: A Top-Down Approach. By Behrouz A. Forouzan, Firouz Mosharraf<br>[2] Computer Networks. By ANDREW S. TANENBAUM, DAVID J. WETHERALL<br>[3] 36.321. By 3GPP specialist panel.</p>
+]]></content>
+      <categories>
+        <category>LTE</category>
+      </categories>
+      <tags>
+        <tag>LTE</tag>
+        <tag>MAC</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>在ubuntu20.04安装最新版GCC</title>
+    <url>/2021/12/10/install-latest-gcc/</url>
+    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#more">编译LLVM</a>过程中，出现了很多头文件无法解析的错误，根据<a href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，原因是因为GCC版本过低，将GCC升级至最新版11.2.0就可以解决这个问题了。本文将介绍如何升级GCC到最新版(当前为11.2.0)。<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-23-33-08.png" alt="2021-12-10-23-33-08"></p>
+<span id="more"></span>
+<h1 id="下载gcc最新源码包"><a href="#下载gcc最新源码包" class="headerlink" title="下载gcc最新源码包"></a>下载gcc最新源码包</h1><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/gcc/gcc-11.2.0/gcc-11.2.0.tar.gz</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-24-58.png" alt="2021-12-10-19-24-58"></p>
+<h1 id="解压缩"><a href="#解压缩" class="headerlink" title="解压缩"></a>解压缩</h1><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">tar -xzvf gcc-11.2.0.tar.gz</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-27-42.png" alt="2021-12-10-19-27-42"></p>
+<h1 id="进入解压缩目录"><a href="#进入解压缩目录" class="headerlink" title="进入解压缩目录"></a>进入解压缩目录</h1><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd gcc-11.2.0</span><br></pre></td></tr></table></figure>
+<h1 id="运行预备库下载脚本"><a href="#运行预备库下载脚本" class="headerlink" title="运行预备库下载脚本"></a>运行预备库下载脚本</h1><p>运行download_prerequisites脚本,这个脚本会自动帮你下载所需要的依赖文件和库：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
+<p>在运行该脚本时，出现以下错误，无法下载依赖文件库<code>gmp-6.1.0.tar.bz2</code>。<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-37-55.png" alt="2021-12-10-19-37-55"><br>解决办法为改从清华镜像源下载，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/gmp/gmp-6.1.0.tar.bz2 #从清华镜像源下载gmp-6.1.0.tar.bz2文件</span><br><span class="line">tar xvfj gmp-6.1.0.tar.bz2 #解压缩文件</span><br><span class="line">ln -s gmp-6.1.0 gmp #在当前目录下创建名为gmp的快捷方式，链接到gmp-6.1.0文件夹</span><br></pre></td></tr></table></figure>
+<p>改从清华镜像源下载后速度真的很快。<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-44-43.png" alt="2021-12-10-19-44-43"><br><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-45-18.png" alt="2021-12-10-19-45-18"><br>继续执行脚本下载依赖文件，出现以下错误，无法下载依赖文件库<code>mpfr-3.1.6.tar.bz2</code>。<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-50-42.png" alt="2021-12-10-19-50-42"><br>解决办法为改从清华镜像源下载，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/mpfr/mpfr-3.1.6.tar.bz2 #从清华镜像源下载mpfr-3.1.6.tar.bz2文件</span><br><span class="line">tar xvfj mpfr-3.1.6.tar.bz2 #解压缩文件</span><br><span class="line">ln -s mpfr-3.1.6 mpfr #在当前目录下创建名为mpfr的快捷方式，链接到mpfr-3.1.6文件夹</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-54-01.png" alt="2021-12-10-19-54-01"><br><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-54-59.png" alt="2021-12-10-19-54-59"><br>继续执行脚本下载，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
+<p>出现以下错误，无法下载<code>mpc-1.0.3.tar.gz</code>文件，<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-04-14.png" alt="2021-12-10-20-04-14"><br>解决办法为改从清华镜像源下载，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/mpc/mpc-1.0.3.tar.gz</span><br><span class="line">tar xvfz mpc-1.0.3.tar.gz</span><br><span class="line">ln -s mpc-1.0.3 mpc #在当前目录下创建名为mpc的快捷方式，链接到mpc-1.0.3文件夹</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-07-46.png" alt="2021-12-10-20-07-46"><br>继续执行下载脚本，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
+<p>出现以下错误，无法下载<code>isl-0.18.tar.bz2</code>文件，<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-23-02.png" alt="2021-12-10-20-23-02"><br>因为这个文件在清华镜像源上没有，因此解决办法为从GNU官网通过http下载：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2</span><br><span class="line">tar xvfj isl-0.18.tar.bz2</span><br><span class="line">ln -s isl-0.18 isl</span><br></pre></td></tr></table></figure>
+<h1 id="创建编译目录"><a href="#创建编译目录" class="headerlink" title="创建编译目录"></a>创建编译目录</h1><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mkdir gcc-build</span><br><span class="line">cd $_</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-30-04.png" alt="2021-12-10-20-30-04"></p>
+<h1 id="生成Makefile文件"><a href="#生成Makefile文件" class="headerlink" title="生成Makefile文件"></a>生成Makefile文件</h1><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">../configure -enable-checking=release -enable-languages=c,c++ -disable-multilib #../configure表示返回上级目录执行configure命令</span><br></pre></td></tr></table></figure>
+<p><code>–enable-languages</code>表示你要让你的gcc支持那些语言，<code>–disable-multilib</code>表示不生成编译为其他平台可执行代码的交叉编译器。<code>–disable-checking</code>表示生成的编译器在编译过程中不做额外检查，也可以使用<code>–enable-checking=xxx</code>来增加一些检查。</p>
+<h1 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h1><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">make -j8</span><br></pre></td></tr></table></figure>
+<p>这里-j8表示的是使用8核进行编译，因为我的电脑CPU为8核。因为make默认是serial build的，如果不加-j选项，就不会开启多核parallel build，这样的话速度会慢很多，所以这里我开启了8核编译。即便如此，这一步花费时间也非常长，我在虚拟机里用了将近两个小时完成这一步，而且虚拟机一定要留出至少20GB的空间，不然可能会出现磁盘不足的问题。<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-38-17.png" alt="2021-12-10-20-38-17"></p>
+<h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo su root #安装GCC需要root权限，这里先切换为root用户</span><br><span class="line">make install #安装</span><br><span class="line">source /etc/profile #安装完成后手动刷新一下profile</span><br><span class="line">gcc -v #检查当前gcc版本</span><br></pre></td></tr></table></figure>
+<p>可以看到，当前的gcc版本更新到了11.2.0，至此安装成功。<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-22-35-17.png" alt="2021-12-10-22-35-17"></p>
+<h1 id="环境变量设置"><a href="#环境变量设置" class="headerlink" title="环境变量设置"></a>环境变量设置</h1><p>在安装GCC完成后，可以将其永久地加入到系统路径中，输入以下命令：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo su yukeyang #这里yukeyang替换成你的用户名，先从root用户切换回超级用户</span><br><span class="line">cd ~/ #cd进入当前用户(我的是yukeyang)的home目录</span><br><span class="line">code .bashrc #用vscode打开.bashrc文件</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-22-46-15.png" alt="2021-12-10-22-46-15"><br>GCC可执行程序所在路径为：<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-23-24-28.png" alt="2021-12-10-23-24-28"><br>因此，将以下两行加入到.bashrc文件中。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export PATH=/usr/local/bin:$PATH #设置GCC可执行程序路径</span><br><span class="line">export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH #设置动态链接库路径</span><br></pre></td></tr></table></figure>
+<p>至此就完成了所有步骤了，更多的环境变量设置，可以参考<a href="https://www.cnblogs.com/jessepeng/p/11674780.html">这篇博客</a>。<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-23-26-40.png" alt="2021-12-10-23-26-40"></p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><ol>
+<li><a href="https://cloud.tencent.com/developer/article/1532384">centos 编译安装gcc8.1</a></li>
+<li><a href="https://solarianprogrammer.com/2016/10/07/building-gcc-ubuntu-linux/">Building GCC 10 on Ubuntu Linux</a></li>
+<li><a href="https://blog.csdn.net/21aspnet/article/details/105708122">安装最新的GCC</a></li>
+<li><a href="https://www.cnblogs.com/jessepeng/p/11674780.html">[Linux] 非root安装GCC9.1.0</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>编译器</category>
+      </categories>
+      <tags>
+        <tag>开发环境</tag>
+        <tag>工具链</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>在ubuntu20.04安装LLVM</title>
+    <url>/2021/12/04/ubuntu-install-llvm/</url>
+    <content><![CDATA[<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>在ubuntu20.04上安装LLVM，主要有四种方法。</p>
+<ul>
+<li>方法一：运行官方的自动安装脚本进行安装</li>
+<li>方法二：通过包管理器进行安装</li>
+<li>方法三：使用官方预编译二进制文件进行安装</li>
+<li>方法四：从源码编译安装<span id="more"></span>
+第一种方法最为简单，只需要一条命令，执行一下脚本，就不要进行任何操作了。第二种方法较第一种要麻烦一点点，但是也比较简单。第三种办法要麻烦点，但是会比较快，简单来说就是直接到网上下载预编译好的binary文件，将其下载到ubuntu20.04系统中，然后解压，再把解压后的所有文件全部拷贝到系统的/usr/local文件夹下，然后就可以使用了。第四种方法最为麻烦，而且很慢，简单来说就是从网上下载LLVM工程的源代码到ubuntu系统，然后在本机上编译，编译完成再安装。</li>
+</ul>
+<p>如果只是为了使用LLVM的工具链，个人建议采用方法一或者二和三(我安装的时候使用的是方法三)，简单快捷。如果为了体验一下在本地编译LLVM工程那种更原汁原味的感觉，可以采用方法四，但是这种方法比较麻烦，因为需要安装一些依赖工具，并且在本地编译LLVM耗时严重，整个过程将会相当漫长，所以如果时间预算不是很充足，又或者电脑配置不太好的情况下，我不建议采用方法四。当然，这里四种方法的过程我都会介绍。</p>
+<h1 id="使用官方安装脚本安装"><a href="#使用官方安装脚本安装" class="headerlink" title="使用官方安装脚本安装"></a>使用官方安装脚本安装</h1><p>首先介绍第一种方法，这种方法又有两个选择，第一个是可以选择安装最新版本的，另外一个就是安装某个特定版本。参考下图，来自<a href="https://apt.llvm.org/">官网</a>的介绍。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-08-23-55-45.png" alt="2021-12-08-23-55-45"></p>
+<blockquote>
+<p>For convenience there is an automatic installation script available that installs LLVM for you.<br>To install the latest stable version:<br>bash -c “$(wget -O - <a href="https://apt.llvm.org/llvm.sh)&quot;">https://apt.llvm.org/llvm.sh)&quot;</a></p>
+<p>To install a specific version of LLVM:<br>wget <a href="https://apt.llvm.org/llvm.sh">https://apt.llvm.org/llvm.sh</a><br>chmod +x llvm.sh<br>sudo ./llvm.sh <version number></version></p>
+</blockquote>
+<h2 id="安装最新稳定版LLVM"><a href="#安装最新稳定版LLVM" class="headerlink" title="安装最新稳定版LLVM"></a>安装最新稳定版LLVM</h2><p>在ubuntu命令终端执行以下命令，将会运行官网上的llvm.sh这个shell脚本，自动给你安装最新的稳定版本的llvm了。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">bash -c &quot;$(wget -O - https://apt.llvm.org/llvm.sh)&quot;</span><br></pre></td></tr></table></figure>
+<h2 id="安装特定版LLVM"><a href="#安装特定版LLVM" class="headerlink" title="安装特定版LLVM"></a>安装特定版LLVM</h2><p>假如我们想用老的版本的话，我们也可以指明某个特定的版本进行安装，在ubuntu命令终端执行以下命令：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://apt.llvm.org/llvm.sh</span><br><span class="line">chmod +x llvm.sh</span><br><span class="line">sudo ./llvm.sh &lt;version number&gt;</span><br></pre></td></tr></table></figure>
+<p>其中，&lt;version number&gt;需要替换成你想安装的那个版本的版本号。例如，假如我们想安装13版本的LLVM时，执行以下命令：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://apt.llvm.org/llvm.sh</span><br><span class="line">chmod +x llvm.sh</span><br><span class="line">sudo ./llvm.sh 13</span><br></pre></td></tr></table></figure>
+<h1 id="使用包管理器安装"><a href="#使用包管理器安装" class="headerlink" title="使用包管理器安装"></a>使用包管理器安装</h1><p>使用包管理器安装，我们需要先修改<code>/etc/apt/source.list</code>，参考以下<a href="https://apt.llvm.org/">官方内容</a>，我们需要先在<code>/etc/apt/source.list</code>加入以下内容，<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-09-00-15-09.png" alt="2021-12-09-00-15-09"></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">deb http://apt.llvm.org/focal/ llvm-toolchain-focal main</span><br><span class="line">deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal main</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">12</span></span><br><span class="line">deb http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main</span><br><span class="line">deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">13</span></span><br><span class="line">deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main</span><br><span class="line">deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main</span><br></pre></td></tr></table></figure>
+<p>加上以上内容后，我们有三种方法可以安装LLVM。</p>
+<h2 id="方法一"><a href="#方法一" class="headerlink" title="方法一"></a>方法一</h2><p>执行以下shell命令，执行后将会安装LLVM release 13。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">apt update</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">LLVM</span></span><br><span class="line">apt install libllvm-13-ocaml-dev libllvm13 llvm-13 llvm-13-dev llvm-13-doc llvm-13-examples llvm-13-runtime</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Clang and co</span></span><br><span class="line">apt install clang-13 clang-tools-13 clang-13-doc libclang-common-13-dev libclang-13-dev libclang1-13 clang-format-13 python-clang-13 clangd-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libfuzzer</span></span><br><span class="line">apt install libfuzzer-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">lldb</span></span><br><span class="line">apt install lldb-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">lld (linker)</span></span><br><span class="line">apt install lld-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libc++</span></span><br><span class="line">apt install libc++-13-dev libc++abi-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">OpenMP</span></span><br><span class="line">apt install libomp-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libclc</span></span><br><span class="line">apt install libclc-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libunwind</span></span><br><span class="line">apt install libunwind-13-dev</span><br></pre></td></tr></table></figure>
+<h2 id="方法二"><a href="#方法二" class="headerlink" title="方法二"></a>方法二</h2><p>参考官网，执行以下shell命令，执行后将会为我们安装最新版本的LLVM（当前版本为version 14）<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-09-00-40-49.png" alt="2021-12-09-00-40-49"></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">apt-get install clang-format clang-tidy clang-tools clang clangd libc++-dev libc++1 libc++abi-dev libc++abi1 libclang-dev libclang1 liblldb-dev libllvm-ocaml-dev libomp-dev libomp5 lld lldb llvm-dev llvm-runtime llvm python-clang</span><br></pre></td></tr></table></figure>
+<h2 id="方法三"><a href="#方法三" class="headerlink" title="方法三"></a>方法三</h2><p>这种方法是用来安装特定稳定版本的LLVM的，参考官网。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-09-00-42-26.png" alt="2021-12-09-00-42-26"><br>以安装13版本为例，首先我们需要获取文档签名，执行以下shell命令，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Fingerprint: 6084 F3CF 814B 57C1 CF12 EFD5 15CF 4D18 AF4F 7421</span></span><br></pre></td></tr></table></figure>
+<p>获取签名后，我们就可以安装LLVM了。假如我们只想安装其中的clang，lld和lldb库(13 release)，我们可以执行以下shell命令，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">apt-get install clang-13 lldb-13 lld-13</span><br></pre></td></tr></table></figure>
+<p>假如我们想安装所有的关键的库，那就不要执行上述命令，而是执行以下shell命令，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">LLVM</span></span><br><span class="line">apt-get install libllvm-13-ocaml-dev libllvm13 llvm-13 llvm-13-dev llvm-13-doc llvm-13-examples llvm-13-runtime</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Clang and co</span></span><br><span class="line">apt-get install clang-13 clang-tools-13 clang-13-doc libclang-common-13-dev libclang-13-dev libclang1-13 clang-format-13 python-clang-13 clangd-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libfuzzer</span></span><br><span class="line">apt-get install libfuzzer-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">lldb</span></span><br><span class="line">apt-get install lldb-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">lld (linker)</span></span><br><span class="line">apt-get install lld-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libc++</span></span><br><span class="line">apt-get install libc++-13-dev libc++abi-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">OpenMP</span></span><br><span class="line">apt-get install libomp-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libclc</span></span><br><span class="line">apt-get install libclc-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libunwind</span></span><br><span class="line">apt-get install libunwind-13-dev</span><br></pre></td></tr></table></figure>
+<h1 id="使用预编译二进制文件安装"><a href="#使用预编译二进制文件安装" class="headerlink" title="使用预编译二进制文件安装"></a>使用预编译二进制文件安装</h1><h2 id="下载文件"><a href="#下载文件" class="headerlink" title="下载文件"></a>下载文件</h2><p>接下来介绍方法三，使用预编译二进制文件安装。顾名思义，预编译二进制文件就是说别人已经帮你编译好LLVM工程，生成了二进制文件，你所需的只是将其下载下来，然后放到合适的位置，就可以使用了。从哪里下载LLVM预编译二进制文件呢？这里我提供两个可选的地址。一个是<a href="https://github.com/llvm/llvm-project/releases/tag/llvmorg-13.0.0">官方Github仓库</a>，LLVM项目组已经将他们的工程放到了这个Github仓库里了，我们只要从里面下载<code>clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz</code>(假如你的操作系统是ubuntu20.04版本的话)或者<code>clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz</code>(假如你的操作系统是ubuntu16.04版本的话)，将其下载到ubuntu系统本地即可。由于国内访问Github网速较慢，而我们所下载的压缩文件大小为500MB左右，为了节省时间起见，我个人建议从另一个地址下载，那就是国内的<a href="https://mirrors.tuna.tsinghua.edu.cn/github-release/llvm/llvm-project/LatestRelease/">清华镜像源</a>。</p>
+<h2 id="安装文件"><a href="#安装文件" class="headerlink" title="安装文件"></a>安装文件</h2><p>下载好二进制文件到ubuntu系统本地后，我们需要先将文件解压，然后再安装。先解压文件，解压的命令如下。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">xz -d clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz #此处你下载的包是clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz，这里是第一步解压</span><br><span class="line">tar -xvf clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz #此处已经是上一步解压完了，文件夹里剩下的是.tar文件</span><br></pre></td></tr></table></figure>
+<p>然后再将解压后文件夹下的5个文件夹（bin,include,share,lib,libexec）及里面的所有文件全部复制到/usr/local目录下即可，复制命令如下。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/* /usr/local/ #此处的*代表这个目录下的五个文件都要被复制</span><br></pre></td></tr></table></figure>
+<p>也可以一个一个文件夹地复制，命令如下。注意，如果/usr/local/没有对应的文件夹(e.g. libexec)时，需要先创建该文件夹，然后再复制解压到对应文件夹里面。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/bin/* /usr/local/bin/ #此处的*代表这个目录下的五个文件都要被复制</span><br><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/include/* /usr/local/include/ #此处的*代表这个目录下的五个文件都要被复制</span><br><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/share/* /usr/local/share/ #此处的*代表这个目录下的五个文件都要被复制</span><br><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/lib/* /usr/local/lib/ #此处的*代表这个目录下的五个文件都要被复制</span><br><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/libexec/* /usr/local/libexec/ #此处的*代表这个目录下的五个文件都要被复制</span><br></pre></td></tr></table></figure>
+<p>完成以上步骤后，我们就可以使用clang了，先测试一下。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">clang --version</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/04/ubuntu-install-llvm/2021-12-04-17-16-26.png" alt="2021-12-04-17-16-26"><br>可以看到，我们已经成功安装clang，版本为13.0.0，接下来就可以愉快地使用了。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>总结来说，就是执行以下命令,</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mkdir -p /usr/local</span><br><span class="line">cd /usr/local</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">不从Github下载，而是从清华镜像源下载</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">sudo wget https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.0/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz</span></span><br><span class="line">sudo wget https://mirrors.tuna.tsinghua.edu.cn/github-release/llvm/llvm-project/LatestRelease/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz</span><br><span class="line">sudo tar xvf clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz</span><br><span class="line">sudo mv clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04 llvm</span><br><span class="line">export PATH=&quot;$PATH:/usr/local/llvm/bin&quot;</span><br></pre></td></tr></table></figure>
+<h1 id="本地编译安装LLVM"><a href="#本地编译安装LLVM" class="headerlink" title="本地编译安装LLVM"></a>本地编译安装LLVM</h1><h2 id="前提条件"><a href="#前提条件" class="headerlink" title="前提条件"></a>前提条件</h2><p>下面介绍方法四，在安装前，需要先安装以下工具，这些工具会在编译LLVM工程过程中使用到，参考<a href="https://llvm.org/docs/GettingStarted.html">官网</a>说明：<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-03-12.png" alt="2021-12-10-14-03-12"></p>
+<ul>
+<li>CMake &gt;= 3.13.4</li>
+<li>GCC &gt;= 5.1.0</li>
+<li>Python &gt;= 3.6</li>
+<li>zlib &gt;= 1.2.3.4</li>
+<li>GNU Make &gt;= 3.79</li>
+<li>Ninja &gt;= 1.10.0</li>
+</ul>
+<p>在ubuntu系统上<a href="https://zhuanlan.zhihu.com/p/321882707">安装Ninja</a>和<a href="https://blog.csdn.net/lj402159806/article/details/76408597">安装CMake</a>非常简单，执行以下命令即可，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt install ninja-build</span><br><span class="line">sudo apt install cmake</span><br></pre></td></tr></table></figure>
+<h2 id="下载LLVM源文件"><a href="#下载LLVM源文件" class="headerlink" title="下载LLVM源文件"></a>下载LLVM源文件</h2><p>下载LLVM工程源文件到本地，然后在本地编译，再安装。首先我们需要下载LLVM工程源代码，这里我们可以选择从官方Github仓库下载或者是从清华镜像源下载，个人建议从清华镜像源下载，因为这样会快很多。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/llvm/llvm-project.git #地址一，从官方Github仓库下载</span><br><span class="line">git clone https://mirrors.tuna.tsinghua.edu.cn/git/llvm-project.git #地址二，从清华镜像源下载</span><br></pre></td></tr></table></figure>
+<p>下载完成后可以看到llvm-project文件夹了。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-11-04.png" alt="2021-12-10-14-11-04"></p>
+<h2 id="配置LLVM"><a href="#配置LLVM" class="headerlink" title="配置LLVM"></a>配置LLVM</h2><p>下载完LLVM项目源文件后，下一步就是编译这些源文件了。这里推荐使用Ninja来编译，速度会快很多，当然也可以使用其他编译系统生成工具，比如Unix Makefiles等。在使用Ninja进行编译之前，我们还需要生成编译过程所需编译文件，这些文件会告诉Ninja如何对LLVM-project进行编译。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-17-16.png" alt="2021-12-10-14-17-16"><br>运行以下shell命令：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project #cd进入llvm-project文件夹</span><br><span class="line">mkdir build #在llvm-project文件夹创建build文件夹</span><br><span class="line">cd build #cd进入build文件夹</span><br><span class="line">cmake -G Ninja ../llvm #在当前目录(build)生成Ninja编译过程所需的文件，cmake的源文件目录为llvm-project下的llvm文件夹</span><br></pre></td></tr></table></figure>
+<p>上面的第四条命令，格式为<code>cmake -G &lt;generator&gt; [options] ../llvm</code>,这里的generator我选择的是Ninja。options则表示可选的选项，常用的有<code>-DLLVM_ENABLE_PROJECTS</code>，表示除了LLVM，你还想编译哪些LLVM子项目。比如，如果除了LLVM外，你还想编译Clang，libcxx和libcxxabi，那么你可以使用编译选项<code>-DLLVM_ENABLE_PROJECTS=&quot;clang&quot; -DLLVM_ENABLE_RUNTIMES=&quot;libcxx;libcxxabi&quot;</code>，上述的第四条命令就是：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang&quot; -DLLVM_ENABLE_RUNTIMES=&quot;libcxx;libcxxabi&quot; ../llvm </span><br></pre></td></tr></table></figure>
+<p>也可以不运行上面的shell命令，而是运行下面的shell命令（参考<a href="https://github.com/llvm/llvm-project">官网指导</a>）：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project #cd进入llvm-project文件夹</span><br><span class="line">mkdir build #在llvm-project文件夹创建build文件夹</span><br><span class="line">cmake -S llvm -B build -G Ninja #对llvm文件夹下的源文件进行cmake，生成的文件放在build目录下，生成的文件将在Ninja编译过程使用</span><br></pre></td></tr></table></figure>
+<p>上面的第三条命令，格式为<code>cmake -S llvm -B build -G &lt;generator&gt; [options]</code>,-S表示cmake的源文件所在文件夹，这里是llvm。-B表示cmake后生成的文件所在的文件夹，这里是build文件夹。-G表示将要使用这些生成的cmake文件来编译的工具，这里是Ninja。如果不清楚这些cmake短选项的含义的话，可以<code>cmake -help</code>查看一下帮助。后面的<code>[options]</code>则表示其它的cmake选项，常用的有<code>-DLLVM_ENABLE_PROJECTS=&#39;...&#39;</code>，具体含义如前所述。假如我们除了llvm子项目以外，还想编译其它的子项目，比如Clang，libcxx，libcxxabi，那我们可以使用<code>-DLLVM_ENABLE_PROJECTS=&quot;clang;libcxx;libcxxabi&quot;</code>选项，上面第三条shell命令就是:</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;libcxx;libcxxabi&quot;</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-45-31.png" alt="2021-12-10-14-45-31"><br>cmake完成后可以看到编译文件已被写到build文件夹下。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-15-01-48.png" alt="2021-12-10-15-01-48"></p>
+<h2 id="编译LLVM"><a href="#编译LLVM" class="headerlink" title="编译LLVM"></a>编译LLVM</h2><p>生成Ninja编译LLVM所需的文件后，下一步就是编译llvm了，参考<a href="https://github.com/llvm/llvm-project">官网</a>，输入以下命令：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake --build build</span><br></pre></td></tr></table></figure>
+<p>上述命令的格式为<code>cmake --build build [-- [options] &lt;target&gt;]</code>，–build指明编译后文件写入的文件夹，这里是build文件夹。–target选项指明所使用的编译工具，假如安装了Ninja的话，默认的target是Ninja。也可以输入以下命令，显式地调用Ninja:</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd build</span><br><span class="line">ninja -j 8</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-12-39-32.png" alt="2021-12-11-12-39-32"><br>在编译到第3257个文件的时候，可能会发生如下错误：<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-19-07-48.png" alt="2021-12-10-19-07-48"><br>原因是因为我的GCC版本太低了，还是9.3.0版本。根据<a href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，升级到11.2.0版（也是当前的最新版）就可以解决这个问题了，因此，需要<a href="https://yang-yuke.github.io/2021/12/10/install-latest-gcc/">升级GCC到最新版</a>。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-19-05-59.png" alt="2021-12-10-19-05-59"><br>在升级到最新版GCC后，再重复上面的编译命令：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;libcxx;libcxxabi&quot;</span><br><span class="line">cd build</span><br><span class="line">ninja -j 8</span><br></pre></td></tr></table></figure>
+<p>依然出现了大量以下错误，<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-16-24-36.png" alt="2021-12-11-16-24-36"><br>这些错误是在编译libcxxabi库的cpp文件时出现的，说明有可能是我们在cmake配置编译的时候出了问题，回到<a href="https://llvm.org/docs/GettingStarted.html">LLVM官网Get started页面</a>，发现与<a href="https://github.com/llvm/llvm-project">LLVM Github Get started</a>上对<code>DLLVM_ENABLE_PROJECTS</code>编译选项的细节描述有点出入，<code>&quot;libcxx;libcxxabi&quot;</code>应该要放到<code>DLLVM_ENABLE_RUNTIMES</code>编译选项里，而不是<code>DLLVM_ENABLE_PROJECTS</code>里面。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-16-29-07.png" alt="2021-12-11-16-29-07"><br>于是，重新进行cmake配置和编译，命令如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang&quot; -DLLVM_ENABLE_RUNTIMES=&quot;libcxx;libcxxabi&quot;</span><br><span class="line">cd build</span><br><span class="line">ninja -j8</span><br></pre></td></tr></table></figure>
+<p>此时，发现能够继续往下编译了，但是每编译十几个cpp文件后就会出现以下错误“fatal error: ld terminated with signal 9 [Killed]”，然后就停止了。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-16-32-11.png" alt="2021-12-11-16-32-11"><br>查了一下，<a href="https://stackoverflow.com/questions/65633304/not-able-to-build-llvm-from-its-source-code">这里</a>提到有可能是因为内存不足所致的，于是重新配置并编译，命令如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS=&quot;clang&quot; -DLLVM_ENABLE_RUNTIMES=&quot;libcxx;libcxxabi&quot; -DLLVM_PARALLEL_LINK_JOBS=1</span><br><span class="line">cmake --build build</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-18-38-00.png" alt="2021-12-11-18-38-00"><br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-18-38-29.png" alt="2021-12-11-18-38-29"><br>上述命令中，<code>-DCMAKE_BUILD_TYPE=Release</code>表示编译的版本是release版本，release版本要小很多，如果不指明的话编译的就是debug版本。<code>-DLLVM_PARALLEL_LINK_JOBS=1</code>表示不开parallel build。等待一段时间后，可以看到这一次可以完全编译所有的文件了。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-18-42-53.png" alt="2021-12-11-18-42-53"><br>编译完成后，需要切换到root用户进行安装，命令如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd build #cd进入llvm-project/build文件夹</span><br><span class="line">sudo su root #切换到root用户权限</span><br><span class="line">ninja install #安装llvm</span><br></pre></td></tr></table></figure>
+<p>安装完成后，可以看到clang已被安装到<code>/usr/local/bin</code>路径下，说明安装已经成功。<br><img src="/2021/12/04/ubuntu-install-llvm/2021-12-13-22-17-01.png" alt="2021-12-13-22-17-01"></p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><ol>
+<li><a href="https://blog.csdn.net/zerolord/article/details/116891720">Ubuntu20.04安装llvm</a></li>
+<li><a href="https://mirrors.tuna.tsinghua.edu.cn/help/llvm-project.git/">LLVM Git 源码仓库镜像使用帮助</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/102028114">LLVM概述——介绍与安装</a></li>
+<li><a href="https://apt.llvm.org/">LLVM Debian/Ubuntu nightly packages</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/321882707">Ninja安装和基本使用</a></li>
+<li><a href="https://blog.csdn.net/lj402159806/article/details/76408597">ubuntu安装CMake的几种方式</a></li>
+<li><a href="https://llvm.org/docs/GettingStarted.html">Getting Started with the LLVM System</a></li>
+<li><a href="https://github.com/llvm/llvm-project">Getting Started with the LLVM System(github)</a></li>
+<li><a href="https://getting-started-with-llvm-core-libraries-zh-cn.readthedocs.io/zh_CN/latest/ch01.html">第1章 编译和安装LLVM</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>编译器</category>
+      </categories>
+      <tags>
+        <tag>开发环境</tag>
+        <tag>工具链</tag>
+      </tags>
+  </entry>
+</search>

@@ -1,553 +1,529 @@
 <!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
 
 
-<html lang="en">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yang-yuke.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="AbbreviationBelow are the abbreviation of some jargons that will be used in the essay. NW: networkUL: uplinkWFQ: weighted fair queueing PrefaceIn LTE protocol stack, MAC lies in the so-called layer2.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LTE MAC token bucket algorithm">
+<meta property="og:url" content="https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/index.html">
+<meta property="og:site_name" content="Yuke&#39;s blog">
+<meta property="og:description" content="AbbreviationBelow are the abbreviation of some jargons that will be used in the essay. NW: networkUL: uplinkWFQ: weighted fair queueing PrefaceIn LTE protocol stack, MAC lies in the so-called layer2.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-22-56-19.png">
+<meta property="og:image" content="https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-23-24-07.png">
+<meta property="og:image" content="https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-10-00-02-20.png">
+<meta property="og:image" content="https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-10-23-37-24.png">
+<meta property="article:published_time" content="2021-11-27T08:17:38.000Z">
+<meta property="article:modified_time" content="2022-06-15T15:23:19.186Z">
+<meta property="article:author" content="Yuke">
+<meta property="article:tag" content="LTE">
+<meta property="article:tag" content="MAC">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-22-56-19.png">
+
+<link rel="canonical" href="https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>LTE MAC token bucket algorithm | Yuke's blog</title>
   
 
-    <head>
-      <meta charset="utf-8" />
-        
-      <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1"
-      />
-      <title>LTE MAC token bucket algorithm |  Yuke&#39;s world</title>
-  <meta name="generator" content="hexo-theme-ayer">
-      
-      <link rel="shortcut icon" href="/paper-plane.ico" />
-       
-<link rel="stylesheet" href="/dist/main.css">
-
-      <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/gh/Shen-Yu/cdn/css/remixicon.min.css"
-      />
-      
-<link rel="stylesheet" href="/css/custom.css">
- 
-      <script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script>
-       
- 
-
-      <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bulma@5.0.1/bulma.min.css"
-      />
-      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.js"></script>
-
-      <!-- mermaid -->
-      
-      <style>
-        .swal2-styled.swal2-confirm {
-          font-size: 1.6rem;
-        }
-      </style>
-    </head>
-  </html>
-</html>
 
 
-<body>
-  <div id="app">
-    
-      
-    <main class="content on">
-      <section class="outer">
-  <article
-  id="post-LTE-MAC-token-bucket-algorithm"
-  class="article article-type-post"
-  itemscope
-  itemprop="blogPost"
-  data-scroll-reveal
->
-  <div class="article-inner">
-    
-    <header class="article-header">
-       
-<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
-  LTE MAC token bucket algorithm
-</h1>
- 
 
-      
-    </header>
-     
-    <div class="article-meta">
-      <a href="/2021/11/27/LTE-MAC-token-bucket-algorithm/" class="article-date">
-  <time datetime="2021-11-27T08:17:38.000Z" itemprop="datePublished">2021-11-27</time>
-</a> 
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Technology/">Technology</a>
-  </div>
-  
-<div class="word_count">
-    <span class="post-time">
-        <span class="post-meta-item-icon">
-            <i class="ri-quill-pen-line"></i>
-            <span class="post-meta-item-text"> Word count:</span>
-            <span class="post-count">1.4k</span>
-        </span>
-    </span>
 
-    <span class="post-time">
-        &nbsp; | &nbsp;
-        <span class="post-meta-item-icon">
-            <i class="ri-book-open-line"></i>
-            <span class="post-meta-item-text"> Reading time≈</span>
-            <span class="post-count">8 min</span>
-        </span>
-    </span>
-</div>
- 
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
     </div>
-      
-    <div class="tocbot"></div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Yuke's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
 
 
 
 
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-commonweal">
+
+    <a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
   
-    <div class="article-entry" itemprop="articleBody">
-       
-  <h1 id="Abbreviation"><a href="#Abbreviation" class="headerlink" title="Abbreviation"></a>Abbreviation</h1><p>Below are the abbreviation of some jargons that will be used in the essay.</p>
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yuke">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yuke's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          LTE MAC token bucket algorithm
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-11-27 16:17:38" itemprop="dateCreated datePublished" datetime="2021-11-27T16:17:38+08:00">2021-11-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-06-15 23:23:19" itemprop="dateModified" datetime="2022-06-15T23:23:19+08:00">2022-06-15</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/LTE/" itemprop="url" rel="index"><span itemprop="name">LTE</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Abbreviation"><a href="#Abbreviation" class="headerlink" title="Abbreviation"></a>Abbreviation</h1><p>Below are the abbreviation of some jargons that will be used in the essay.</p>
 <p>NW: network<br>UL: uplink<br>WFQ: weighted fair queueing</p>
 <h1 id="Preface"><a href="#Preface" class="headerlink" title="Preface"></a>Preface</h1><p>In LTE protocol stack, MAC lies in the so-called layer2. One of its main functionalities is managing the UL grant we receive from layer1. In other words, it allocates the UL grant to different logic channels. In this essay, I will briefly talk about how MAC layer allocates the UL grant to different logic channel. It does so by implementing the toket bucket algorithm, which is the official MAC UL sheduling algorithm used by LTE MAC layer, specified in 3GPP specification 36.321.</p>
 <span id="more"></span>
 <h1 id="Token-bucket-algorithm"><a href="#Token-bucket-algorithm" class="headerlink" title="Token bucket algorithm"></a>Token bucket algorithm</h1><p>Suppose we have below 3 active logic channels. For each logic channel, there will be a bucket which holds the tokens. The size of token bucket for each logic channel are not neccessarily the same. They may vary, depending on NW’s configuration.</p>
 <p>Each TTI, a certain amount of token will be injected to seperate logic channel’s token bucket. The amount of token injected each TTI is equal to PBR, which is actually the data rate that we want to ensure that the logic channel can achieve at the very least, to avoid that some logic channel of higher priority might hog over the UL grant and hunger those less prioritized logic channels to death. We want to make sure that as long as there is UL grant, each logic channel might relish a share of it, even for those of low priority.<br><img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-22-56-19.png" alt="2022-02-09-22-56-19"></p>
-<p>In actual implementation, the token bucket algorithm is essentially a combination of WFQ algorithm and round-robin queueing algorithm. When we get an UL grant, how should we allocate them to different logic channels? For the sake of discussion, let’s take the below graph as an example. In below graph, each logic channel’s token bucket has 500bytes of token. And each logic channel’s buffer has 3000bytes of data pending in it. Now, if we get an UL grant of 3000bytes at some point, how should we allocate it? If we allocate all of them to one logic channel, that would be unfair to the other 2 logic channels because they don’t get the chance to send out any bit of data. Then how about sharing it fairly among the logic channels? Well, that doesn’t seem a wise choice as well, because in the real-life scenario, some traffic, such as video or audio data, are obviously more important than other application’s traffic, such as FTP. We can tolerate a slowly downloaded file but we have zero tolerance for a jittering video call or voice call!<br><img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-23-24-07.png" alt="2022-02-09-23-24-07"></p>
+<p>In actual implementation, the token bucket algorithm is essentially a combination of WFQ algorithm and round-robin queueing algorivthm. When we get an UL grant, how should we allocate them to different logic channels? For the sake of discussion, let’s take the below graph as an example. In below graph, each logic channel’s token bucket has 500bytes of token. And each logic channel’s buffer has 3000bytes of data pending in it. Now, if we get an UL grant of 3000bytes at some point, how should we allocate it? If we allocate all of them to one logic channel, that would be unfair to the other 2 logic channels because they don’t get the chance to send out any bit of data. Then how about sharing it fairly among the logic channels? Well, that doesn’t seem a wise choice as well, because in the real-life scenario, some traffic, such as video or audio data, are obviously more important than other application’s traffic, such as FTP. We can tolerate a slowly downloaded file but we have zero tolerance for a jittering video call or voice call!<br><img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-23-24-07.png" alt="2022-02-09-23-24-07"></p>
 <p>Alright, enough for those non-sense, then what should we do here? Well, after the trade-off of fairness and effectiveness, someone came up with an ingenuous idea that balances both pretty well. In the actual MAC token bucket algorithm, there are 2 rounds of UL grant allocation. The first round is actually somewhat like the WFQ algorithm. In this round, we will start from the highest prioritized logic channel, we allocate a part of the UL grant to it. How many? Depends on the available token bytes and the data pending in the buffer. If there are too much data pending the buffer that the number of token cannot match it, then sorry, we can only allocate the size of the UL grant upto the amount of available token to that particular logic channel at this round. The number of token is the budget. We can’t exceed the budget. If there are not much pending data and the token is enough, then congratulation, we don’t have to consume all the token. Instead, we only need to allocate the size of UL grant that is equal to the number pending data to that logic channel. So, the grant allotment to a logic channel can be summarized with one simple equation as follows. MIN stands for taking the minimum value.<br><code>allotment=MIN(pending_data_size, number_of_token)</code></p>
 <p>After allocating the UL grant to the highest logic channel, we will apply the same logic to allocate the leftover grant to the rest logic channel, one by one, from secondary highest prioritized logic channel all the way down to the least significant logic channel, as long as there is still UL grant left. This is how the first round works. The main purpose of this round is fairness. Regardless it is good or bad, we want to make sure every logic channel can enjoy a piece of the UL grant. The quality of service each logic channel can get depends on the PBR and token bucket size. They work together as the weight in the WFQ algorithm. They defines the weight of each logic channel. Now, let’s take the above graph as an example. How will the situation looks like after the first round of grant allocation? Well, apparently, each logic channel has enough pending data(3000bytes), so all of their available token(500bytes) will be consumed. So the situation will be as follows.<br><img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-10-00-02-20.png" alt="2022-02-10-00-02-20"></p>
 <p>All the logic channels’ token bucket are empty. Each one’s buffer will have 500 bytes less(i.e. the amount the token consumed), so there are now only 2500 bytes pending in each logic channels’ buffer. The leftover grant will be only 1500 bytes now. Now, after this round, seems every body is happy with the result right? Everyone can enjoy a bit of it. Fair enough. Well, is it? Suppose LICD1 is the highest prioritized logic channel here, I’m afraid LCID1 will say no! Because sometimes some traffic are much more important than the others(e.g. video or voice call traffic versus downloaded file traffic), they should be preferred when we allocate the UL grant. Fairness might backfire here if we only consider it. So,in order to achieve effectiveness, we will adopt a round-robin strategy in the second round of grant allocation.</p>
 <p>Let’s continue the analysis of the scenario above. Now we still have 1500 bytes of UL grant left. Each logic channel’s token bucket is already empty. And each logic channel still has 2500 bytes of pending data. What should we do now? You might think that since the token bucket is already empty, we cannot allocate the grant to any of the logic channel and cannot send out any data anymore. But that’s not the case, because in this round token bucket is not involved at all. Remember, the existence of token bucket is to ensure that each logic channel can get a certain amount of UL grant and hence get some service, regardless of good or bad. Since they have all be served in the first round, we have acheived our goal, so there is no need to adhere to such principle in this round anymore. Instead, we should forget it and try a best-effort strategy in order that the most important logic channel can get the best service. Therefore, starting from the highest prioritized logic channel, we will allocate all the leftover UL grant to it as long as there is enough data in its buffer to consume the UL grant. If after its pending data is all consumed, there is still UL grant left, then we will continue to apply the same logic to the secondary highest prioritized logic channel, until the UL grant has all been consumed or all logic channels’ data has been consumed. So, in this round, all the leftover UL grant(1500 bytes) will be allocated to logic channel 1, and logic channel 1 will have 1000 bytes left. LCID3 and LCID5 channels don’t get the chance to be served in this round, but that’s ok since they have been served in the first round. The scenario will be as below after the second round.<br><img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-10-23-37-24.png" alt="2022-02-10-23-37-24"></p>
 <p>There are also might be some minor details skipped here, but that’s the general idea of the token bucket algorithm used in actual implementation.</p>
 <h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p>[1] Computer Networks: A Top-Down Approach. By Behrouz A. Forouzan, Firouz Mosharraf<br>[2] Computer Networks. By ANDREW S. TANENBAUM, DAVID J. WETHERALL<br>[3] 36.321. By 3GPP specialist panel.</p>
- 
-      <!-- reward -->
-      
-    </div>
-    
 
-    <!-- copyright -->
+    </div>
+
     
-    <footer class="article-footer">
-       
-<div class="share-btn">
-      <span class="share-sns share-outer">
-        <i class="ri-share-forward-line"></i>
-        Share
-      </span>
-      <div class="share-wrap">
-        <i class="arrow"></i>
-        <div class="share-icons">
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Yuke
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/" title="LTE MAC token bucket algorithm">https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/LTE/" rel="tag"># LTE</a>
+              <a href="/tags/MAC/" rel="tag"># MAC</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/11/27/hello-world/" rel="prev" title="Hello World">
+      <i class="fa fa-chevron-left"></i> Hello World
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/12/04/ubuntu-install-llvm/" rel="next" title="在ubuntu20.04安装LLVM">
+      在ubuntu20.04安装LLVM <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
           
-          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
-            <i class="ri-weibo-fill"></i>
-          </a>
-          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
-            <i class="ri-wechat-fill"></i>
-          </a>
-          <a class="qq share-sns" href="javascript:;" data-type="qq">
-            <i class="ri-qq-fill"></i>
-          </a>
-          <a class="douban share-sns" href="javascript:;" data-type="douban">
-            <i class="ri-douban-line"></i>
-          </a>
-          <!-- <a class="qzone share-sns" href="javascript:;" data-type="qzone">
-            <i class="icon icon-qzone"></i>
-          </a> -->
-          
-          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
-            <i class="ri-facebook-circle-fill"></i>
-          </a>
-          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
-            <i class="ri-twitter-fill"></i>
-          </a>
-          <a class="google share-sns" href="javascript:;" data-type="google">
-            <i class="ri-google-fill"></i>
-          </a>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
         </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Abbreviation"><span class="nav-number">1.</span> <span class="nav-text">Abbreviation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Preface"><span class="nav-number">2.</span> <span class="nav-text">Preface</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Token-bucket-algorithm"><span class="nav-number">3.</span> <span class="nav-text">Token bucket algorithm</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Reference"><span class="nav-number">4.</span> <span class="nav-text">Reference</span></a></li></ol></div>
       </div>
-</div>
+      <!--/noindex-->
 
-<div class="wx-share-modal">
-    <a class="modal-close" href="javascript:;"><i class="ri-close-circle-line"></i></a>
-    <p>扫一扫，分享到微信</p>
-    <div class="wx-qrcode">
-      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://example.com/2021/11/27/LTE-MAC-token-bucket-algorithm/" alt="微信分享二维码">
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Yuke</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/yukeyang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;yukeyang" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yang1294891635@gmail.com" title="E-Mail → mailto:yang1294891635@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
     </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2021 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yuke</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
 </div>
 
-<div id="share-mask"></div>  
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LTE/" rel="tag">LTE</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MAC/" rel="tag">MAC</a></li></ul>
 
+
+
+
+
+
+
+      </div>
     </footer>
   </div>
 
-   
-  <nav class="article-nav">
-    
-      <a href="/2021/12/04/ubuntu-install-llvm/" class="article-nav-link">
-        <strong class="article-nav-caption">Previous post</strong>
-        <div class="article-nav-title">
-          
-            在ubuntu20.04安装LLVM
-          
-        </div>
-      </a>
-    
-    
-      <a href="/2021/11/27/hello-world/" class="article-nav-link">
-        <strong class="article-nav-caption">Next post</strong>
-        <div class="article-nav-title">Hello World</div>
-      </a>
-    
-  </nav>
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
 
   
-   
-     
-</article>
 
-</section>
-      <footer class="footer">
-  <div class="outer">
-    <ul>
-      <li>
-        Copyrights &copy;
-        2021-2022
-        <i class="ri-heart-fill heart_icon"></i> Yuke
-      </li>
-    </ul>
-    <ul>
-      <li>
-        
-      </li>
-    </ul>
-    <ul>
-      <li>
-        
-      </li>
-    </ul>
-    <ul>
-      
-    </ul>
-    <ul>
-      
-    </ul>
-    <ul>
-      <li>
-        <!-- cnzz统计 -->
-        
-      </li>
-    </ul>
-  </div>
-</footer>    
-    </main>
-    <div class="float_btns">
-      <div class="totop" id="totop">
-  <i class="ri-arrow-up-line"></i>
-</div>
 
-<div class="todark" id="todark">
-  <i class="ri-moon-line"></i>
-</div>
 
-    </div>
-    <aside class="sidebar on">
-      <button class="navbar-toggle"></button>
-<nav class="navbar">
+
   
-  <div class="logo">
-    <a href="/"><img src="/images/纸飞机.svg" alt="Yuke&#39;s world"></a>
-  </div>
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
   
-  <ul class="nav nav-main">
-    
-    <li class="nav-item">
-      <a class="nav-item-link" href="/">Home</a>
-    </li>
-    
-    <li class="nav-item">
-      <a class="nav-item-link" href="/archives">Archives</a>
-    </li>
-    
-    <li class="nav-item">
-      <a class="nav-item-link" href="/categories">Categories</a>
-    </li>
-    
-    <li class="nav-item">
-      <a class="nav-item-link" href="/tags">Tags</a>
-    </li>
-    
-    <li class="nav-item">
-      <a class="nav-item-link" href="/about">About</a>
-    </li>
-    
-  </ul>
-</nav>
-<nav class="navbar navbar-bottom">
-  <ul class="nav">
-    <li class="nav-item">
-      
-      <a class="nav-item-link nav-item-search"  title="Search">
-        <i class="ri-search-line"></i>
-      </a>
-      
-      
-    </li>
-  </ul>
-</nav>
-<div class="search-form-wrap">
-  <div class="local-search local-search-plugin">
-  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
-  <div id="local-search-result" class="local-search-result"></div>
-</div>
-</div>
-    </aside>
-    <div id="mask"></div>
 
-<!-- #reward -->
-<div id="reward">
-  <span class="close"><i class="ri-close-line"></i></span>
-  <p class="reward-p"><i class="ri-cup-line"></i>请我喝杯咖啡吧~</p>
-  <div class="reward-box">
-    
-    <div class="reward-item">
-      <img class="reward-img" src="https://cdn.jsdelivr.net/gh/Shen-Yu/cdn/img/alipay.jpg">
-      <span class="reward-type">支付宝</span>
-    </div>
-    
-    
-    <div class="reward-item">
-      <img class="reward-img" src="https://cdn.jsdelivr.net/gh/Shen-Yu/cdn/img/wechat.jpg">
-      <span class="reward-type">微信</span>
-    </div>
-    
-  </div>
-</div>
-    
-<script src="/js/jquery-3.6.0.min.js"></script>
- 
-<script src="/js/lazyload.min.js"></script>
+  
 
-<!-- Tocbot -->
- 
-<script src="/js/tocbot.min.js"></script>
-
-<script>
-  tocbot.init({
-    tocSelector: ".tocbot",
-    contentSelector: ".article-entry",
-    headingSelector: "h1, h2, h3, h4, h5, h6",
-    hasInnerContainers: true,
-    scrollSmooth: true,
-    scrollContainer: "main",
-    positionFixedSelector: ".tocbot",
-    positionFixedClass: "is-position-fixed",
-    fixedSidebarOffset: "auto",
-  });
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/jquery-modal@0.9.2/jquery.modal.min.js"></script>
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/jquery-modal@0.9.2/jquery.modal.min.css"
-/>
-<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js"></script>
-
-<script src="/dist/main.js"></script>
-
-<!-- ImageViewer -->
- <!-- Root element of PhotoSwipe. Must have class pswp. -->
-<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
-
-    <!-- Background of PhotoSwipe. 
-         It's a separate element as animating opacity is faster than rgba(). -->
-    <div class="pswp__bg"></div>
-
-    <!-- Slides wrapper with overflow:hidden. -->
-    <div class="pswp__scroll-wrap">
-
-        <!-- Container that holds slides. 
-            PhotoSwipe keeps only 3 of them in the DOM to save memory.
-            Don't modify these 3 pswp__item elements, data is added later on. -->
-        <div class="pswp__container">
-            <div class="pswp__item"></div>
-            <div class="pswp__item"></div>
-            <div class="pswp__item"></div>
-        </div>
-
-        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
-        <div class="pswp__ui pswp__ui--hidden">
-
-            <div class="pswp__top-bar">
-
-                <!--  Controls are self-explanatory. Order can be changed. -->
-
-                <div class="pswp__counter"></div>
-
-                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
-
-                <button class="pswp__button pswp__button--share" style="display:none" title="Share"></button>
-
-                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-
-                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
-
-                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
-                <!-- element will get class pswp__preloader--active when preloader is running -->
-                <div class="pswp__preloader">
-                    <div class="pswp__preloader__icn">
-                        <div class="pswp__preloader__cut">
-                            <div class="pswp__preloader__donut"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-                <div class="pswp__share-tooltip"></div>
-            </div>
-
-            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-            </button>
-
-            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
-            </button>
-
-            <div class="pswp__caption">
-                <div class="pswp__caption__center"></div>
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css">
-<script src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"></script>
-
-<script>
-    function viewer_init() {
-        let pswpElement = document.querySelectorAll('.pswp')[0];
-        let $imgArr = document.querySelectorAll(('.article-entry img:not(.reward-img)'))
-
-        $imgArr.forEach(($em, i) => {
-            $em.onclick = () => {
-                // slider展开状态
-                // todo: 这样不好，后面改成状态
-                if (document.querySelector('.left-col.show')) return
-                let items = []
-                $imgArr.forEach(($em2, i2) => {
-                    let img = $em2.getAttribute('data-idx', i2)
-                    let src = $em2.getAttribute('data-target') || $em2.getAttribute('src')
-                    let title = $em2.getAttribute('alt')
-                    // 获得原图尺寸
-                    const image = new Image()
-                    image.src = src
-                    items.push({
-                        src: src,
-                        w: image.width || $em2.width,
-                        h: image.height || $em2.height,
-                        title: title
-                    })
-                })
-                var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
-                    index: parseInt(i)
-                });
-                gallery.init()
-            }
-        })
-    }
-    viewer_init()
-</script> 
-<!-- MathJax -->
-
-<!-- Katex -->
-
-<!-- busuanzi  -->
-
-<!-- ClickLove -->
-
-<!-- ClickBoom1 -->
-
-<!-- ClickBoom2 -->
-
-<!-- CodeCopy -->
- 
-<link rel="stylesheet" href="/css/clipboard.css">
- <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
-<script>
-  function wait(callback, seconds) {
-    var timelag = null;
-    timelag = window.setTimeout(callback, seconds);
-  }
-  !function (e, t, a) {
-    var initCopyCode = function(){
-      var copyHtml = '';
-      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
-      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
-      copyHtml += '</button>';
-      $(".highlight .code pre").before(copyHtml);
-      $(".article pre code").before(copyHtml);
-      var clipboard = new ClipboardJS('.btn-copy', {
-        target: function(trigger) {
-          return trigger.nextElementSibling;
-        }
-      });
-      clipboard.on('success', function(e) {
-        let $btn = $(e.trigger);
-        $btn.addClass('copied');
-        let $icon = $($btn.find('i'));
-        $icon.removeClass('ri-file-copy-2-line');
-        $icon.addClass('ri-checkbox-circle-line');
-        let $span = $($btn.find('span'));
-        $span[0].innerText = 'COPIED';
-        
-        wait(function () { // 等待两秒钟后恢复
-          $icon.removeClass('ri-checkbox-circle-line');
-          $icon.addClass('ri-file-copy-2-line');
-          $span[0].innerText = 'COPY';
-        }, 2000);
-      });
-      clipboard.on('error', function(e) {
-        e.clearSelection();
-        let $btn = $(e.trigger);
-        $btn.addClass('copy-failed');
-        let $icon = $($btn.find('i'));
-        $icon.removeClass('ri-file-copy-2-line');
-        $icon.addClass('ri-time-line');
-        let $span = $($btn.find('span'));
-        $span[0].innerText = 'COPY FAILED';
-        
-        wait(function () { // 等待两秒钟后恢复
-          $icon.removeClass('ri-time-line');
-          $icon.addClass('ri-file-copy-2-line');
-          $span[0].innerText = 'COPY';
-        }, 2000);
-      });
-    }
-    initCopyCode();
-  }(window, document);
-</script>
- 
-<!-- CanvasBackground -->
-
-<script>
-  if (window.mermaid) {
-    mermaid.initialize({ theme: "forest" });
-  }
-</script>
-
-
-    
-    
-
-  </div>
 </body>
-
 </html>
