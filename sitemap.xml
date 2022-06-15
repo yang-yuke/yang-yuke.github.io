@@ -11,6 +11,15 @@
   </url>
   
   <url>
+    <loc>https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/</loc>
+    
+    <lastmod>2022-06-15</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://yang-yuke.github.io/about/index.html</loc>
     
     <lastmod>2022-06-15</lastmod>
@@ -30,15 +39,6 @@
   
   <url>
     <loc>https://yang-yuke.github.io/categories/index.html</loc>
-    
-    <lastmod>2022-06-15</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/</loc>
     
     <lastmod>2022-06-15</lastmod>
     
@@ -101,6 +101,20 @@
 
   
   <url>
+    <loc>https://yang-yuke.github.io/tags/LTE/</loc>
+    <lastmod>2022-06-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://yang-yuke.github.io/tags/MAC/</loc>
+    <lastmod>2022-06-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://yang-yuke.github.io/tags/%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/</loc>
     <lastmod>2022-06-15</lastmod>
     <changefreq>weekly</changefreq>
@@ -129,14 +143,7 @@
   </url>
   
   <url>
-    <loc>https://yang-yuke.github.io/tags/LTE/</loc>
-    <lastmod>2022-06-15</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://yang-yuke.github.io/tags/MAC/</loc>
+    <loc>https://yang-yuke.github.io/tags/RLC/</loc>
     <lastmod>2022-06-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -145,14 +152,14 @@
 
   
   <url>
-    <loc>https://yang-yuke.github.io/categories/%E7%BC%96%E8%AF%91%E5%99%A8/</loc>
+    <loc>https://yang-yuke.github.io/categories/LTE/</loc>
     <lastmod>2022-06-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://yang-yuke.github.io/categories/LTE/</loc>
+    <loc>https://yang-yuke.github.io/categories/%E7%BC%96%E8%AF%91%E5%99%A8/</loc>
     <lastmod>2022-06-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>

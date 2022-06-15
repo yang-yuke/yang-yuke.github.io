@@ -20,19 +20,19 @@
     var CONFIG = {"hostname":"yang-yuke.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="AbbreviationBelow are the abbreviation of some jargons that will be used in the essay. NW: networkUL: uplinkWFQ: weighted fair queueing PrefaceIn LTE protocol stack, MAC lies in the so-called layer2.">
+  <meta name="description" content="Abbreviation Below are the abbreviation of some jargons that will be used in the essay. NW: network UL: uplink WFQ: weighted fair queueing  Preface In LTE protocol stack, MAC lies in the so-called la">
 <meta property="og:type" content="article">
 <meta property="og:title" content="LTE MAC token bucket algorithm">
 <meta property="og:url" content="https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/index.html">
 <meta property="og:site_name" content="Yuke&#39;s blog">
-<meta property="og:description" content="AbbreviationBelow are the abbreviation of some jargons that will be used in the essay. NW: networkUL: uplinkWFQ: weighted fair queueing PrefaceIn LTE protocol stack, MAC lies in the so-called layer2.">
+<meta property="og:description" content="Abbreviation Below are the abbreviation of some jargons that will be used in the essay. NW: network UL: uplink WFQ: weighted fair queueing  Preface In LTE protocol stack, MAC lies in the so-called la">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-22-56-19.png">
 <meta property="og:image" content="https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-23-24-07.png">
 <meta property="og:image" content="https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-10-00-02-20.png">
 <meta property="og:image" content="https://yang-yuke.github.io/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-10-23-37-24.png">
 <meta property="article:published_time" content="2021-11-27T08:17:38.000Z">
-<meta property="article:modified_time" content="2022-06-15T15:23:19.186Z">
+<meta property="article:modified_time" content="2022-06-15T17:56:51.787Z">
 <meta property="article:author" content="Yuke">
 <meta property="article:tag" content="LTE">
 <meta property="article:tag" content="MAC">
@@ -83,7 +83,123 @@
   </style>
 </noscript>
 
-</head>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style></head>
 
 <body itemscope itemtype="http://schema.org/WebPage">
   <div class="container use-motion">
@@ -230,7 +346,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-06-15 23:23:19" itemprop="dateModified" datetime="2022-06-15T23:23:19+08:00">2022-06-15</time>
+                <time title="修改时间：2022-06-16 01:56:51" itemprop="dateModified" datetime="2022-06-16T01:56:51+08:00">2022-06-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -260,19 +376,32 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="Abbreviation"><a href="#Abbreviation" class="headerlink" title="Abbreviation"></a>Abbreviation</h1><p>Below are the abbreviation of some jargons that will be used in the essay.</p>
-<p>NW: network<br>UL: uplink<br>WFQ: weighted fair queueing</p>
-<h1 id="Preface"><a href="#Preface" class="headerlink" title="Preface"></a>Preface</h1><p>In LTE protocol stack, MAC lies in the so-called layer2. One of its main functionalities is managing the UL grant we receive from layer1. In other words, it allocates the UL grant to different logic channels. In this essay, I will briefly talk about how MAC layer allocates the UL grant to different logic channel. It does so by implementing the toket bucket algorithm, which is the official MAC UL sheduling algorithm used by LTE MAC layer, specified in 3GPP specification 36.321.</p>
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="abbreviation"><a class="markdownIt-Anchor" href="#abbreviation"></a> Abbreviation</h1>
+<p>Below are the abbreviation of some jargons that will be used in the essay.</p>
+<p>NW: network<br>
+UL: uplink<br>
+WFQ: weighted fair queueing</p>
+<h1 id="preface"><a class="markdownIt-Anchor" href="#preface"></a> Preface</h1>
+<p>In LTE protocol stack, MAC lies in the so-called layer2. One of its main functionalities is managing the UL grant we receive from layer1. In other words, it allocates the UL grant to different logic channels. In this essay, I will briefly talk about how MAC layer allocates the UL grant to different logic channel. It does so by implementing the toket bucket algorithm, which is the official MAC UL sheduling algorithm used by LTE MAC layer, specified in 3GPP specification 36.321.</p>
 <span id="more"></span>
-<h1 id="Token-bucket-algorithm"><a href="#Token-bucket-algorithm" class="headerlink" title="Token bucket algorithm"></a>Token bucket algorithm</h1><p>Suppose we have below 3 active logic channels. For each logic channel, there will be a bucket which holds the tokens. The size of token bucket for each logic channel are not neccessarily the same. They may vary, depending on NW’s configuration.</p>
-<p>Each TTI, a certain amount of token will be injected to seperate logic channel’s token bucket. The amount of token injected each TTI is equal to PBR, which is actually the data rate that we want to ensure that the logic channel can achieve at the very least, to avoid that some logic channel of higher priority might hog over the UL grant and hunger those less prioritized logic channels to death. We want to make sure that as long as there is UL grant, each logic channel might relish a share of it, even for those of low priority.<br><img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-22-56-19.png" alt="2022-02-09-22-56-19"></p>
-<p>In actual implementation, the token bucket algorithm is essentially a combination of WFQ algorithm and round-robin queueing algorivthm. When we get an UL grant, how should we allocate them to different logic channels? For the sake of discussion, let’s take the below graph as an example. In below graph, each logic channel’s token bucket has 500bytes of token. And each logic channel’s buffer has 3000bytes of data pending in it. Now, if we get an UL grant of 3000bytes at some point, how should we allocate it? If we allocate all of them to one logic channel, that would be unfair to the other 2 logic channels because they don’t get the chance to send out any bit of data. Then how about sharing it fairly among the logic channels? Well, that doesn’t seem a wise choice as well, because in the real-life scenario, some traffic, such as video or audio data, are obviously more important than other application’s traffic, such as FTP. We can tolerate a slowly downloaded file but we have zero tolerance for a jittering video call or voice call!<br><img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-23-24-07.png" alt="2022-02-09-23-24-07"></p>
-<p>Alright, enough for those non-sense, then what should we do here? Well, after the trade-off of fairness and effectiveness, someone came up with an ingenuous idea that balances both pretty well. In the actual MAC token bucket algorithm, there are 2 rounds of UL grant allocation. The first round is actually somewhat like the WFQ algorithm. In this round, we will start from the highest prioritized logic channel, we allocate a part of the UL grant to it. How many? Depends on the available token bytes and the data pending in the buffer. If there are too much data pending the buffer that the number of token cannot match it, then sorry, we can only allocate the size of the UL grant upto the amount of available token to that particular logic channel at this round. The number of token is the budget. We can’t exceed the budget. If there are not much pending data and the token is enough, then congratulation, we don’t have to consume all the token. Instead, we only need to allocate the size of UL grant that is equal to the number pending data to that logic channel. So, the grant allotment to a logic channel can be summarized with one simple equation as follows. MIN stands for taking the minimum value.<br><code>allotment=MIN(pending_data_size, number_of_token)</code></p>
-<p>After allocating the UL grant to the highest logic channel, we will apply the same logic to allocate the leftover grant to the rest logic channel, one by one, from secondary highest prioritized logic channel all the way down to the least significant logic channel, as long as there is still UL grant left. This is how the first round works. The main purpose of this round is fairness. Regardless it is good or bad, we want to make sure every logic channel can enjoy a piece of the UL grant. The quality of service each logic channel can get depends on the PBR and token bucket size. They work together as the weight in the WFQ algorithm. They defines the weight of each logic channel. Now, let’s take the above graph as an example. How will the situation looks like after the first round of grant allocation? Well, apparently, each logic channel has enough pending data(3000bytes), so all of their available token(500bytes) will be consumed. So the situation will be as follows.<br><img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-10-00-02-20.png" alt="2022-02-10-00-02-20"></p>
+<h1 id="token-bucket-algorithm"><a class="markdownIt-Anchor" href="#token-bucket-algorithm"></a> Token bucket algorithm</h1>
+<p>Suppose we have below 3 active logic channels. For each logic channel, there will be a bucket which holds the tokens. The size of token bucket for each logic channel are not neccessarily the same. They may vary, depending on NW’s configuration.</p>
+<p>Each TTI, a certain amount of token will be injected to seperate logic channel’s token bucket. The amount of token injected each TTI is equal to PBR, which is actually the data rate that we want to ensure that the logic channel can achieve at the very least, to avoid that some logic channel of higher priority might hog over the UL grant and hunger those less prioritized logic channels to death. We want to make sure that as long as there is UL grant, each logic channel might relish a share of it, even for those of low priority.<br>
+<img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-22-56-19.png" alt="2022-02-09-22-56-19"></p>
+<p>In actual implementation, the token bucket algorithm is essentially a combination of WFQ algorithm and round-robin queueing algorivthm. When we get an UL grant, how should we allocate them to different logic channels? For the sake of discussion, let’s take the below graph as an example. In below graph, each logic channel’s token bucket has 500bytes of token. And each logic channel’s buffer has 3000bytes of data pending in it. Now, if we get an UL grant of 3000bytes at some point, how should we allocate it? If we allocate all of them to one logic channel, that would be unfair to the other 2 logic channels because they don’t get the chance to send out any bit of data. Then how about sharing it fairly among the logic channels? Well, that doesn’t seem a wise choice as well, because in the real-life scenario, some traffic, such as video or audio data, are obviously more important than other application’s traffic, such as FTP. We can tolerate a slowly downloaded file but we have zero tolerance for a jittering video call or voice call!<br>
+<img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-23-24-07.png" alt="2022-02-09-23-24-07"></p>
+<p>Alright, enough for those non-sense, then what should we do here? Well, after the trade-off of fairness and effectiveness, someone came up with an ingenuous idea that balances both pretty well. In the actual MAC token bucket algorithm, there are 2 rounds of UL grant allocation. The first round is actually somewhat like the WFQ algorithm. In this round, we will start from the highest prioritized logic channel, we allocate a part of the UL grant to it. How many? Depends on the available token bytes and the data pending in the buffer. If there are too much data pending the buffer that the number of token cannot match it, then sorry, we can only allocate the size of the UL grant upto the amount of available token to that particular logic channel at this round. The number of token is the budget. We can’t exceed the budget. If there are not much pending data and the token is enough, then congratulation, we don’t have to consume all the token. Instead, we only need to allocate the size of UL grant that is equal to the number pending data to that logic channel. So, the grant allotment to a logic channel can be summarized with one simple equation as follows. MIN stands for taking the minimum value.</p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>a</mi><mi>l</mi><mi>l</mi><mi>o</mi><mi>t</mi><mi>m</mi><mi>e</mi><mi>n</mi><mi>t</mi><mo>=</mo><mi>M</mi><mi>I</mi><mi>N</mi><mo stretchy="false">(</mo><mi>p</mi><mi>e</mi><mi>n</mi><mi>d</mi><mi>i</mi><mi>n</mi><mi>g</mi><mi mathvariant="normal">_</mi><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi><mi mathvariant="normal">_</mi><mi>s</mi><mi>i</mi><mi>z</mi><mi>e</mi><mo separator="true">,</mo><mi>n</mi><mi>u</mi><mi>m</mi><mi>b</mi><mi>e</mi><mi>r</mi><mi mathvariant="normal">_</mi><mi>o</mi><mi>f</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>o</mi><mi>k</mi><mi>e</mi><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">allotment=MIN(pending\_data\_size, number\_of\_token)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault">a</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">o</span><span class="mord mathdefault">t</span><span class="mord mathdefault">m</span><span class="mord mathdefault">e</span><span class="mord mathdefault">n</span><span class="mord mathdefault">t</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault" style="margin-right:0.07847em;">I</span><span class="mord mathdefault" style="margin-right:0.10903em;">N</span><span class="mopen">(</span><span class="mord mathdefault">p</span><span class="mord mathdefault">e</span><span class="mord mathdefault">n</span><span class="mord mathdefault">d</span><span class="mord mathdefault">i</span><span class="mord mathdefault">n</span><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">s</span><span class="mord mathdefault">i</span><span class="mord mathdefault" style="margin-right:0.04398em;">z</span><span class="mord mathdefault">e</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">n</span><span class="mord mathdefault">u</span><span class="mord mathdefault">m</span><span class="mord mathdefault">b</span><span class="mord mathdefault">e</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">t</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.03148em;">k</span><span class="mord mathdefault">e</span><span class="mord mathdefault">n</span><span class="mclose">)</span></span></span></span></p>
+<p>After allocating the UL grant to the highest logic channel, we will apply the same logic to allocate the leftover grant to the rest logic channel, one by one, from secondary highest prioritized logic channel all the way down to the least significant logic channel, as long as there is still UL grant left. This is how the first round works. The main purpose of this round is fairness. Regardless it is good or bad, we want to make sure every logic channel can enjoy a piece of the UL grant. The quality of service each logic channel can get depends on the PBR and token bucket size. They work together as the weight in the WFQ algorithm. They defines the weight of each logic channel. Now, let’s take the above graph as an example. How will the situation looks like after the first round of grant allocation? Well, apparently, each logic channel has enough pending data(3000bytes), so all of their available token(500bytes) will be consumed. So the situation will be as follows.<br>
+<img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-10-00-02-20.png" alt="2022-02-10-00-02-20"></p>
 <p>All the logic channels’ token bucket are empty. Each one’s buffer will have 500 bytes less(i.e. the amount the token consumed), so there are now only 2500 bytes pending in each logic channels’ buffer. The leftover grant will be only 1500 bytes now. Now, after this round, seems every body is happy with the result right? Everyone can enjoy a bit of it. Fair enough. Well, is it? Suppose LICD1 is the highest prioritized logic channel here, I’m afraid LCID1 will say no! Because sometimes some traffic are much more important than the others(e.g. video or voice call traffic versus downloaded file traffic), they should be preferred when we allocate the UL grant. Fairness might backfire here if we only consider it. So,in order to achieve effectiveness, we will adopt a round-robin strategy in the second round of grant allocation.</p>
-<p>Let’s continue the analysis of the scenario above. Now we still have 1500 bytes of UL grant left. Each logic channel’s token bucket is already empty. And each logic channel still has 2500 bytes of pending data. What should we do now? You might think that since the token bucket is already empty, we cannot allocate the grant to any of the logic channel and cannot send out any data anymore. But that’s not the case, because in this round token bucket is not involved at all. Remember, the existence of token bucket is to ensure that each logic channel can get a certain amount of UL grant and hence get some service, regardless of good or bad. Since they have all be served in the first round, we have acheived our goal, so there is no need to adhere to such principle in this round anymore. Instead, we should forget it and try a best-effort strategy in order that the most important logic channel can get the best service. Therefore, starting from the highest prioritized logic channel, we will allocate all the leftover UL grant to it as long as there is enough data in its buffer to consume the UL grant. If after its pending data is all consumed, there is still UL grant left, then we will continue to apply the same logic to the secondary highest prioritized logic channel, until the UL grant has all been consumed or all logic channels’ data has been consumed. So, in this round, all the leftover UL grant(1500 bytes) will be allocated to logic channel 1, and logic channel 1 will have 1000 bytes left. LCID3 and LCID5 channels don’t get the chance to be served in this round, but that’s ok since they have been served in the first round. The scenario will be as below after the second round.<br><img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-10-23-37-24.png" alt="2022-02-10-23-37-24"></p>
+<p>Let’s continue the analysis of the scenario above. Now we still have 1500 bytes of UL grant left. Each logic channel’s token bucket is already empty. And each logic channel still has 2500 bytes of pending data. What should we do now? You might think that since the token bucket is already empty, we cannot allocate the grant to any of the logic channel and cannot send out any data anymore. But that’s not the case, because in this round token bucket is not involved at all. Remember, the existence of token bucket is to ensure that each logic channel can get a certain amount of UL grant and hence get some service, regardless of good or bad. Since they have all be served in the first round, we have acheived our goal, so there is no need to adhere to such principle in this round anymore. Instead, we should forget it and try a best-effort strategy in order that the most important logic channel can get the best service. Therefore, starting from the highest prioritized logic channel, we will allocate all the leftover UL grant to it as long as there is enough data in its buffer to consume the UL grant. If after its pending data is all consumed, there is still UL grant left, then we will continue to apply the same logic to the secondary highest prioritized logic channel, until the UL grant has all been consumed or all logic channels’ data has been consumed. So, in this round, all the leftover UL grant(1500 bytes) will be allocated to logic channel 1, and logic channel 1 will have 1000 bytes left. LCID3 and LCID5 channels don’t get the chance to be served in this round, but that’s ok since they have been served in the first round. The scenario will be as below after the second round.<br>
+<img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-10-23-37-24.png" alt="2022-02-10-23-37-24"></p>
 <p>There are also might be some minor details skipped here, but that’s the general idea of the token bucket algorithm used in actual implementation.</p>
-<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p>[1] Computer Networks: A Top-Down Approach. By Behrouz A. Forouzan, Firouz Mosharraf<br>[2] Computer Networks. By ANDREW S. TANENBAUM, DAVID J. WETHERALL<br>[3] 36.321. By 3GPP specialist panel.</p>
+<h1 id="reference"><a class="markdownIt-Anchor" href="#reference"></a> Reference</h1>
+<p>[1] Computer Networks: A Top-Down Approach. By Behrouz A. Forouzan, Firouz Mosharraf<br>
+[2] Computer Networks. By ANDREW S. TANENBAUM, DAVID J. WETHERALL<br>
+[3] 36.321. By 3GPP specialist panel.</p>
 
     </div>
 
@@ -374,7 +503,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Abbreviation"><span class="nav-number">1.</span> <span class="nav-text">Abbreviation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Preface"><span class="nav-number">2.</span> <span class="nav-text">Preface</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Token-bucket-algorithm"><span class="nav-number">3.</span> <span class="nav-text">Token bucket algorithm</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Reference"><span class="nav-number">4.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#abbreviation"><span class="nav-number">1.</span> <span class="nav-text"> Abbreviation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#preface"><span class="nav-number">2.</span> <span class="nav-text"> Preface</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#token-bucket-algorithm"><span class="nav-number">3.</span> <span class="nav-text"> Token bucket algorithm</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#reference"><span class="nav-number">4.</span> <span class="nav-text"> Reference</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -401,7 +530,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -517,6 +646,61 @@
 
 
   
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
 
   
 

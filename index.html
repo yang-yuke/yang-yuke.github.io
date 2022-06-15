@@ -72,7 +72,123 @@
   </style>
 </noscript>
 
-</head>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style></head>
 
 <body itemscope itemtype="http://schema.org/WebPage">
   <div class="container use-motion">
@@ -213,7 +329,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-06-16 00:21:20 / 修改时间：00:26:33" itemprop="dateCreated datePublished" datetime="2022-06-16T00:21:20+08:00">2022-06-16</time>
+              <time title="创建时间：2022-06-16 00:21:20 / 修改时间：02:00:51" itemprop="dateCreated datePublished" datetime="2022-06-16T00:21:20+08:00">2022-06-16</time>
             </span>
 
           
@@ -230,8 +346,10 @@
           <blockquote>
 <p>本文将从UE角度对LTE网络RLC层的polling机制进行详细阐述。</p>
 </blockquote>
-<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在LTE网络中，RLC层提供了两种服务模式，一种是保证数据无损传输(lossless)的<code>AM模式</code>(acknowledged mode)，另一种是不保证数据可靠传输的<code>UM模式</code>(unacknowledged mode)。在<code>AM模式</code>下，RLC层要保证数据可靠传输，因此，此时的RLC协议是一种<code>可靠性数据传输协议</code>(reliable data transmission protocol, RDP)。</p>
+<h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
+<p>在LTE网络中，RLC层提供了两种服务模式，一种是保证数据无损传输(lossless)的<code>AM模式</code>(acknowledged mode)，另一种是不保证数据可靠传输的<code>UM模式</code>(unacknowledged mode)。在<code>AM模式</code>下，RLC层要保证数据可靠传输，因此，此时的RLC协议是一种<code>可靠性数据传输协议</code>(reliable data transmission protocol, RDP)。</p>
 <p>RDP是网络协议中常用的一种协议，TCP协议就是其中之一。与TCP协议相比，RLC位于无线通信协议栈的更底层，对时延的要求更高。因此，为了更快地实现数据的无损传输，RLC层引入了<code>polling</code>(问询)机制。</p>
+<h2 id="-more-"><a class="markdownIt-Anchor" href="#-more-"></a></h2>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2022/06/16/LTE%E7%BD%91%E7%BB%9CRLC%E5%B1%82%E7%9A%84polling%E6%9C%BA%E5%88%B6/#more" rel="contents">
@@ -312,7 +430,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>lldb-mi(lldb machine interface)是一个C/C++调试器，原来是LLVM项目中lldb的一部分，但是由于长时间没有人维护和更新，于是是从LLVM项目的lldb中分了出去，成为单独的一个工程。在linux环境下，使用vscode对C/C++代码进行调试时，常用的调试器是GDB，除此之外，还有个选择就是lldb-mi。本文将介绍如何在本地对lldb-mi工程源码进行编译，从而生成可执行文件。编译lldb-mi，需要一个C++14编译器以及LLDB，而LLDB又依赖于Clang和LLVM，因此，在编译lldb-mi之前，需要先安装Clang，LLVM和LLDB，可以参考<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">这篇博客</a>进行安装。</p>
+          <h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
+<p>lldb-mi(lldb machine interface)是一个C/C<ins>调试器，原来是LLVM项目中lldb的一部分，但是由于长时间没有人维护和更新，于是是从LLVM项目的lldb中分了出去，成为单独的一个工程。在linux环境下，使用vscode对C/C</ins>代码进行调试时，常用的调试器是GDB，除此之外，还有个选择就是lldb-mi。本文将介绍如何在本地对lldb-mi工程源码进行编译，从而生成可执行文件。编译lldb-mi，需要一个C++14编译器以及LLDB，而LLDB又依赖于Clang和LLVM，因此，在编译lldb-mi之前，需要先安装Clang，LLVM和LLDB，可以参考<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">这篇博客</a>进行安装。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/12/28/compile-lldb-mi/#more" rel="contents">
@@ -393,7 +512,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>已经介绍了如何在本地编译及安装llvm，但是当时只是编译和安装了<code>llvm;clang;libcxx;libcxxabi</code>这四个库，本文将介绍如何编译及安装lldb。</p>
+          <h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
+<p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>已经介绍了如何在本地编译及安装llvm，但是当时只是编译和安装了<code>llvm;clang;libcxx;libcxxabi</code>这四个库，本文将介绍如何编译及安装lldb。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/12/16/compile-and-install-lldb/#more" rel="contents">
@@ -474,7 +594,9 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#more">编译LLVM</a>过程中，出现了很多头文件无法解析的错误，根据<a target="_blank" rel="noopener" href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，原因是因为GCC版本过低，将GCC升级至最新版11.2.0就可以解决这个问题了。本文将介绍如何升级GCC到最新版(当前为11.2.0)。<br><img src="/2021/12/10/install-latest-gcc/2021-12-10-23-33-08.png" alt="2021-12-10-23-33-08"></p>
+          <h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
+<p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#more">编译LLVM</a>过程中，出现了很多头文件无法解析的错误，根据<a target="_blank" rel="noopener" href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，原因是因为GCC版本过低，将GCC升级至最新版11.2.0就可以解决这个问题了。本文将介绍如何升级GCC到最新版(当前为11.2.0)。<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-23-33-08.png" alt="2021-12-10-23-33-08"></p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/12/10/install-latest-gcc/#more" rel="contents">
@@ -555,12 +677,14 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>在ubuntu20.04上安装LLVM，主要有四种方法。</p>
+          <h1 id="简介"><a class="markdownIt-Anchor" href="#简介"></a> 简介</h1>
+<p>在ubuntu20.04上安装LLVM，主要有四种方法。</p>
 <ul>
 <li>方法一：运行官方的自动安装脚本进行安装</li>
 <li>方法二：通过包管理器进行安装</li>
 <li>方法三：使用官方预编译二进制文件进行安装</li>
-<li>方法四：从源码编译安装</li></ul>
+<li>方法四：从源码编译安装</li>
+</ul>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/12/04/ubuntu-install-llvm/#more" rel="contents">
@@ -618,7 +742,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-06-15 23:23:19" itemprop="dateModified" datetime="2022-06-15T23:23:19+08:00">2022-06-15</time>
+                <time title="修改时间：2022-06-16 01:56:51" itemprop="dateModified" datetime="2022-06-16T01:56:51+08:00">2022-06-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -641,9 +765,13 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="Abbreviation"><a href="#Abbreviation" class="headerlink" title="Abbreviation"></a>Abbreviation</h1><p>Below are the abbreviation of some jargons that will be used in the essay.</p>
-<p>NW: network<br>UL: uplink<br>WFQ: weighted fair queueing</p>
-<h1 id="Preface"><a href="#Preface" class="headerlink" title="Preface"></a>Preface</h1><p>In LTE protocol stack, MAC lies in the so-called layer2. One of its main functionalities is managing the UL grant we receive from layer1. In other words, it allocates the UL grant to different logic channels. In this essay, I will briefly talk about how MAC layer allocates the UL grant to different logic channel. It does so by implementing the toket bucket algorithm, which is the official MAC UL sheduling algorithm used by LTE MAC layer, specified in 3GPP specification 36.321.</p>
+          <h1 id="abbreviation"><a class="markdownIt-Anchor" href="#abbreviation"></a> Abbreviation</h1>
+<p>Below are the abbreviation of some jargons that will be used in the essay.</p>
+<p>NW: network<br>
+UL: uplink<br>
+WFQ: weighted fair queueing</p>
+<h1 id="preface"><a class="markdownIt-Anchor" href="#preface"></a> Preface</h1>
+<p>In LTE protocol stack, MAC lies in the so-called layer2. One of its main functionalities is managing the UL grant we receive from layer1. In other words, it allocates the UL grant to different logic channels. In this essay, I will briefly talk about how MAC layer allocates the UL grant to different logic channel. It does so by implementing the toket bucket algorithm, which is the official MAC UL sheduling algorithm used by LTE MAC layer, specified in 3GPP specification 36.321.</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/11/27/LTE-MAC-token-bucket-algorithm/#more" rel="contents">
@@ -817,7 +945,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -933,6 +1061,61 @@
 
 
   
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
 
   
 
