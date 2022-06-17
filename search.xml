@@ -1,6 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>LTE MAC token bucket algorithm</title>
+    <url>/2021/11/27/LTE-MAC-token-bucket-algorithm/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="abbreviation"><a class="markdownIt-Anchor" href="#abbreviation"></a> Abbreviation</h1>
+<p>Below are the abbreviation of some jargons that will be used in the essay.</p>
+<p>NW: network<br>
+UL: uplink<br>
+WFQ: weighted fair queueing</p>
+<h1 id="preface"><a class="markdownIt-Anchor" href="#preface"></a> Preface</h1>
+<p>In LTE protocol stack, MAC lies in the so-called layer2. One of its main functionalities is managing the UL grant we receive from layer1. In other words, it allocates the UL grant to different logic channels. In this essay, I will briefly talk about how MAC layer allocates the UL grant to different logic channel. It does so by implementing the toket bucket algorithm, which is the official MAC UL sheduling algorithm used by LTE MAC layer, specified in 3GPP specification 36.321.</p>
+<span id="more"></span>
+<h1 id="token-bucket-algorithm"><a class="markdownIt-Anchor" href="#token-bucket-algorithm"></a> Token bucket algorithm</h1>
+<p>Suppose we have below 3 active logic channels. For each logic channel, there will be a bucket which holds the tokens. The size of token bucket for each logic channel are not neccessarily the same. They may vary, depending on NW’s configuration.</p>
+<p>Each TTI, a certain amount of token will be injected to seperate logic channel’s token bucket. The amount of token injected each TTI is equal to PBR, which is actually the data rate that we want to ensure that the logic channel can achieve at the very least, to avoid that some logic channel of higher priority might hog over the UL grant and hunger those less prioritized logic channels to death. We want to make sure that as long as there is UL grant, each logic channel might relish a share of it, even for those of low priority.<br>
+<img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-22-56-19.png" alt="2022-02-09-22-56-19"></p>
+<p>In actual implementation, the token bucket algorithm is essentially a combination of WFQ algorithm and round-robin queueing algorivthm. When we get an UL grant, how should we allocate them to different logic channels? For the sake of discussion, let’s take the below graph as an example. In below graph, each logic channel’s token bucket has 500bytes of token. And each logic channel’s buffer has 3000bytes of data pending in it. Now, if we get an UL grant of 3000bytes at some point, how should we allocate it? If we allocate all of them to one logic channel, that would be unfair to the other 2 logic channels because they don’t get the chance to send out any bit of data. Then how about sharing it fairly among the logic channels? Well, that doesn’t seem a wise choice as well, because in the real-life scenario, some traffic, such as video or audio data, are obviously more important than other application’s traffic, such as FTP. We can tolerate a slowly downloaded file but we have zero tolerance for a jittering video call or voice call!<br>
+<img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-23-24-07.png" alt="2022-02-09-23-24-07"></p>
+<p>Alright, enough for those non-sense, then what should we do here? Well, after the trade-off of fairness and effectiveness, someone came up with an ingenuous idea that balances both pretty well. In the actual MAC token bucket algorithm, there are 2 rounds of UL grant allocation. The first round is actually somewhat like the WFQ algorithm. In this round, we will start from the highest prioritized logic channel, we allocate a part of the UL grant to it. How many? Depends on the available token bytes and the data pending in the buffer. If there are too much data pending the buffer that the number of token cannot match it, then sorry, we can only allocate the size of the UL grant upto the amount of available token to that particular logic channel at this round. The number of token is the budget. We can’t exceed the budget. If there are not much pending data and the token is enough, then congratulation, we don’t have to consume all the token. Instead, we only need to allocate the size of UL grant that is equal to the number pending data to that logic channel. So, the grant allotment to a logic channel can be summarized with one simple equation as follows. MIN stands for taking the minimum value.</p>
+<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>a</mi><mi>l</mi><mi>l</mi><mi>o</mi><mi>t</mi><mi>m</mi><mi>e</mi><mi>n</mi><mi>t</mi><mo>=</mo><mi>M</mi><mi>I</mi><mi>N</mi><mo stretchy="false">(</mo><mi>p</mi><mi>e</mi><mi>n</mi><mi>d</mi><mi>i</mi><mi>n</mi><mi>g</mi><mi mathvariant="normal">_</mi><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi><mi mathvariant="normal">_</mi><mi>s</mi><mi>i</mi><mi>z</mi><mi>e</mi><mo separator="true">,</mo><mi>n</mi><mi>u</mi><mi>m</mi><mi>b</mi><mi>e</mi><mi>r</mi><mi mathvariant="normal">_</mi><mi>o</mi><mi>f</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>o</mi><mi>k</mi><mi>e</mi><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">allotment=MIN(pending\_data\_size, number\_of\_token)
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault">a</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">o</span><span class="mord mathdefault">t</span><span class="mord mathdefault">m</span><span class="mord mathdefault">e</span><span class="mord mathdefault">n</span><span class="mord mathdefault">t</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault" style="margin-right:0.07847em;">I</span><span class="mord mathdefault" style="margin-right:0.10903em;">N</span><span class="mopen">(</span><span class="mord mathdefault">p</span><span class="mord mathdefault">e</span><span class="mord mathdefault">n</span><span class="mord mathdefault">d</span><span class="mord mathdefault">i</span><span class="mord mathdefault">n</span><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">s</span><span class="mord mathdefault">i</span><span class="mord mathdefault" style="margin-right:0.04398em;">z</span><span class="mord mathdefault">e</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">n</span><span class="mord mathdefault">u</span><span class="mord mathdefault">m</span><span class="mord mathdefault">b</span><span class="mord mathdefault">e</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">t</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.03148em;">k</span><span class="mord mathdefault">e</span><span class="mord mathdefault">n</span><span class="mclose">)</span></span></span></span></span></p>
+<p>After allocating the UL grant to the highest logic channel, we will apply the same logic to allocate the leftover grant to the rest logic channel, one by one, from secondary highest prioritized logic channel all the way down to the least significant logic channel, as long as there is still UL grant left. This is how the first round works. The main purpose of this round is fairness. Regardless it is good or bad, we want to make sure every logic channel can enjoy a piece of the UL grant. The quality of service each logic channel can get depends on the PBR and token bucket size. They work together as the weight in the WFQ algorithm. They defines the weight of each logic channel. Now, let’s take the above graph as an example. How will the situation looks like after the first round of grant allocation? Well, apparently, each logic channel has enough pending data(3000bytes), so all of their available token(500bytes) will be consumed. So the situation will be as follows.<br>
+<img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-10-00-02-20.png" alt="2022-02-10-00-02-20"></p>
+<p>All the logic channels’ token bucket are empty. Each one’s buffer will have 500 bytes less(i.e. the amount the token consumed), so there are now only 2500 bytes pending in each logic channels’ buffer. The leftover grant will be only 1500 bytes now. Now, after this round, seems every body is happy with the result right? Everyone can enjoy a bit of it. Fair enough. Well, is it? Suppose LICD1 is the highest prioritized logic channel here, I’m afraid LCID1 will say no! Because sometimes some traffic are much more important than the others(e.g. video or voice call traffic versus downloaded file traffic), they should be preferred when we allocate the UL grant. Fairness might backfire here if we only consider it. So,in order to achieve effectiveness, we will adopt a round-robin strategy in the second round of grant allocation.</p>
+<p>Let’s continue the analysis of the scenario above. Now we still have 1500 bytes of UL grant left. Each logic channel’s token bucket is already empty. And each logic channel still has 2500 bytes of pending data. What should we do now? You might think that since the token bucket is already empty, we cannot allocate the grant to any of the logic channel and cannot send out any data anymore. But that’s not the case, because in this round token bucket is not involved at all. Remember, the existence of token bucket is to ensure that each logic channel can get a certain amount of UL grant and hence get some service, regardless of good or bad. Since they have all be served in the first round, we have acheived our goal, so there is no need to adhere to such principle in this round anymore. Instead, we should forget it and try a best-effort strategy in order that the most important logic channel can get the best service. Therefore, starting from the highest prioritized logic channel, we will allocate all the leftover UL grant to it as long as there is enough data in its buffer to consume the UL grant. If after its pending data is all consumed, there is still UL grant left, then we will continue to apply the same logic to the secondary highest prioritized logic channel, until the UL grant has all been consumed or all logic channels’ data has been consumed. So, in this round, all the leftover UL grant(1500 bytes) will be allocated to logic channel 1, and logic channel 1 will have 1000 bytes left. LCID3 and LCID5 channels don’t get the chance to be served in this round, but that’s ok since they have been served in the first round. The scenario will be as below after the second round.<br>
+<img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-10-23-37-24.png" alt="2022-02-10-23-37-24"></p>
+<p>There are also might be some minor details skipped here, but that’s the general idea of the token bucket algorithm used in actual implementation.</p>
+<h1 id="reference"><a class="markdownIt-Anchor" href="#reference"></a> Reference</h1>
+<p>[1] Computer Networks: A Top-Down Approach. By Behrouz A. Forouzan, Firouz Mosharraf<br>
+[2] Computer Networks. By ANDREW S. TANENBAUM, DAVID J. WETHERALL<br>
+[3] 36.321. By 3GPP specialist panel.</p>
+]]></content>
+      <categories>
+        <category>LTE</category>
+      </categories>
+      <tags>
+        <tag>LTE</tag>
+        <tag>MAC</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LTE网络MAC层令牌桶算法</title>
     <url>/2022/06/17/LTE%E7%BD%91%E7%BB%9CMAC%E5%B1%82%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%AE%97%E6%B3%95/</url>
     <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="引言"><a class="markdownIt-Anchor" href="#引言"></a> 引言</h1>
@@ -41,45 +80,6 @@
 <p>[1] 深入理解LTE-A. 温金辉著. 第17章17.1节<br>
 [2] 3GPP协议36.321. 第5.4.3.1节<br>
 [3] Computer networks(fifth edition). By Andrew S. Tanenbaum etl. Section 5.4.2</p>
-]]></content>
-      <categories>
-        <category>LTE</category>
-      </categories>
-      <tags>
-        <tag>LTE</tag>
-        <tag>MAC</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>LTE MAC token bucket algorithm</title>
-    <url>/2021/11/27/LTE-MAC-token-bucket-algorithm/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="abbreviation"><a class="markdownIt-Anchor" href="#abbreviation"></a> Abbreviation</h1>
-<p>Below are the abbreviation of some jargons that will be used in the essay.</p>
-<p>NW: network<br>
-UL: uplink<br>
-WFQ: weighted fair queueing</p>
-<h1 id="preface"><a class="markdownIt-Anchor" href="#preface"></a> Preface</h1>
-<p>In LTE protocol stack, MAC lies in the so-called layer2. One of its main functionalities is managing the UL grant we receive from layer1. In other words, it allocates the UL grant to different logic channels. In this essay, I will briefly talk about how MAC layer allocates the UL grant to different logic channel. It does so by implementing the toket bucket algorithm, which is the official MAC UL sheduling algorithm used by LTE MAC layer, specified in 3GPP specification 36.321.</p>
-<span id="more"></span>
-<h1 id="token-bucket-algorithm"><a class="markdownIt-Anchor" href="#token-bucket-algorithm"></a> Token bucket algorithm</h1>
-<p>Suppose we have below 3 active logic channels. For each logic channel, there will be a bucket which holds the tokens. The size of token bucket for each logic channel are not neccessarily the same. They may vary, depending on NW’s configuration.</p>
-<p>Each TTI, a certain amount of token will be injected to seperate logic channel’s token bucket. The amount of token injected each TTI is equal to PBR, which is actually the data rate that we want to ensure that the logic channel can achieve at the very least, to avoid that some logic channel of higher priority might hog over the UL grant and hunger those less prioritized logic channels to death. We want to make sure that as long as there is UL grant, each logic channel might relish a share of it, even for those of low priority.<br>
-<img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-22-56-19.png" alt="2022-02-09-22-56-19"></p>
-<p>In actual implementation, the token bucket algorithm is essentially a combination of WFQ algorithm and round-robin queueing algorivthm. When we get an UL grant, how should we allocate them to different logic channels? For the sake of discussion, let’s take the below graph as an example. In below graph, each logic channel’s token bucket has 500bytes of token. And each logic channel’s buffer has 3000bytes of data pending in it. Now, if we get an UL grant of 3000bytes at some point, how should we allocate it? If we allocate all of them to one logic channel, that would be unfair to the other 2 logic channels because they don’t get the chance to send out any bit of data. Then how about sharing it fairly among the logic channels? Well, that doesn’t seem a wise choice as well, because in the real-life scenario, some traffic, such as video or audio data, are obviously more important than other application’s traffic, such as FTP. We can tolerate a slowly downloaded file but we have zero tolerance for a jittering video call or voice call!<br>
-<img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-09-23-24-07.png" alt="2022-02-09-23-24-07"></p>
-<p>Alright, enough for those non-sense, then what should we do here? Well, after the trade-off of fairness and effectiveness, someone came up with an ingenuous idea that balances both pretty well. In the actual MAC token bucket algorithm, there are 2 rounds of UL grant allocation. The first round is actually somewhat like the WFQ algorithm. In this round, we will start from the highest prioritized logic channel, we allocate a part of the UL grant to it. How many? Depends on the available token bytes and the data pending in the buffer. If there are too much data pending the buffer that the number of token cannot match it, then sorry, we can only allocate the size of the UL grant upto the amount of available token to that particular logic channel at this round. The number of token is the budget. We can’t exceed the budget. If there are not much pending data and the token is enough, then congratulation, we don’t have to consume all the token. Instead, we only need to allocate the size of UL grant that is equal to the number pending data to that logic channel. So, the grant allotment to a logic channel can be summarized with one simple equation as follows. MIN stands for taking the minimum value.</p>
-<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>a</mi><mi>l</mi><mi>l</mi><mi>o</mi><mi>t</mi><mi>m</mi><mi>e</mi><mi>n</mi><mi>t</mi><mo>=</mo><mi>M</mi><mi>I</mi><mi>N</mi><mo stretchy="false">(</mo><mi>p</mi><mi>e</mi><mi>n</mi><mi>d</mi><mi>i</mi><mi>n</mi><mi>g</mi><mi mathvariant="normal">_</mi><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi><mi mathvariant="normal">_</mi><mi>s</mi><mi>i</mi><mi>z</mi><mi>e</mi><mo separator="true">,</mo><mi>n</mi><mi>u</mi><mi>m</mi><mi>b</mi><mi>e</mi><mi>r</mi><mi mathvariant="normal">_</mi><mi>o</mi><mi>f</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>o</mi><mi>k</mi><mi>e</mi><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">allotment=MIN(pending\_data\_size, number\_of\_token)
-</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault">a</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">o</span><span class="mord mathdefault">t</span><span class="mord mathdefault">m</span><span class="mord mathdefault">e</span><span class="mord mathdefault">n</span><span class="mord mathdefault">t</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault" style="margin-right:0.07847em;">I</span><span class="mord mathdefault" style="margin-right:0.10903em;">N</span><span class="mopen">(</span><span class="mord mathdefault">p</span><span class="mord mathdefault">e</span><span class="mord mathdefault">n</span><span class="mord mathdefault">d</span><span class="mord mathdefault">i</span><span class="mord mathdefault">n</span><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span><span class="mord mathdefault">a</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">s</span><span class="mord mathdefault">i</span><span class="mord mathdefault" style="margin-right:0.04398em;">z</span><span class="mord mathdefault">e</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">n</span><span class="mord mathdefault">u</span><span class="mord mathdefault">m</span><span class="mord mathdefault">b</span><span class="mord mathdefault">e</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathdefault">t</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.03148em;">k</span><span class="mord mathdefault">e</span><span class="mord mathdefault">n</span><span class="mclose">)</span></span></span></span></span></p>
-<p>After allocating the UL grant to the highest logic channel, we will apply the same logic to allocate the leftover grant to the rest logic channel, one by one, from secondary highest prioritized logic channel all the way down to the least significant logic channel, as long as there is still UL grant left. This is how the first round works. The main purpose of this round is fairness. Regardless it is good or bad, we want to make sure every logic channel can enjoy a piece of the UL grant. The quality of service each logic channel can get depends on the PBR and token bucket size. They work together as the weight in the WFQ algorithm. They defines the weight of each logic channel. Now, let’s take the above graph as an example. How will the situation looks like after the first round of grant allocation? Well, apparently, each logic channel has enough pending data(3000bytes), so all of their available token(500bytes) will be consumed. So the situation will be as follows.<br>
-<img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-10-00-02-20.png" alt="2022-02-10-00-02-20"></p>
-<p>All the logic channels’ token bucket are empty. Each one’s buffer will have 500 bytes less(i.e. the amount the token consumed), so there are now only 2500 bytes pending in each logic channels’ buffer. The leftover grant will be only 1500 bytes now. Now, after this round, seems every body is happy with the result right? Everyone can enjoy a bit of it. Fair enough. Well, is it? Suppose LICD1 is the highest prioritized logic channel here, I’m afraid LCID1 will say no! Because sometimes some traffic are much more important than the others(e.g. video or voice call traffic versus downloaded file traffic), they should be preferred when we allocate the UL grant. Fairness might backfire here if we only consider it. So,in order to achieve effectiveness, we will adopt a round-robin strategy in the second round of grant allocation.</p>
-<p>Let’s continue the analysis of the scenario above. Now we still have 1500 bytes of UL grant left. Each logic channel’s token bucket is already empty. And each logic channel still has 2500 bytes of pending data. What should we do now? You might think that since the token bucket is already empty, we cannot allocate the grant to any of the logic channel and cannot send out any data anymore. But that’s not the case, because in this round token bucket is not involved at all. Remember, the existence of token bucket is to ensure that each logic channel can get a certain amount of UL grant and hence get some service, regardless of good or bad. Since they have all be served in the first round, we have acheived our goal, so there is no need to adhere to such principle in this round anymore. Instead, we should forget it and try a best-effort strategy in order that the most important logic channel can get the best service. Therefore, starting from the highest prioritized logic channel, we will allocate all the leftover UL grant to it as long as there is enough data in its buffer to consume the UL grant. If after its pending data is all consumed, there is still UL grant left, then we will continue to apply the same logic to the secondary highest prioritized logic channel, until the UL grant has all been consumed or all logic channels’ data has been consumed. So, in this round, all the leftover UL grant(1500 bytes) will be allocated to logic channel 1, and logic channel 1 will have 1000 bytes left. LCID3 and LCID5 channels don’t get the chance to be served in this round, but that’s ok since they have been served in the first round. The scenario will be as below after the second round.<br>
-<img src="/2021/11/27/LTE-MAC-token-bucket-algorithm/2022-02-10-23-37-24.png" alt="2022-02-10-23-37-24"></p>
-<p>There are also might be some minor details skipped here, but that’s the general idea of the token bucket algorithm used in actual implementation.</p>
-<h1 id="reference"><a class="markdownIt-Anchor" href="#reference"></a> Reference</h1>
-<p>[1] Computer Networks: A Top-Down Approach. By Behrouz A. Forouzan, Firouz Mosharraf<br>
-[2] Computer Networks. By ANDREW S. TANENBAUM, DAVID J. WETHERALL<br>
-[3] 36.321. By 3GPP specialist panel.</p>
 ]]></content>
       <categories>
         <category>LTE</category>
@@ -234,148 +234,6 @@ WFQ: weighted fair queueing</p>
 ]]></content>
   </entry>
   <entry>
-    <title>浅析比特币脚本</title>
-    <url>/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
-<p>在比特币网络中，每个用户的身份是通过公钥来识别的，由此实现了一定程度的用户的匿名性。那么，直觉上，自然而然地我们会认为每一笔交易是通过公钥来指明支付的对象，毕竟现在公钥就等价于用户的身份证号码。然而实际上并非如此，每一笔交易的输出实际上只是指明了一个脚本(script)，通过脚本，间接地指明这笔交易会把多少比特币转给谁。那么为什么交易的输出不是直接用公钥来指明比特币的支付对象，而要通过脚本来指明呢？</p>
-<span id="more"></span>
-<p>实际上这是为了保证两点，其一，支付对象的匿名性；其二，所支付的比特币只能被支付对象所使用。举个例子，如下图所示，假如Alice在交易a的输出中，将十个比特币给了Bob，在交易b中，Bob又将这十个比特币转给了Carol，那么Alice在交易a中应该怎么做才能保证这十个比特币在后续的交易中只能被Bob使用，而不是被别人偷走？<br>
-<img src="/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/2022-06-17-16-19-26.png#pic_center" alt="2022-06-17-16-19-26"></p>
-<p>Alice应该在交易输出中给出Bob的公钥哈希，并且要求，假如Bob要使用这个十个比特币，那就必须要提供Bob的公钥以及Bob的数字签名，只有当Bob给出的公钥的哈希与Alice给的相等，并且Bob的数字签名有效时，才能使用这十个比特币。为什么Alice不是在交易输出中直接指明Bob的公钥，而是指明Bob的公钥哈希？这是为了实现匿名性，具体原因可以参考这篇博客<a href="https://happypeter.github.io/binfo/address.html#:~:text=%E6%AF%94%E7%89%B9%E5%B8%81%E9%87%87%E7%94%A8%E7%9A%84%E6%98%AF,%E5%AE%9E%E9%99%85%E4%B8%AD%E4%B8%8D%E5%8F%AF%E8%83%BD%E5%AE%9E%E7%8E%B0%E3%80%82">为何使用地址而不是公钥？</a>。</p>
-<p>当Alice在交易输出中使用Bob的公钥哈希时，Alice可以证明这笔支付是给了Bob；而当Bob在后续的交易公开给出公钥和他的数字签名时，可以向大家证明他是Bob，从而解锁Alice所支付的比特币，注意，Bob需要在后续交易中公开公钥，而不是简单地给出他的公钥哈希，这样才能让别人在验证他的数字签名是有效的同时，也证明上一次Alice所支付的地址的确是Bob的公钥哈希。Alice支付的过程就是通过给出输出脚本来实现的，而Bob解锁Alice所支付给他的比特币的过程则是通过输入脚本来实现的。当Bob要解锁Alice支付的比特币时，Bob会给出输入脚本，这个输入脚本会和Alice给出的输出脚本拼接到一起，组成一个完整的脚本，然后执行脚本，如果结果是True，那么就解锁成功，Bob的这次交易就能被成功地添加到区块中，否则这次交易无效，不会被添加到区块中。</p>
-<h1 id="比特币脚本语言结构"><a class="markdownIt-Anchor" href="#比特币脚本语言结构"></a> 比特币脚本语言结构</h1>
-<p>从上面一节可以看出，Bob要完成一次交易，需要执行一个比特币脚本，该脚本由输入脚本(scriptSig)和输出脚本(scriptPubKey)两部分组成，输出脚本由Alice在之前的交易(交易a)的输出中给出，输入脚本则由Bob在本次交易(交易b)中给出。比特币脚本使用方法主要有以下几种。</p>
-<ol>
-<li>P2PK (Pay to Public Key)</li>
-<li>P2PKH (Pay to Public Key Hash)</li>
-<li>P2SH (Pay to Script Hash)</li>
-<li>多重签名</li>
-<li>Proof of Burn</li>
-</ol>
-<p>在本文中介绍的例子将会使用第二种(P2PKH)，这种是最常用的方法，有关其它方法的细节，可以参考<a href="https://blog.csdn.net/ice_fire_x/article/details/104173840">比特币脚本原理和使用方法</a>一文，这里不再细述。一个P2PKH输出脚本(scriptPubKey)的例子如下所示，在上面交易例子中由Alice在交易a的输出中给出，输出脚本里包含了Bob的公钥哈希(69e02e18…)，以及一些操作，后面会提到这些操作。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">OP_DUP</span><br><span class="line">OP_HASH160</span><br><span class="line">69e02e18...</span><br><span class="line">OP_EQUALVERIFY</span><br><span class="line">OP_CHECKSIG</span><br></pre></td></tr></table></figure>
-<p>一个输入脚本(scriptSig)的例子如下所示，在上面的交易例子中由Bob在交易b的输入中给出。这里的输入由两部分组成，一是Bob用他自己的私钥对本次交易(即交易b)进行签名所得到的数字签名(sig, signature)，另一部分就是Bob的公钥(pubKey, public key)。给出公钥主要有两个目的，一个是证明Alice在交易a中支付的对象的确是Bob，前面提到，Alice在交易a中只是给出了一个公钥哈希，但是并没有明确指明Bob的公钥，那么别人怎么能知道Alice给的这个公钥哈希就是Bob的公钥哈希呢？因此，为了证明这点，Bob需要在交易b公开他的公钥，然后取哈希，一旦得到的哈希与Alice给的相等，那就证明了Alice给的公钥哈希的确是Bob的公钥哈希，换言之，Alice这十个比特币的确是支付给Bob的。另外一个目的就是为了进行数字验签，Bob需要给出公钥，别人才能用他的公钥和数字签名进行验签，才能确认他的数字签名有效，即他的确是Bob。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;sig&gt;</span><br><span class="line">&lt;pubKey&gt;</span><br></pre></td></tr></table></figure>
-<p>Bob在进行交易b时，需要证明他是Bob，以解锁交易a输出中给Bob的十个比特币，这个证明的过程是通过执行脚本来实现的。Bob会将Alice在交易a输出中给出的输出脚本拼接到他给的输入脚本后面，组成一个完整的脚本，然后执行该脚本，拼接后Bob所执行的完整的脚本如下所示。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;sig&gt;</span><br><span class="line">&lt;pubKey&gt;</span><br><span class="line">------------------------</span><br><span class="line">OP_DUP</span><br><span class="line">OP_HASH160</span><br><span class="line">69e02e18...</span><br><span class="line">OP_EQUALVERIFY</span><br><span class="line">OP_CHECKSIG</span><br></pre></td></tr></table></figure>
-<h1 id="脚本执行过程"><a class="markdownIt-Anchor" href="#脚本执行过程"></a> 脚本执行过程</h1>
-<p>比特币脚本所使用的语言是一门基于堆栈的语言，脚本的每一行要么是数据，要么是指令，执行过程从脚本的第一行开始，自上到下。如果是数据的话，就将其压入到堆栈中，如果是指令的话，就执行该指令。</p>
-<p>还是以上面的例子来进行说明，当Bob在交易b要解锁Alice在交易a支付给他的十个比特币时，Bob需要执行上面的这个完整的比特币脚本，执行过程如下。</p>
-<ul>
-<li>第一步，将Bob在交易b的输入脚本中给出的他对当前交易(即交易b)的数字签名&lt;sig&gt;压入堆栈。</li>
-<li>第二步，将Bob在交易b的输入脚本中给出的他自己的公钥&lt;pubKey&gt;压入堆栈。</li>
-<li>第三步，执行OP_DUP，该操作将会复制Bob的公钥并添加到栈顶。</li>
-<li>第四步，执行OP_HASH160，该操作将对当前栈顶的Bob的公钥拷贝进行哈希运算，得到Bob的公钥哈希&lt;pubKeyHash&gt;，并将其替换当前栈顶的Bob的公钥拷贝。</li>
-<li>第五步，将Alice在输出脚本中给出的Bob的公钥哈希&lt;pubKeyHash?&gt;(在上面的例子中是69e02e18…)弹入到堆栈中。</li>
-<li>第六步，执行OP_EQUALVERIFY，判断Alice给出的公钥哈希&lt;pubKeyHash?&gt;，和第四步对Bob的公钥进行哈希运算后得到的公钥哈希&lt;pubKeyHash&gt;进行对比，判断两者是否相等，相等则继续往下执行，否则认为本次交易失败。</li>
-<li>第七步，假如第六步的操作成功，那么将执行这一步。到这一步时，堆栈中只剩下Bob在交易b的输入脚本中给出的他的公钥(&lt;pubKey&gt;)，以及他用自己的私钥对交易b进行签名所得到的数字签名(&lt;sig&gt;)。执行OP_CHECKSIG，该操作将进行数字验签。验签过程大致如下，用Bob给出的公钥(&lt;pubKey&gt;)对他给出的他对交易b的数字签名进行解密，得到一个哈希值hash = decrypt(publicKey, signature)，然后再对交易b进行哈希运算，得到另一个哈希值hash’，假如hash和hash’相等，那么数字验签成功，即Bob证明了他是Bob，可以开始使用Alice在交易a中给他的十个比特币了，本次交易有效，将被加入到新创建的区块中；否则验签失败，本次交易被丢弃。关于数字验签，可以参考<a href="https://www.liaoxuefeng.com/wiki/1252599548343744/1304227943022626">签名算法</a>以及<a href="https://segmentfault.com/a/1190000024523772">一文彻底搞懂加密、数字签名和数字证书！</a>这两篇文章。</li>
-</ul>
-<p>上面的执行过程可以用下图表示，大家可以参考这张图，结合上面的描述来理解整个过程。<br>
-<img src="/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/2022-06-17-16-21-56.png#pic_center" alt="2022-06-17-16-21-56"></p>
-<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
-<ol>
-<li><a href="https://happypeter.github.io/binfo/address.html#:~:text=%E6%AF%94%E7%89%B9%E5%B8%81%E9%87%87%E7%94%A8%E7%9A%84%E6%98%AF,%E5%AE%9E%E9%99%85%E4%B8%AD%E4%B8%8D%E5%8F%AF%E8%83%BD%E5%AE%9E%E7%8E%B0%E3%80%82">为何使用地址而不是公钥？</a></li>
-<li><a href="https://blog.csdn.net/ice_fire_x/article/details/104173840">比特币脚本原理和使用方法</a></li>
-<li><a href="https://www.liaoxuefeng.com/wiki/1252599548343744/1304227943022626">签名算法</a></li>
-<li><a href="https://segmentfault.com/a/1190000024523772">一文彻底搞懂加密、数字签名和数字证书！</a></li>
-<li><a href="https://www.liaoxuefeng.com/article/1124144362997184">深入理解比特币交易的脚本</a></li>
-<li><a href="https://zhuanlan.zhihu.com/p/25461051">理解比特币脚本</a></li>
-<li><a href="https://bitcoinbook.cs.princeton.edu/">Bitcoin and Cryptocurrency Technologies</a> by Arvind Narayanan, Joseph Bonneau etl.</li>
-</ol>
-]]></content>
-      <categories>
-        <category>比特币</category>
-      </categories>
-      <tags>
-        <tag>比特币</tag>
-        <tag>脚本</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>在ubuntu20.04安装最新版GCC</title>
-    <url>/2021/12/10/install-latest-gcc/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
-<p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#more">编译LLVM</a>过程中，出现了很多头文件无法解析的错误，根据<a href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，原因是因为GCC版本过低，将GCC升级至最新版11.2.0就可以解决这个问题了。本文将介绍如何升级GCC到最新版(当前为11.2.0)。<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-23-33-08.png" alt="2021-12-10-23-33-08"></p>
-<span id="more"></span>
-<h1 id="下载gcc最新源码包"><a class="markdownIt-Anchor" href="#下载gcc最新源码包"></a> 下载gcc最新源码包</h1>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/gcc/gcc-11.2.0/gcc-11.2.0.tar.gz</span><br></pre></td></tr></table></figure>
-<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-24-58.png" alt="2021-12-10-19-24-58"></p>
-<h1 id="解压缩"><a class="markdownIt-Anchor" href="#解压缩"></a> 解压缩</h1>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">tar -xzvf gcc-11.2.0.tar.gz</span><br></pre></td></tr></table></figure>
-<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-27-42.png" alt="2021-12-10-19-27-42"></p>
-<h1 id="进入解压缩目录"><a class="markdownIt-Anchor" href="#进入解压缩目录"></a> 进入解压缩目录</h1>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd gcc-11.2.0</span><br></pre></td></tr></table></figure>
-<h1 id="运行预备库下载脚本"><a class="markdownIt-Anchor" href="#运行预备库下载脚本"></a> 运行预备库下载脚本</h1>
-<p>运行download_prerequisites脚本,这个脚本会自动帮你下载所需要的依赖文件和库：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
-<p>在运行该脚本时，出现以下错误，无法下载依赖文件库<code>gmp-6.1.0.tar.bz2</code>。<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-37-55.png" alt="2021-12-10-19-37-55"><br>
-解决办法为改从清华镜像源下载，</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/gmp/gmp-6.1.0.tar.bz2 #从清华镜像源下载gmp-6.1.0.tar.bz2文件</span><br><span class="line">tar xvfj gmp-6.1.0.tar.bz2 #解压缩文件</span><br><span class="line">ln -s gmp-6.1.0 gmp #在当前目录下创建名为gmp的快捷方式，链接到gmp-6.1.0文件夹</span><br></pre></td></tr></table></figure>
-<p>改从清华镜像源下载后速度真的很快。<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-44-43.png" alt="2021-12-10-19-44-43"><br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-45-18.png" alt="2021-12-10-19-45-18"><br>
-继续执行脚本下载依赖文件，出现以下错误，无法下载依赖文件库<code>mpfr-3.1.6.tar.bz2</code>。<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-50-42.png" alt="2021-12-10-19-50-42"><br>
-解决办法为改从清华镜像源下载，</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/mpfr/mpfr-3.1.6.tar.bz2 #从清华镜像源下载mpfr-3.1.6.tar.bz2文件</span><br><span class="line">tar xvfj mpfr-3.1.6.tar.bz2 #解压缩文件</span><br><span class="line">ln -s mpfr-3.1.6 mpfr #在当前目录下创建名为mpfr的快捷方式，链接到mpfr-3.1.6文件夹</span><br></pre></td></tr></table></figure>
-<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-54-01.png" alt="2021-12-10-19-54-01"><br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-54-59.png" alt="2021-12-10-19-54-59"><br>
-继续执行脚本下载，</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
-<p>出现以下错误，无法下载<code>mpc-1.0.3.tar.gz</code>文件，<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-20-04-14.png" alt="2021-12-10-20-04-14"><br>
-解决办法为改从清华镜像源下载，</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/mpc/mpc-1.0.3.tar.gz</span><br><span class="line">tar xvfz mpc-1.0.3.tar.gz</span><br><span class="line">ln -s mpc-1.0.3 mpc #在当前目录下创建名为mpc的快捷方式，链接到mpc-1.0.3文件夹</span><br></pre></td></tr></table></figure>
-<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-07-46.png" alt="2021-12-10-20-07-46"><br>
-继续执行下载脚本，</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
-<p>出现以下错误，无法下载<code>isl-0.18.tar.bz2</code>文件，<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-20-23-02.png" alt="2021-12-10-20-23-02"><br>
-因为这个文件在清华镜像源上没有，因此解决办法为从GNU官网通过http下载：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2</span><br><span class="line">tar xvfj isl-0.18.tar.bz2</span><br><span class="line">ln -s isl-0.18 isl</span><br></pre></td></tr></table></figure>
-<h1 id="创建编译目录"><a class="markdownIt-Anchor" href="#创建编译目录"></a> 创建编译目录</h1>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mkdir gcc-build</span><br><span class="line">cd $_</span><br></pre></td></tr></table></figure>
-<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-30-04.png" alt="2021-12-10-20-30-04"></p>
-<h1 id="生成makefile文件"><a class="markdownIt-Anchor" href="#生成makefile文件"></a> 生成Makefile文件</h1>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">../configure -enable-checking=release -enable-languages=c,c++ -disable-multilib #../configure表示返回上级目录执行configure命令</span><br></pre></td></tr></table></figure>
-<p><code>–enable-languages</code>表示你要让你的gcc支持那些语言，<code>–disable-multilib</code>表示不生成编译为其他平台可执行代码的交叉编译器。<code>–disable-checking</code>表示生成的编译器在编译过程中不做额外检查，也可以使用<code>–enable-checking=xxx</code>来增加一些检查。</p>
-<h1 id="编译"><a class="markdownIt-Anchor" href="#编译"></a> 编译</h1>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">make -j8</span><br></pre></td></tr></table></figure>
-<p>这里-j8表示的是使用8核进行编译，因为我的电脑CPU为8核。因为make默认是serial build的，如果不加-j选项，就不会开启多核parallel build，这样的话速度会慢很多，所以这里我开启了8核编译。即便如此，这一步花费时间也非常长，我在虚拟机里用了将近两个小时完成这一步，而且虚拟机一定要留出至少20GB的空间，不然可能会出现磁盘不足的问题。<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-20-38-17.png" alt="2021-12-10-20-38-17"></p>
-<h1 id="安装"><a class="markdownIt-Anchor" href="#安装"></a> 安装</h1>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo su root #安装GCC需要root权限，这里先切换为root用户</span><br><span class="line">make install #安装</span><br><span class="line">source /etc/profile #安装完成后手动刷新一下profile</span><br><span class="line">gcc -v #检查当前gcc版本</span><br></pre></td></tr></table></figure>
-<p>可以看到，当前的gcc版本更新到了11.2.0，至此安装成功。<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-22-35-17.png" alt="2021-12-10-22-35-17"></p>
-<h1 id="环境变量设置"><a class="markdownIt-Anchor" href="#环境变量设置"></a> 环境变量设置</h1>
-<p>在安装GCC完成后，可以将其永久地加入到系统路径中，输入以下命令：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo su yukeyang #这里yukeyang替换成你的用户名，先从root用户切换回超级用户</span><br><span class="line">cd ~/ #cd进入当前用户(我的是yukeyang)的home目录</span><br><span class="line">code .bashrc #用vscode打开.bashrc文件</span><br></pre></td></tr></table></figure>
-<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-22-46-15.png" alt="2021-12-10-22-46-15"><br>
-GCC可执行程序所在路径为：<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-23-24-28.png" alt="2021-12-10-23-24-28"><br>
-因此，将以下两行加入到.bashrc文件中。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export PATH=/usr/local/bin:$PATH #设置GCC可执行程序路径</span><br><span class="line">export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH #设置动态链接库路径</span><br></pre></td></tr></table></figure>
-<p>至此就完成了所有步骤了，更多的环境变量设置，可以参考<a href="https://www.cnblogs.com/jessepeng/p/11674780.html">这篇博客</a>。<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-23-26-40.png" alt="2021-12-10-23-26-40"></p>
-<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
-<ol>
-<li><a href="https://cloud.tencent.com/developer/article/1532384">centos 编译安装gcc8.1</a></li>
-<li><a href="https://solarianprogrammer.com/2016/10/07/building-gcc-ubuntu-linux/">Building GCC 10 on Ubuntu Linux</a></li>
-<li><a href="https://blog.csdn.net/21aspnet/article/details/105708122">安装最新的GCC</a></li>
-<li><a href="https://www.cnblogs.com/jessepeng/p/11674780.html">[Linux] 非root安装GCC9.1.0</a></li>
-</ol>
-]]></content>
-      <categories>
-        <category>编译器</category>
-      </categories>
-      <tags>
-        <tag>开发环境</tag>
-        <tag>工具链</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>在ubuntu20.04安装LLVM</title>
     <url>/2021/12/04/ubuntu-install-llvm/</url>
     <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="简介"><a class="markdownIt-Anchor" href="#简介"></a> 简介</h1>
@@ -521,6 +379,222 @@ cmake完成后可以看到编译文件已被写到build文件夹下。<br>
 <li><a href="https://llvm.org/docs/GettingStarted.html">Getting Started with the LLVM System</a></li>
 <li><a href="https://github.com/llvm/llvm-project">Getting Started with the LLVM System(github)</a></li>
 <li><a href="https://getting-started-with-llvm-core-libraries-zh-cn.readthedocs.io/zh_CN/latest/ch01.html">第1章 编译和安装LLVM</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>编译器</category>
+      </categories>
+      <tags>
+        <tag>开发环境</tag>
+        <tag>工具链</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>比特币多重签名</title>
+    <url>/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="概述"><a class="markdownIt-Anchor" href="#概述"></a> 概述</h1>
+<p>在“<a href="https://blog.csdn.net/zengaliang/article/details/125133213?spm=1001.2014.3001.5501">浅析比特币脚本</a>”一文中，曾经提到过比特币脚本的一个应用是多重签名(Multi-Signature)。顾名思义，多重签名(以下简称多签)是指一笔交易需要多个私钥签名才能被执行。</p>
+<p>在大多数情况下，交易都是一对一进行的，买家向卖家给出的地址(即卖家的公钥哈希)支付比特币，卖家要使用该比特币的时候提供自己的数字签名并验证自己的数字签名有效即可。但也会有这样一类场景：一个钱包被多个人共同持有。比如，某公司有5个合伙人，公司钱包相应就有5个私钥，每个合伙人持有其中1个私钥。为了防止其中某一个合伙人想中饱私囊或者肆意挥霍，必须有5个人中的3人同时签名才可以把钱包中的币取走，这类情况就需要使用“多重签名”。</p>
+<span id="more"></span>
+<p>在比特币中，多签的含义是：一个钱包如果有m个私钥，交易的时候，需要其中n(1≤n≤m) 个私钥的签名，交易才能被执行。对应到现实里，可以想象为这样一个场景：m个人共同管理一笔资金(比特币)，他们各自持有一把私钥，要花费这笔资金需要取得其中至少n个人的同意(签名) 才能进行。对应到这个场景的话，m就是5，n就是3。</p>
+<p>使用多签有这些优点：</p>
+<ul>
+<li>一个钱包可以由多人共同管理</li>
+<li>避免单点故障，防止某一个私钥被盗影响整个钱包</li>
+<li>多个私钥可以起备份作用，防止单一私钥在丢失的情况下导致大量属于该私钥持有者的资金损失</li>
+</ul>
+<p>多签主要有两种实现方式：</p>
+<ul>
+<li>CHECKMULTISIG实现多签</li>
+<li>P2SH实现多签</li>
+</ul>
+<p>下面将对这两种实现方式进行介绍。</p>
+<h1 id="checkmultisig实现多签"><a class="markdownIt-Anchor" href="#checkmultisig实现多签"></a> CHECKMULTISIG实现多签</h1>
+<p>用CHECKMULTISIG实现多签，输出脚本(也叫锁定脚本)的形式如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">n</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_1)</span></span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_2)</span></span><br><span class="line">...</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_m)</span></span><br><span class="line">m</span><br><span class="line">OP_CHECKMULTSIG</span><br></pre></td></tr></table></figure>
+<p>如果输出脚本是这种形式的话，这笔交易就是一笔<strong>付款到多重签名</strong>(P2MS，Pay to Multi Signature)的交易，也常用multisig表示。其中m表示一共有m个人，每个人各自有一把公钥，共有m把公钥，这笔钱将会付给这m个人，由他们共同持有；n表示需要当这m个人想要使用这笔钱的时候，需要其中n个人的数字签名(即获得n个人的同意)才能使用这笔钱。</p>
+<p>解锁UTXO(可理解为输出脚本所支付的比特币的ID)时，需要提供输入脚本(也叫解锁脚本)，其形式如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br></pre></td></tr></table></figure>
+<p>可以理解为需要n个签名(即获得n个人的同意)才能使用这笔钱。在需要使用这笔钱的时候，n个人提供输入脚本，将输入脚本与输出脚本拼接到一起，得到完整的执行脚本，然后执行该脚本。拼接后的脚本形式如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br><span class="line">n</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_1)</span></span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_2)</span></span><br><span class="line">...</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_m)</span></span><br><span class="line">m</span><br><span class="line">OP_CHECKMULTSIG</span><br></pre></td></tr></table></figure>
+<p>其执行过程如图：<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-00-06.png#pic_center" alt="2022-06-17-18-00-06"><br>
+可见，OP_CHECKMULTISIG一条语句就能完成整个多签的验证。</p>
+<p>但是这种验证方式也有不足，它需要付款人（输出脚本）提供所有收款人的公钥。换句话说，要给有5个合伙人的公司打款，需要付款人先去获得每个合伙人的公钥，这样很不方便。</p>
+<p>如果5个合伙人能提供单一的收款地址，不需要付款人把他们的公钥一一列出来，那样是最简便的，而这可以通过P2SH来实现。</p>
+<h1 id="p2sh实现单签"><a class="markdownIt-Anchor" href="#p2sh实现单签"></a> P2SH实现单签</h1>
+<p>P2SH(Pay to Script Hash)是除P2K(Pay to public key)、P2KH(Pay to public key hash)之外的另一种付款方式。在P2SH的输入脚本中需要提供一个被称为RedeemScript的脚本，在P2SH的输出脚本则需要提供RedeemScript的哈希。在讨论P2SH实现多签之前，先讨论P2SH实现单签这种简单的情况。</p>
+<p>P2SH的输出脚本格式如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
+<p>输入脚本格式如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br></pre></td></tr></table></figure>
+<p>拼接后的脚本如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
+<p>使用P2SH方式付款时，收款人只需要向付款人提供一个地址，付款人往这个地址支付比特币即可，这个地址就是收款人的Redeem Script的哈希；当收款人要花这笔钱的时候，需要提供相应的Redeem Script，以及收款人的数字签名。如果Redeem Script执行后，栈顶等于TRUE，那么表示整个付款的验证通过。</p>
+<p>执行拼接后的脚本，执行过程如下图所示：<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-01-00.png#pic_center" alt="2022-06-17-18-01-00"><br>
+在上图中，如果<strong>OP_EQUALVERIFY</strong>执行结果为TRUE，那么接下来会执行redeemScript，而redeemScript是收款人自定义的，我们也可以通过它来实现多签。</p>
+<h1 id="p2sh实现多签"><a class="markdownIt-Anchor" href="#p2sh实现多签"></a> P2SH实现多签</h1>
+<p>使用P2SH的支付方式，可以通过Redeem Script来实现多签。</p>
+<p>P2SH实现多签时的输出脚本格式如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
+<p>可以看到，P2SH的输出脚本格式在实现多签和单签时是一样的。</p>
+<p>输入脚本格式如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br></pre></td></tr></table></figure>
+<p>可以看到，在实现多签时，输入脚本与单签时的格式略微有所不同，此时需要提供的数字签名不再只有一个，而是多个。</p>
+<p>拼接后的脚本如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
+<p>执行拼接后的脚本，如果<strong>OP_EQUALVERIFY</strong>等于TRUE，将开始执行redeemScript，redeemScript的格式如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">n</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_1)</span></span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_2)</span></span><br><span class="line">...</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_m)</span></span><br><span class="line">m</span><br><span class="line">OP_CHECKMULTISIG</span><br></pre></td></tr></table></figure>
+<p>此时，执行redeemScript的过程将和前面&quot;CHECKMULTISIG实现多签&quot;一节的过程一样。</p>
+<p>以上就是通过redeemScript来实现多签的过程，整个过程如下图所示。<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-01-54.png#pic_center" alt="2022-06-17-18-01-54"></p>
+<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
+<p>[1] <a href="https://qianniu.fun/2022/%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC%E6%98%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E5%A4%9A%E7%AD%BE%E7%9A%84%EF%BC%9F/">比特币脚本是如何实现多签的？</a><br>
+[2] <a href="https://zhuanlan.zhihu.com/p/53652207">“付款到多重签名” 和 “付款到脚本哈希”</a><br>
+[3] <a href="https://www.liaoxuefeng.com/wiki/1207298049439968/1207315329092960">多重签名</a><br>
+[4] <a href="https://bitcoinbook.cs.princeton.edu/">Bitcoin and Cryptocurrency Technologies</a> by Arvind Narayanan, Joseph Bonneau etl. Section 3.2</p>
+]]></content>
+      <categories>
+        <category>比特币</category>
+      </categories>
+      <tags>
+        <tag>比特币</tag>
+        <tag>多重签名</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>浅析比特币脚本</title>
+    <url>/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
+<p>在比特币网络中，每个用户的身份是通过公钥来识别的，由此实现了一定程度的用户的匿名性。那么，直觉上，自然而然地我们会认为每一笔交易是通过公钥来指明支付的对象，毕竟现在公钥就等价于用户的身份证号码。然而实际上并非如此，每一笔交易的输出实际上只是指明了一个脚本(script)，通过脚本，间接地指明这笔交易会把多少比特币转给谁。那么为什么交易的输出不是直接用公钥来指明比特币的支付对象，而要通过脚本来指明呢？</p>
+<span id="more"></span>
+<p>实际上这是为了保证两点，其一，支付对象的匿名性；其二，所支付的比特币只能被支付对象所使用。举个例子，如下图所示，假如Alice在交易a的输出中，将十个比特币给了Bob，在交易b中，Bob又将这十个比特币转给了Carol，那么Alice在交易a中应该怎么做才能保证这十个比特币在后续的交易中只能被Bob使用，而不是被别人偷走？<br>
+<img src="/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/2022-06-17-16-19-26.png#pic_center" alt="2022-06-17-16-19-26"></p>
+<p>Alice应该在交易输出中给出Bob的公钥哈希，并且要求，假如Bob要使用这个十个比特币，那就必须要提供Bob的公钥以及Bob的数字签名，只有当Bob给出的公钥的哈希与Alice给的相等，并且Bob的数字签名有效时，才能使用这十个比特币。为什么Alice不是在交易输出中直接指明Bob的公钥，而是指明Bob的公钥哈希？这是为了实现匿名性，具体原因可以参考这篇博客<a href="https://happypeter.github.io/binfo/address.html#:~:text=%E6%AF%94%E7%89%B9%E5%B8%81%E9%87%87%E7%94%A8%E7%9A%84%E6%98%AF,%E5%AE%9E%E9%99%85%E4%B8%AD%E4%B8%8D%E5%8F%AF%E8%83%BD%E5%AE%9E%E7%8E%B0%E3%80%82">为何使用地址而不是公钥？</a>。</p>
+<p>当Alice在交易输出中使用Bob的公钥哈希时，Alice可以证明这笔支付是给了Bob；而当Bob在后续的交易公开给出公钥和他的数字签名时，可以向大家证明他是Bob，从而解锁Alice所支付的比特币，注意，Bob需要在后续交易中公开公钥，而不是简单地给出他的公钥哈希，这样才能让别人在验证他的数字签名是有效的同时，也证明上一次Alice所支付的地址的确是Bob的公钥哈希。Alice支付的过程就是通过给出输出脚本来实现的，而Bob解锁Alice所支付给他的比特币的过程则是通过输入脚本来实现的。当Bob要解锁Alice支付的比特币时，Bob会给出输入脚本，这个输入脚本会和Alice给出的输出脚本拼接到一起，组成一个完整的脚本，然后执行脚本，如果结果是True，那么就解锁成功，Bob的这次交易就能被成功地添加到区块中，否则这次交易无效，不会被添加到区块中。</p>
+<h1 id="比特币脚本语言结构"><a class="markdownIt-Anchor" href="#比特币脚本语言结构"></a> 比特币脚本语言结构</h1>
+<p>从上面一节可以看出，Bob要完成一次交易，需要执行一个比特币脚本，该脚本由输入脚本(scriptSig)和输出脚本(scriptPubKey)两部分组成，输出脚本由Alice在之前的交易(交易a)的输出中给出，输入脚本则由Bob在本次交易(交易b)中给出。比特币脚本使用方法主要有以下几种。</p>
+<ol>
+<li>P2PK (Pay to Public Key)</li>
+<li>P2PKH (Pay to Public Key Hash)</li>
+<li>P2SH (Pay to Script Hash)</li>
+<li>多重签名</li>
+<li>Proof of Burn</li>
+</ol>
+<p>在本文中介绍的例子将会使用第二种(P2PKH)，这种是最常用的方法，有关其它方法的细节，可以参考<a href="https://blog.csdn.net/ice_fire_x/article/details/104173840">比特币脚本原理和使用方法</a>一文，这里不再细述。一个P2PKH输出脚本(scriptPubKey)的例子如下所示，在上面交易例子中由Alice在交易a的输出中给出，输出脚本里包含了Bob的公钥哈希(69e02e18…)，以及一些操作，后面会提到这些操作。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">OP_DUP</span><br><span class="line">OP_HASH160</span><br><span class="line">69e02e18...</span><br><span class="line">OP_EQUALVERIFY</span><br><span class="line">OP_CHECKSIG</span><br></pre></td></tr></table></figure>
+<p>一个输入脚本(scriptSig)的例子如下所示，在上面的交易例子中由Bob在交易b的输入中给出。这里的输入由两部分组成，一是Bob用他自己的私钥对本次交易(即交易b)进行签名所得到的数字签名(sig, signature)，另一部分就是Bob的公钥(pubKey, public key)。给出公钥主要有两个目的，一个是证明Alice在交易a中支付的对象的确是Bob，前面提到，Alice在交易a中只是给出了一个公钥哈希，但是并没有明确指明Bob的公钥，那么别人怎么能知道Alice给的这个公钥哈希就是Bob的公钥哈希呢？因此，为了证明这点，Bob需要在交易b公开他的公钥，然后取哈希，一旦得到的哈希与Alice给的相等，那就证明了Alice给的公钥哈希的确是Bob的公钥哈希，换言之，Alice这十个比特币的确是支付给Bob的。另外一个目的就是为了进行数字验签，Bob需要给出公钥，别人才能用他的公钥和数字签名进行验签，才能确认他的数字签名有效，即他的确是Bob。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;sig&gt;</span><br><span class="line">&lt;pubKey&gt;</span><br></pre></td></tr></table></figure>
+<p>Bob在进行交易b时，需要证明他是Bob，以解锁交易a输出中给Bob的十个比特币，这个证明的过程是通过执行脚本来实现的。Bob会将Alice在交易a输出中给出的输出脚本拼接到他给的输入脚本后面，组成一个完整的脚本，然后执行该脚本，拼接后Bob所执行的完整的脚本如下所示。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;sig&gt;</span><br><span class="line">&lt;pubKey&gt;</span><br><span class="line">------------------------</span><br><span class="line">OP_DUP</span><br><span class="line">OP_HASH160</span><br><span class="line">69e02e18...</span><br><span class="line">OP_EQUALVERIFY</span><br><span class="line">OP_CHECKSIG</span><br></pre></td></tr></table></figure>
+<h1 id="脚本执行过程"><a class="markdownIt-Anchor" href="#脚本执行过程"></a> 脚本执行过程</h1>
+<p>比特币脚本所使用的语言是一门基于堆栈的语言，脚本的每一行要么是数据，要么是指令，执行过程从脚本的第一行开始，自上到下。如果是数据的话，就将其压入到堆栈中，如果是指令的话，就执行该指令。</p>
+<p>还是以上面的例子来进行说明，当Bob在交易b要解锁Alice在交易a支付给他的十个比特币时，Bob需要执行上面的这个完整的比特币脚本，执行过程如下。</p>
+<ul>
+<li>第一步，将Bob在交易b的输入脚本中给出的他对当前交易(即交易b)的数字签名&lt;sig&gt;压入堆栈。</li>
+<li>第二步，将Bob在交易b的输入脚本中给出的他自己的公钥&lt;pubKey&gt;压入堆栈。</li>
+<li>第三步，执行OP_DUP，该操作将会复制Bob的公钥并添加到栈顶。</li>
+<li>第四步，执行OP_HASH160，该操作将对当前栈顶的Bob的公钥拷贝进行哈希运算，得到Bob的公钥哈希&lt;pubKeyHash&gt;，并将其替换当前栈顶的Bob的公钥拷贝。</li>
+<li>第五步，将Alice在输出脚本中给出的Bob的公钥哈希&lt;pubKeyHash?&gt;(在上面的例子中是69e02e18…)弹入到堆栈中。</li>
+<li>第六步，执行OP_EQUALVERIFY，判断Alice给出的公钥哈希&lt;pubKeyHash?&gt;，和第四步对Bob的公钥进行哈希运算后得到的公钥哈希&lt;pubKeyHash&gt;进行对比，判断两者是否相等，相等则继续往下执行，否则认为本次交易失败。</li>
+<li>第七步，假如第六步的操作成功，那么将执行这一步。到这一步时，堆栈中只剩下Bob在交易b的输入脚本中给出的他的公钥(&lt;pubKey&gt;)，以及他用自己的私钥对交易b进行签名所得到的数字签名(&lt;sig&gt;)。执行OP_CHECKSIG，该操作将进行数字验签。验签过程大致如下，用Bob给出的公钥(&lt;pubKey&gt;)对他给出的他对交易b的数字签名进行解密，得到一个哈希值hash = decrypt(publicKey, signature)，然后再对交易b进行哈希运算，得到另一个哈希值hash’，假如hash和hash’相等，那么数字验签成功，即Bob证明了他是Bob，可以开始使用Alice在交易a中给他的十个比特币了，本次交易有效，将被加入到新创建的区块中；否则验签失败，本次交易被丢弃。关于数字验签，可以参考<a href="https://www.liaoxuefeng.com/wiki/1252599548343744/1304227943022626">签名算法</a>以及<a href="https://segmentfault.com/a/1190000024523772">一文彻底搞懂加密、数字签名和数字证书！</a>这两篇文章。</li>
+</ul>
+<p>上面的执行过程可以用下图表示，大家可以参考这张图，结合上面的描述来理解整个过程。<br>
+<img src="/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/2022-06-17-16-21-56.png#pic_center" alt="2022-06-17-16-21-56"></p>
+<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
+<ol>
+<li><a href="https://happypeter.github.io/binfo/address.html#:~:text=%E6%AF%94%E7%89%B9%E5%B8%81%E9%87%87%E7%94%A8%E7%9A%84%E6%98%AF,%E5%AE%9E%E9%99%85%E4%B8%AD%E4%B8%8D%E5%8F%AF%E8%83%BD%E5%AE%9E%E7%8E%B0%E3%80%82">为何使用地址而不是公钥？</a></li>
+<li><a href="https://blog.csdn.net/ice_fire_x/article/details/104173840">比特币脚本原理和使用方法</a></li>
+<li><a href="https://www.liaoxuefeng.com/wiki/1252599548343744/1304227943022626">签名算法</a></li>
+<li><a href="https://segmentfault.com/a/1190000024523772">一文彻底搞懂加密、数字签名和数字证书！</a></li>
+<li><a href="https://www.liaoxuefeng.com/article/1124144362997184">深入理解比特币交易的脚本</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/25461051">理解比特币脚本</a></li>
+<li><a href="https://bitcoinbook.cs.princeton.edu/">Bitcoin and Cryptocurrency Technologies</a> by Arvind Narayanan, Joseph Bonneau etl.</li>
+</ol>
+]]></content>
+      <categories>
+        <category>比特币</category>
+      </categories>
+      <tags>
+        <tag>比特币</tag>
+        <tag>脚本</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>在ubuntu20.04安装最新版GCC</title>
+    <url>/2021/12/10/install-latest-gcc/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
+<p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#more">编译LLVM</a>过程中，出现了很多头文件无法解析的错误，根据<a href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，原因是因为GCC版本过低，将GCC升级至最新版11.2.0就可以解决这个问题了。本文将介绍如何升级GCC到最新版(当前为11.2.0)。<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-23-33-08.png" alt="2021-12-10-23-33-08"></p>
+<span id="more"></span>
+<h1 id="下载gcc最新源码包"><a class="markdownIt-Anchor" href="#下载gcc最新源码包"></a> 下载gcc最新源码包</h1>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/gcc/gcc-11.2.0/gcc-11.2.0.tar.gz</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-24-58.png" alt="2021-12-10-19-24-58"></p>
+<h1 id="解压缩"><a class="markdownIt-Anchor" href="#解压缩"></a> 解压缩</h1>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">tar -xzvf gcc-11.2.0.tar.gz</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-27-42.png" alt="2021-12-10-19-27-42"></p>
+<h1 id="进入解压缩目录"><a class="markdownIt-Anchor" href="#进入解压缩目录"></a> 进入解压缩目录</h1>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd gcc-11.2.0</span><br></pre></td></tr></table></figure>
+<h1 id="运行预备库下载脚本"><a class="markdownIt-Anchor" href="#运行预备库下载脚本"></a> 运行预备库下载脚本</h1>
+<p>运行download_prerequisites脚本,这个脚本会自动帮你下载所需要的依赖文件和库：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
+<p>在运行该脚本时，出现以下错误，无法下载依赖文件库<code>gmp-6.1.0.tar.bz2</code>。<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-37-55.png" alt="2021-12-10-19-37-55"><br>
+解决办法为改从清华镜像源下载，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/gmp/gmp-6.1.0.tar.bz2 #从清华镜像源下载gmp-6.1.0.tar.bz2文件</span><br><span class="line">tar xvfj gmp-6.1.0.tar.bz2 #解压缩文件</span><br><span class="line">ln -s gmp-6.1.0 gmp #在当前目录下创建名为gmp的快捷方式，链接到gmp-6.1.0文件夹</span><br></pre></td></tr></table></figure>
+<p>改从清华镜像源下载后速度真的很快。<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-44-43.png" alt="2021-12-10-19-44-43"><br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-45-18.png" alt="2021-12-10-19-45-18"><br>
+继续执行脚本下载依赖文件，出现以下错误，无法下载依赖文件库<code>mpfr-3.1.6.tar.bz2</code>。<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-50-42.png" alt="2021-12-10-19-50-42"><br>
+解决办法为改从清华镜像源下载，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/mpfr/mpfr-3.1.6.tar.bz2 #从清华镜像源下载mpfr-3.1.6.tar.bz2文件</span><br><span class="line">tar xvfj mpfr-3.1.6.tar.bz2 #解压缩文件</span><br><span class="line">ln -s mpfr-3.1.6 mpfr #在当前目录下创建名为mpfr的快捷方式，链接到mpfr-3.1.6文件夹</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-54-01.png" alt="2021-12-10-19-54-01"><br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-54-59.png" alt="2021-12-10-19-54-59"><br>
+继续执行脚本下载，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
+<p>出现以下错误，无法下载<code>mpc-1.0.3.tar.gz</code>文件，<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-20-04-14.png" alt="2021-12-10-20-04-14"><br>
+解决办法为改从清华镜像源下载，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/mpc/mpc-1.0.3.tar.gz</span><br><span class="line">tar xvfz mpc-1.0.3.tar.gz</span><br><span class="line">ln -s mpc-1.0.3 mpc #在当前目录下创建名为mpc的快捷方式，链接到mpc-1.0.3文件夹</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-07-46.png" alt="2021-12-10-20-07-46"><br>
+继续执行下载脚本，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
+<p>出现以下错误，无法下载<code>isl-0.18.tar.bz2</code>文件，<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-20-23-02.png" alt="2021-12-10-20-23-02"><br>
+因为这个文件在清华镜像源上没有，因此解决办法为从GNU官网通过http下载：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2</span><br><span class="line">tar xvfj isl-0.18.tar.bz2</span><br><span class="line">ln -s isl-0.18 isl</span><br></pre></td></tr></table></figure>
+<h1 id="创建编译目录"><a class="markdownIt-Anchor" href="#创建编译目录"></a> 创建编译目录</h1>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mkdir gcc-build</span><br><span class="line">cd $_</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-30-04.png" alt="2021-12-10-20-30-04"></p>
+<h1 id="生成makefile文件"><a class="markdownIt-Anchor" href="#生成makefile文件"></a> 生成Makefile文件</h1>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">../configure -enable-checking=release -enable-languages=c,c++ -disable-multilib #../configure表示返回上级目录执行configure命令</span><br></pre></td></tr></table></figure>
+<p><code>–enable-languages</code>表示你要让你的gcc支持那些语言，<code>–disable-multilib</code>表示不生成编译为其他平台可执行代码的交叉编译器。<code>–disable-checking</code>表示生成的编译器在编译过程中不做额外检查，也可以使用<code>–enable-checking=xxx</code>来增加一些检查。</p>
+<h1 id="编译"><a class="markdownIt-Anchor" href="#编译"></a> 编译</h1>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">make -j8</span><br></pre></td></tr></table></figure>
+<p>这里-j8表示的是使用8核进行编译，因为我的电脑CPU为8核。因为make默认是serial build的，如果不加-j选项，就不会开启多核parallel build，这样的话速度会慢很多，所以这里我开启了8核编译。即便如此，这一步花费时间也非常长，我在虚拟机里用了将近两个小时完成这一步，而且虚拟机一定要留出至少20GB的空间，不然可能会出现磁盘不足的问题。<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-20-38-17.png" alt="2021-12-10-20-38-17"></p>
+<h1 id="安装"><a class="markdownIt-Anchor" href="#安装"></a> 安装</h1>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo su root #安装GCC需要root权限，这里先切换为root用户</span><br><span class="line">make install #安装</span><br><span class="line">source /etc/profile #安装完成后手动刷新一下profile</span><br><span class="line">gcc -v #检查当前gcc版本</span><br></pre></td></tr></table></figure>
+<p>可以看到，当前的gcc版本更新到了11.2.0，至此安装成功。<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-22-35-17.png" alt="2021-12-10-22-35-17"></p>
+<h1 id="环境变量设置"><a class="markdownIt-Anchor" href="#环境变量设置"></a> 环境变量设置</h1>
+<p>在安装GCC完成后，可以将其永久地加入到系统路径中，输入以下命令：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo su yukeyang #这里yukeyang替换成你的用户名，先从root用户切换回超级用户</span><br><span class="line">cd ~/ #cd进入当前用户(我的是yukeyang)的home目录</span><br><span class="line">code .bashrc #用vscode打开.bashrc文件</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-22-46-15.png" alt="2021-12-10-22-46-15"><br>
+GCC可执行程序所在路径为：<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-23-24-28.png" alt="2021-12-10-23-24-28"><br>
+因此，将以下两行加入到.bashrc文件中。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export PATH=/usr/local/bin:$PATH #设置GCC可执行程序路径</span><br><span class="line">export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH #设置动态链接库路径</span><br></pre></td></tr></table></figure>
+<p>至此就完成了所有步骤了，更多的环境变量设置，可以参考<a href="https://www.cnblogs.com/jessepeng/p/11674780.html">这篇博客</a>。<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-23-26-40.png" alt="2021-12-10-23-26-40"></p>
+<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
+<ol>
+<li><a href="https://cloud.tencent.com/developer/article/1532384">centos 编译安装gcc8.1</a></li>
+<li><a href="https://solarianprogrammer.com/2016/10/07/building-gcc-ubuntu-linux/">Building GCC 10 on Ubuntu Linux</a></li>
+<li><a href="https://blog.csdn.net/21aspnet/article/details/105708122">安装最新的GCC</a></li>
+<li><a href="https://www.cnblogs.com/jessepeng/p/11674780.html">[Linux] 非root安装GCC9.1.0</a></li>
 </ol>
 ]]></content>
       <categories>
