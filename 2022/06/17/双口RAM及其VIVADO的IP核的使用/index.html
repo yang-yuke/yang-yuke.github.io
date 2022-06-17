@@ -23,26 +23,26 @@
   <meta name="description" content="双口RAM概述 双口RAM（dual port RAM）在异构系统中应用广泛，通过双口RAM，不同硬件架构的芯片可以实现数据的交互，从而实现通信。例如，一般情况下，ARM与DSP之间的通信，可以利用双口RAM实现，ARM通过EBI总线连接到双口RAM的A口，DSP通过EMIF总线（也可以是uPP总线，取决于速度需求）连接到双口RAM的B口，两者对同一块存储区域进行操作，即可实现两者的数据交互。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="双口RAM及其VIVADO的IP核的使用">
-<meta property="og:url" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/index.html">
+<meta property="og:url" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/index.html">
 <meta property="og:site_name" content="Yuke&#39;s blog">
 <meta property="og:description" content="双口RAM概述 双口RAM（dual port RAM）在异构系统中应用广泛，通过双口RAM，不同硬件架构的芯片可以实现数据的交互，从而实现通信。例如，一般情况下，ARM与DSP之间的通信，可以利用双口RAM实现，ARM通过EBI总线连接到双口RAM的A口，DSP通过EMIF总线（也可以是uPP总线，取决于速度需求）连接到双口RAM的B口，两者对同一块存储区域进行操作，即可实现两者的数据交互。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-23-22.png#pic_center">
-<meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-16.png#pic_center">
-<meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-48.png#pic_center">
-<meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-15.png#pic_center">
-<meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-36.png#pic_center">
-<meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-04.png#pic_center">
-<meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-41.png#pic_center">
-<meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-27-26.png#pic_center">
+<meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-23-22.png#pic_center">
+<meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-16.png#pic_center">
+<meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-48.png#pic_center">
+<meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-15.png#pic_center">
+<meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-36.png#pic_center">
+<meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-04.png#pic_center">
+<meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-41.png#pic_center">
+<meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-27-26.png#pic_center">
 <meta property="article:published_time" content="2022-06-16T16:55:48.000Z">
 <meta property="article:modified_time" content="2022-06-16T18:22:15.881Z">
 <meta property="article:author" content="Yuke">
 <meta property="article:tag" content="FPAG">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-23-22.png#pic_center">
+<meta name="twitter:image" content="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-23-22.png#pic_center">
 
-<link rel="canonical" href="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/">
+<link rel="canonical" href="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/">
 
 
 <script id="page-configurations">
@@ -207,7 +207,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/">
+    <link itemprop="mainEntityOfPage" href="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -266,19 +266,19 @@
 <span id="more"></span>
 <p>但是，因为双口RAM的A口和B口都可以对相同的内存地址进行操作，这就引出了一个问题——假如通信双方在两个端口对同一地址同时读写，就会引发冲突。要解决这个问题，办法有二。一是通信双方在时序上保证不会同时读写同一地址，将ARM和DSP可写地址范围进行分区，无论任何一方写完数据后都通过IO发送中断通知对方，对方进行数据读取（乒乓RAM操作），这样是比较可靠的；另外一个办法就是在fpga里设置写busy信号，实现两端写同步<a target="_blank" rel="noopener" href="http://blog.csdn.net/DanielLee_ustb/article/details/46446359">1</a>。在FPGA中，构建双口RAM可以通过两种方法，一种是利用distributed RAM构建，另一种是利用Block RAM构建，关于两者的具体区别，可以参考这两篇文章<a target="_blank" rel="noopener" href="http://blog.csdn.net/yzy19900402/article/details/45025901">2</a><a target="_blank" rel="noopener" href="http://blog.csdn.net/jbb0523/article/details/6533760">3</a>。简而言之，Block RAM是是使用FPGA中的整块双口RAM资源，而distributed RAM则是用FPGA中的逻辑资源拼凑形成的。一般的原则是，较大的存储应用，建议用bram；零星的小ram，一般就用dram。</p>
 <p>在Vivado中，RAM IP核在Memories &amp; Strorage Elements\RAM &amp; ROMs和RAM &amp; ROMs &amp; BRAM文件夹下，如图所示，下面简要介绍一下Vivado的双口RAM IP核。<br>
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-23-22.png#pic_center" alt="图1.1" title="图1.1"></p>
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-23-22.png#pic_center" alt="图1.1" title="图1.1"></p>
 <h1 id="vivado-双口ram-ip核"><a class="markdownIt-Anchor" href="#vivado-双口ram-ip核"></a> Vivado 双口RAM IP核</h1>
 <h2 id="block-memory-generator概述"><a class="markdownIt-Anchor" href="#block-memory-generator概述"></a> Block Memory Generator概述</h2>
 <p>点击图1.1的Block Memory Generator项，利用BRAM来构建双口RAM。Block Memory Generator窗口如图2.1所示。图中，第1部分，在IP symbol选项卡，点击&quot;+&quot;号可以展开端口具体信号，如图2.2所示。第2部分，Component Name可以设置IP核的名字。第3部分，Basic选项卡，在Memory Type下拉列表中，可以设置内存的类型，如图2.3所示。Block Memory Gnerator一共可以产生5种不同类型的内存空间，其中block RAM有三种：单口RAM、简化双口RAM和真双口RAM<a target="_blank" rel="noopener" href="https://www.xilinx.com/support/documentation/ip_documentation/blk_mem_gen/v8_2/pg058-blk-mem-gen.pdf">4</a>。单口RAM只有一个端口（A端口），可以对A端口进行读写。简化双口RAM有两个端口（A和B端口），但是A端口只能进行写入操作，不能进行读出操作，而B端口则只能进行读出操作，不能进行写入操作。真双口RAM有两个端口（A和B端口），A和B端口都能进行读写操作<a target="_blank" rel="noopener" href="http://blog.csdn.net/c602273091/article/details/39694145">5</a>。<br>
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-16.png#pic_center" alt="图2.1" title="图2.1"><br>
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-48.png#pic_center" alt="图2.2" title="图2.2"><br>
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-15.png#pic_center" alt="图2.3" title="图2.3"></p>
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-16.png#pic_center" alt="图2.1" title="图2.1"><br>
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-48.png#pic_center" alt="图2.2" title="图2.2"><br>
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-15.png#pic_center" alt="图2.3" title="图2.3"></p>
 <h2 id="真双口ram的设置"><a class="markdownIt-Anchor" href="#真双口ram的设置"></a> 真双口RAM的设置</h2>
 <h3 id="basic设置"><a class="markdownIt-Anchor" href="#basic设置"></a> Basic设置</h3>
-<p><img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-36.png#pic_center" alt="图2.4" title="图2.4"></p>
+<p><img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-36.png#pic_center" alt="图2.4" title="图2.4"></p>
 <h3 id="port设置"><a class="markdownIt-Anchor" href="#port设置"></a> Port设置</h3>
 <p>点击Port A Options选项卡，对A端口进行设置， 设置Write Width为16（即RAM单元为16位），Write Width为1024（即内存深度为1024，该端口可读写的RAM单元有1024个），Operating Mode（操作模式）一共有三种：Write First，Read First，No Change。在Write First模式中，在一个时钟周期里，写入内存单元的数据被同步输出到输出数据总线上；在Read First模式中，在一个时钟周期里，写入到内存单元的数据是当前输入数据总线上的数据，而输出到输出数据总线上的数据则是上一个时钟周期存储在内存单元中的数据。细节可参考PG058的49到50页4。Enable Port Type设置为Always Enabled，一直使能端口A。其它设置使用默认设置。如图2.5所示。<br>
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-04.png#pic_center" alt="图2.5" title="图2.5"><br>
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-04.png#pic_center" alt="图2.5" title="图2.5"><br>
 端口B设置为与A一致。在Other Options选项卡中，保留默认设置。Load Init File设置是否用Coe文件对内存区域初始化，这个在初始化ROM的时候会用到，这里不勾选，保持默认。最后，在Summary选项卡会显示消耗的资源。</p>
 <h1 id="双口ram例程"><a class="markdownIt-Anchor" href="#双口ram例程"></a> 双口RAM例程</h1>
 <p>​例程1，该例程是Altera官方例程<a target="_blank" rel="noopener" href="https://www.altera.com.cn/support/support-resources/design-examples/design-software/verilog/ver-true-dual-port-ram-sclk.html">6</a>，采用寄存器构建双口RAM，代码如下：</p>
@@ -299,9 +299,9 @@
 <p>​testbench文件如下：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">`timescale <span class="number">1</span>ns / <span class="number">1</span>ps</span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Company: </span></span><br><span class="line"><span class="comment">// Engineer: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Create Date: 2017/12/09 22:47:26</span></span><br><span class="line"><span class="comment">// Design Name: </span></span><br><span class="line"><span class="comment">// Module Name: simu</span></span><br><span class="line"><span class="comment">// Project Name: </span></span><br><span class="line"><span class="comment">// Target Devices: </span></span><br><span class="line"><span class="comment">// Tool Versions: </span></span><br><span class="line"><span class="comment">// Description: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Dependencies: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Revision:</span></span><br><span class="line"><span class="comment">// Revision 0.01 - File Created</span></span><br><span class="line"><span class="comment">// Additional Comments:</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"></span><br><span class="line">module <span class="title function_">simu</span><span class="params">(</span></span><br><span class="line"><span class="params"></span></span><br><span class="line"><span class="params">    )</span>;</span><br><span class="line"><span class="comment">//testbench 时钟信号</span></span><br><span class="line">reg clk = <span class="number">0</span>;</span><br><span class="line">always # <span class="number">10</span> clk &lt;= ~clk;</span><br><span class="line"><span class="comment">//调用dual_port_ram_demo模块</span></span><br><span class="line">dual_port_ram_demo <span class="title function_">demo1</span><span class="params">(clk)</span>;</span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
 <p>仿真结果如下：<br>
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-41.png#pic_center" alt="图4.1" title="图4.1"><br>
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-41.png#pic_center" alt="图4.1" title="图4.1"><br>
 程序在1时刻准备好地址和要写入RAM的数据，在2时刻写入RAM中，在3时刻端口才会输出2时刻写入RAM的数据，注意与PG058的图稍有不同。<br>
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-27-26.png#pic_center" alt="图4.2" title="图4.2"></p>
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-27-26.png#pic_center" alt="图4.2" title="图4.2"></p>
 <h1 id="后记"><a class="markdownIt-Anchor" href="#后记"></a> 后记</h1>
 <p>关于BRAM，推荐一个youtube视频，里面讲的非常清晰易懂。<br>
 <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=fqUuvwl4QJA">What is a Block RAM in an FPGA?</a></p>
@@ -329,7 +329,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8AVi%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/" title="双口RAM及其VIVADO的IP核的使用">https://yang-yuke.github.io/2022/06/17/双口RAM及Vi其VIVADO的IP核的使用/</a>
+    <a href="https://yang-yuke.github.io/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/" title="双口RAM及其VIVADO的IP核的使用">https://yang-yuke.github.io/2022/06/17/双口RAM及其VIVADO的IP核的使用/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -352,7 +352,10 @@
     <a href="/2022/06/17/LTE%E7%BD%91%E7%BB%9CMAC%E5%B1%82%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%AE%97%E6%B3%95/" rel="prev" title="LTE网络MAC层令牌桶算法">
       <i class="fa fa-chevron-left"></i> LTE网络MAC层令牌桶算法
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/" rel="next" title="浅析比特币脚本">
+      浅析比特币脚本 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -425,20 +428,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-count">10</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">10</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
