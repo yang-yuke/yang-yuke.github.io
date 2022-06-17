@@ -40,6 +40,51 @@ WFQ: weighted fair queueing</p>
       </tags>
   </entry>
   <entry>
+    <title>在ubuntu20.04编译及安装LLDB</title>
+    <url>/2021/12/16/compile-and-install-lldb/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
+<p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>已经介绍了如何在本地编译及安装llvm，但是当时只是编译和安装了<code>llvm;clang;libcxx;libcxxabi</code>这四个库，本文将介绍如何编译及安装lldb。</p>
+<span id="more"></span>
+<h1 id="配置及安装lldb"><a class="markdownIt-Anchor" href="#配置及安装lldb"></a> 配置及安装LLDB</h1>
+<p>在进行下面的步骤时，假设你已经下载了llvm整个工程，并且安装了所需的依赖工具。如果你还没进行这些操作，可以参考<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>一文的<code>本地编译安装LLVM</code>一节的<code>前提条件</code>和<code>下载LLVM源文件</code>这两部分内容，先完成这两步。</p>
+<p>完成上述步骤后，输入以下命令。首先cd进入llvm-project工程，然后生成cmake文件。<code>-S llvm</code>表示源文件所在文件夹为当前路径下的llvm文件夹；<code>-B build</code>表示生成的cmake文件将放到当前路径下的build文件夹；<code>-G Ninja</code>表示生成的cmake文件将给Ninja在编译时使用。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure>
+<p>在编译到第[4169/4171]个文件时，会出现以下错误。<br>
+<img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-22-28.png" alt="2021-12-18-17-22-28"><br>
+参考<a href="https://blog.csdn.net/Vin_tt/article/details/110421022">这篇文章</a>解决这个问题，输入以下命令:</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project/build</span><br><span class="line">sudo mkdir swapfile</span><br><span class="line">cd /swapfile</span><br><span class="line">sudo dd if=/dev/zero of=swap bs=1024 count=20000000</span><br><span class="line">sudo mkswap -f swap</span><br><span class="line">sudo swapon swap</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-56-57.png" alt="2021-12-18-17-56-57"><br>
+可以看到，剩下的三个文件都被成功地编译了。编译出来生成的应用程序位于llvm-project/build/bin路径下，将其拷贝到/usr/local/bin/文件夹下即可。<br>
+<img src="/2021/12/16/compile-and-install-lldb/2021-12-18-18-17-50.png" alt="2021-12-18-18-17-50"></p>
+<h1 id="后记"><a class="markdownIt-Anchor" href="#后记"></a> 后记</h1>
+<p>这部分讲的是后续的失败经历，以及没有解决的问题。</p>
+<p>上述编译命令在编译lldb过程中会有debug信息，其体积会很大，而且编译出来的文件在llvm-project/build文件夹下面，还需要<code>ninja install</code>命令将其安装至默认路径下，但是由于体积过大，在安装时容易出问题。最好是编译release版本，并且在生成cmake文件的时候指明安装路径，命令如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;clang;lldb&quot;</span> <span class="comment">#1,这条命令与下面这条命令2选1</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;clang;lldb&quot;</span> ./llvm <span class="comment">#2,这条命令与上面的命令2选1</span></span></span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_BUILD_TYPE=&quot;Release&quot; -DLLDB_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=&quot;/usr/local/llvm&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_BUILD_TYPE=&quot;Release&quot; -DLLDB_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=&quot;/usr/local/llvm&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure>
+<p>编译完成后，生成的文件位于llvm-project/build文件夹内，我们要把它们安装到/usr/local/路径下，因此，需要输入以下命令</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ninja install</span><br></pre></td></tr></table></figure>
+<p>然后就会开始将lldb安装到/usr/local/路径下,在安装到第[203/1128]个文件时，出现了<code>fatal error: ld terminated with signal 9 [Killed]</code>错误，参照上面的方法，在build文件夹创建swapfile尝试解决。<br>
+<img src="/2021/12/16/compile-and-install-lldb/2021-12-21-23-18-01.png" alt="2021-12-21-23-18-01"><br>
+在安装剩下的文件时，安装到[375/927]个文件时仍然出现了以上错误。<br>
+<img src="/2021/12/16/compile-and-install-lldb/2021-12-22-08-27-51.png" alt="2021-12-22-08-27-51"><br>
+再次尝试用上述方法安装剩下的文件。<br>
+<img src="/2021/12/16/compile-and-install-lldb/2021-12-22-08-39-08.png" alt="2021-12-22-08-39-08"><br>
+依旧出现以上问题，最终只得作罢。<br>
+<img src="/2021/12/16/compile-and-install-lldb/2021-12-22-09-05-29.png" alt="2021-12-22-09-05-29"></p>
+<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
+<ol>
+<li><a href="https://lldb.llvm.org/resources/build.html#building-lldb-with-cmake">Building LLDB with CMake</a></li>
+<li><a href="https://blog.csdn.net/Vin_tt/article/details/110421022">LLVM编译collect2: fatal error: ld terminated with signal 9</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>编译器</category>
+      </categories>
+      <tags>
+        <tag>开发环境</tag>
+        <tag>工具链</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LTE网络MAC层令牌桶算法</title>
     <url>/2022/06/17/LTE%E7%BD%91%E7%BB%9CMAC%E5%B1%82%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%AE%97%E6%B3%95/</url>
     <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="引言"><a class="markdownIt-Anchor" href="#引言"></a> 引言</h1>
@@ -142,78 +187,6 @@ WFQ: weighted fair queueing</p>
       </tags>
   </entry>
   <entry>
-    <title>在ubuntu20.04编译及安装LLDB</title>
-    <url>/2021/12/16/compile-and-install-lldb/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
-<p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>已经介绍了如何在本地编译及安装llvm，但是当时只是编译和安装了<code>llvm;clang;libcxx;libcxxabi</code>这四个库，本文将介绍如何编译及安装lldb。</p>
-<span id="more"></span>
-<h1 id="配置及安装lldb"><a class="markdownIt-Anchor" href="#配置及安装lldb"></a> 配置及安装LLDB</h1>
-<p>在进行下面的步骤时，假设你已经下载了llvm整个工程，并且安装了所需的依赖工具。如果你还没进行这些操作，可以参考<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>一文的<code>本地编译安装LLVM</code>一节的<code>前提条件</code>和<code>下载LLVM源文件</code>这两部分内容，先完成这两步。</p>
-<p>完成上述步骤后，输入以下命令。首先cd进入llvm-project工程，然后生成cmake文件。<code>-S llvm</code>表示源文件所在文件夹为当前路径下的llvm文件夹；<code>-B build</code>表示生成的cmake文件将放到当前路径下的build文件夹；<code>-G Ninja</code>表示生成的cmake文件将给Ninja在编译时使用。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure>
-<p>在编译到第[4169/4171]个文件时，会出现以下错误。<br>
-<img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-22-28.png" alt="2021-12-18-17-22-28"><br>
-参考<a href="https://blog.csdn.net/Vin_tt/article/details/110421022">这篇文章</a>解决这个问题，输入以下命令:</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project/build</span><br><span class="line">sudo mkdir swapfile</span><br><span class="line">cd /swapfile</span><br><span class="line">sudo dd if=/dev/zero of=swap bs=1024 count=20000000</span><br><span class="line">sudo mkswap -f swap</span><br><span class="line">sudo swapon swap</span><br></pre></td></tr></table></figure>
-<p><img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-56-57.png" alt="2021-12-18-17-56-57"><br>
-可以看到，剩下的三个文件都被成功地编译了。编译出来生成的应用程序位于llvm-project/build/bin路径下，将其拷贝到/usr/local/bin/文件夹下即可。<br>
-<img src="/2021/12/16/compile-and-install-lldb/2021-12-18-18-17-50.png" alt="2021-12-18-18-17-50"></p>
-<h1 id="后记"><a class="markdownIt-Anchor" href="#后记"></a> 后记</h1>
-<p>这部分讲的是后续的失败经历，以及没有解决的问题。</p>
-<p>上述编译命令在编译lldb过程中会有debug信息，其体积会很大，而且编译出来的文件在llvm-project/build文件夹下面，还需要<code>ninja install</code>命令将其安装至默认路径下，但是由于体积过大，在安装时容易出问题。最好是编译release版本，并且在生成cmake文件的时候指明安装路径，命令如下：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;clang;lldb&quot;</span> <span class="comment">#1,这条命令与下面这条命令2选1</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;clang;lldb&quot;</span> ./llvm <span class="comment">#2,这条命令与上面的命令2选1</span></span></span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_BUILD_TYPE=&quot;Release&quot; -DLLDB_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=&quot;/usr/local/llvm&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_BUILD_TYPE=&quot;Release&quot; -DLLDB_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=&quot;/usr/local/llvm&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure>
-<p>编译完成后，生成的文件位于llvm-project/build文件夹内，我们要把它们安装到/usr/local/路径下，因此，需要输入以下命令</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ninja install</span><br></pre></td></tr></table></figure>
-<p>然后就会开始将lldb安装到/usr/local/路径下,在安装到第[203/1128]个文件时，出现了<code>fatal error: ld terminated with signal 9 [Killed]</code>错误，参照上面的方法，在build文件夹创建swapfile尝试解决。<br>
-<img src="/2021/12/16/compile-and-install-lldb/2021-12-21-23-18-01.png" alt="2021-12-21-23-18-01"><br>
-在安装剩下的文件时，安装到[375/927]个文件时仍然出现了以上错误。<br>
-<img src="/2021/12/16/compile-and-install-lldb/2021-12-22-08-27-51.png" alt="2021-12-22-08-27-51"><br>
-再次尝试用上述方法安装剩下的文件。<br>
-<img src="/2021/12/16/compile-and-install-lldb/2021-12-22-08-39-08.png" alt="2021-12-22-08-39-08"><br>
-依旧出现以上问题，最终只得作罢。<br>
-<img src="/2021/12/16/compile-and-install-lldb/2021-12-22-09-05-29.png" alt="2021-12-22-09-05-29"></p>
-<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
-<ol>
-<li><a href="https://lldb.llvm.org/resources/build.html#building-lldb-with-cmake">Building LLDB with CMake</a></li>
-<li><a href="https://blog.csdn.net/Vin_tt/article/details/110421022">LLVM编译collect2: fatal error: ld terminated with signal 9</a></li>
-</ol>
-]]></content>
-      <categories>
-        <category>编译器</category>
-      </categories>
-      <tags>
-        <tag>开发环境</tag>
-        <tag>工具链</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>在ubuntu20.04编译lldb-mi</title>
-    <url>/2021/12/28/compile-lldb-mi/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
-<p>lldb-mi(lldb machine interface)是一个C/C<ins>调试器，原来是LLVM项目中lldb的一部分，但是由于长时间没有人维护和更新，于是是从LLVM项目的lldb中分了出去，成为单独的一个工程。在linux环境下，使用vscode对C/C</ins>代码进行调试时，常用的调试器是GDB，除此之外，还有个选择就是lldb-mi。本文将介绍如何在本地对lldb-mi工程源码进行编译，从而生成可执行文件。编译lldb-mi，需要一个C++14编译器以及LLDB，而LLDB又依赖于Clang和LLVM，因此，在编译lldb-mi之前，需要先安装Clang，LLVM和LLDB，可以参考<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">这篇博客</a>进行安装。</p>
-<span id="more"></span>
-<h1 id="编译"><a class="markdownIt-Anchor" href="#编译"></a> 编译</h1>
-<p>输入以下命令，</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~/ #进入home目录</span><br><span class="line">mkdir buildspace #在home目录下建立buildspace目录</span><br><span class="line">cd ~/buildspace #进入buildspace目录</span><br><span class="line">mkdir llvm-inst #创建llvm-inst目录</span><br><span class="line">git clone https://github.com/lldb-tools/lldb-mi #将lldb-mi工程下载到当前目录（即buildspace目录）</span><br><span class="line">cd lldb-mi #进入lldb-mi工程目录里</span><br><span class="line">mkdir build #在当前目录（即lldb-mi目录）建立build目录，用来存放编译后生成的文件</span><br><span class="line">cmake -DCMAKE_PREFIX_PATH=~/buildspace/llvm-inst/ -GNinja .. #在当前目录（即build目录）的上一级目录（即lldb-mi目录）下生成cmake文件</span><br><span class="line">ninja #编译</span><br></pre></td></tr></table></figure>
-<p>执行完以上命令后，可以看到，所生成的lldb-mi可执行文件将位于lldb-mi/build/src目录下，这个就是lldb-mi调试器。然后，我们就可以开始在vscode中使用这个调试器对程序进行调试了。<br>
-<img src="/2021/12/28/compile-lldb-mi/2021-12-29-00-49-15.png" alt="2021-12-29-00-49-15"></p>
-<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
-<ol>
-<li><a href="https://github.com/lldb-tools/lldb-mi">Building against custom LLDB</a></li>
-<li><a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">在ubuntu20.04安装LLVM</a></li>
-</ol>
-]]></content>
-      <categories>
-        <category>编译器</category>
-      </categories>
-      <tags>
-        <tag>开发环境</tag>
-        <tag>工具链</tag>
-        <tag>lldb-mi</tag>
-        <tag>调试器</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Hello World</title>
     <url>/2021/11/27/hello-world/</url>
     <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
@@ -232,6 +205,90 @@ WFQ: weighted fair queueing</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
 <p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 ]]></content>
+  </entry>
+  <entry>
+    <title>在ubuntu20.04安装最新版GCC</title>
+    <url>/2021/12/10/install-latest-gcc/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
+<p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#more">编译LLVM</a>过程中，出现了很多头文件无法解析的错误，根据<a href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，原因是因为GCC版本过低，将GCC升级至最新版11.2.0就可以解决这个问题了。本文将介绍如何升级GCC到最新版(当前为11.2.0)。<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-23-33-08.png" alt="2021-12-10-23-33-08"></p>
+<span id="more"></span>
+<h1 id="下载gcc最新源码包"><a class="markdownIt-Anchor" href="#下载gcc最新源码包"></a> 下载gcc最新源码包</h1>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/gcc/gcc-11.2.0/gcc-11.2.0.tar.gz</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-24-58.png" alt="2021-12-10-19-24-58"></p>
+<h1 id="解压缩"><a class="markdownIt-Anchor" href="#解压缩"></a> 解压缩</h1>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">tar -xzvf gcc-11.2.0.tar.gz</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-27-42.png" alt="2021-12-10-19-27-42"></p>
+<h1 id="进入解压缩目录"><a class="markdownIt-Anchor" href="#进入解压缩目录"></a> 进入解压缩目录</h1>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd gcc-11.2.0</span><br></pre></td></tr></table></figure>
+<h1 id="运行预备库下载脚本"><a class="markdownIt-Anchor" href="#运行预备库下载脚本"></a> 运行预备库下载脚本</h1>
+<p>运行download_prerequisites脚本,这个脚本会自动帮你下载所需要的依赖文件和库：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
+<p>在运行该脚本时，出现以下错误，无法下载依赖文件库<code>gmp-6.1.0.tar.bz2</code>。<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-37-55.png" alt="2021-12-10-19-37-55"><br>
+解决办法为改从清华镜像源下载，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/gmp/gmp-6.1.0.tar.bz2 #从清华镜像源下载gmp-6.1.0.tar.bz2文件</span><br><span class="line">tar xvfj gmp-6.1.0.tar.bz2 #解压缩文件</span><br><span class="line">ln -s gmp-6.1.0 gmp #在当前目录下创建名为gmp的快捷方式，链接到gmp-6.1.0文件夹</span><br></pre></td></tr></table></figure>
+<p>改从清华镜像源下载后速度真的很快。<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-44-43.png" alt="2021-12-10-19-44-43"><br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-45-18.png" alt="2021-12-10-19-45-18"><br>
+继续执行脚本下载依赖文件，出现以下错误，无法下载依赖文件库<code>mpfr-3.1.6.tar.bz2</code>。<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-50-42.png" alt="2021-12-10-19-50-42"><br>
+解决办法为改从清华镜像源下载，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/mpfr/mpfr-3.1.6.tar.bz2 #从清华镜像源下载mpfr-3.1.6.tar.bz2文件</span><br><span class="line">tar xvfj mpfr-3.1.6.tar.bz2 #解压缩文件</span><br><span class="line">ln -s mpfr-3.1.6 mpfr #在当前目录下创建名为mpfr的快捷方式，链接到mpfr-3.1.6文件夹</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-54-01.png" alt="2021-12-10-19-54-01"><br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-54-59.png" alt="2021-12-10-19-54-59"><br>
+继续执行脚本下载，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
+<p>出现以下错误，无法下载<code>mpc-1.0.3.tar.gz</code>文件，<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-20-04-14.png" alt="2021-12-10-20-04-14"><br>
+解决办法为改从清华镜像源下载，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/mpc/mpc-1.0.3.tar.gz</span><br><span class="line">tar xvfz mpc-1.0.3.tar.gz</span><br><span class="line">ln -s mpc-1.0.3 mpc #在当前目录下创建名为mpc的快捷方式，链接到mpc-1.0.3文件夹</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-07-46.png" alt="2021-12-10-20-07-46"><br>
+继续执行下载脚本，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
+<p>出现以下错误，无法下载<code>isl-0.18.tar.bz2</code>文件，<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-20-23-02.png" alt="2021-12-10-20-23-02"><br>
+因为这个文件在清华镜像源上没有，因此解决办法为从GNU官网通过http下载：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2</span><br><span class="line">tar xvfj isl-0.18.tar.bz2</span><br><span class="line">ln -s isl-0.18 isl</span><br></pre></td></tr></table></figure>
+<h1 id="创建编译目录"><a class="markdownIt-Anchor" href="#创建编译目录"></a> 创建编译目录</h1>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mkdir gcc-build</span><br><span class="line">cd $_</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-30-04.png" alt="2021-12-10-20-30-04"></p>
+<h1 id="生成makefile文件"><a class="markdownIt-Anchor" href="#生成makefile文件"></a> 生成Makefile文件</h1>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">../configure -enable-checking=release -enable-languages=c,c++ -disable-multilib #../configure表示返回上级目录执行configure命令</span><br></pre></td></tr></table></figure>
+<p><code>–enable-languages</code>表示你要让你的gcc支持那些语言，<code>–disable-multilib</code>表示不生成编译为其他平台可执行代码的交叉编译器。<code>–disable-checking</code>表示生成的编译器在编译过程中不做额外检查，也可以使用<code>–enable-checking=xxx</code>来增加一些检查。</p>
+<h1 id="编译"><a class="markdownIt-Anchor" href="#编译"></a> 编译</h1>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">make -j8</span><br></pre></td></tr></table></figure>
+<p>这里-j8表示的是使用8核进行编译，因为我的电脑CPU为8核。因为make默认是serial build的，如果不加-j选项，就不会开启多核parallel build，这样的话速度会慢很多，所以这里我开启了8核编译。即便如此，这一步花费时间也非常长，我在虚拟机里用了将近两个小时完成这一步，而且虚拟机一定要留出至少20GB的空间，不然可能会出现磁盘不足的问题。<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-20-38-17.png" alt="2021-12-10-20-38-17"></p>
+<h1 id="安装"><a class="markdownIt-Anchor" href="#安装"></a> 安装</h1>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo su root #安装GCC需要root权限，这里先切换为root用户</span><br><span class="line">make install #安装</span><br><span class="line">source /etc/profile #安装完成后手动刷新一下profile</span><br><span class="line">gcc -v #检查当前gcc版本</span><br></pre></td></tr></table></figure>
+<p>可以看到，当前的gcc版本更新到了11.2.0，至此安装成功。<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-22-35-17.png" alt="2021-12-10-22-35-17"></p>
+<h1 id="环境变量设置"><a class="markdownIt-Anchor" href="#环境变量设置"></a> 环境变量设置</h1>
+<p>在安装GCC完成后，可以将其永久地加入到系统路径中，输入以下命令：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo su yukeyang #这里yukeyang替换成你的用户名，先从root用户切换回超级用户</span><br><span class="line">cd ~/ #cd进入当前用户(我的是yukeyang)的home目录</span><br><span class="line">code .bashrc #用vscode打开.bashrc文件</span><br></pre></td></tr></table></figure>
+<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-22-46-15.png" alt="2021-12-10-22-46-15"><br>
+GCC可执行程序所在路径为：<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-23-24-28.png" alt="2021-12-10-23-24-28"><br>
+因此，将以下两行加入到.bashrc文件中。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export PATH=/usr/local/bin:$PATH #设置GCC可执行程序路径</span><br><span class="line">export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH #设置动态链接库路径</span><br></pre></td></tr></table></figure>
+<p>至此就完成了所有步骤了，更多的环境变量设置，可以参考<a href="https://www.cnblogs.com/jessepeng/p/11674780.html">这篇博客</a>。<br>
+<img src="/2021/12/10/install-latest-gcc/2021-12-10-23-26-40.png" alt="2021-12-10-23-26-40"></p>
+<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
+<ol>
+<li><a href="https://cloud.tencent.com/developer/article/1532384">centos 编译安装gcc8.1</a></li>
+<li><a href="https://solarianprogrammer.com/2016/10/07/building-gcc-ubuntu-linux/">Building GCC 10 on Ubuntu Linux</a></li>
+<li><a href="https://blog.csdn.net/21aspnet/article/details/105708122">安装最新的GCC</a></li>
+<li><a href="https://www.cnblogs.com/jessepeng/p/11674780.html">[Linux] 非root安装GCC9.1.0</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>编译器</category>
+      </categories>
+      <tags>
+        <tag>开发环境</tag>
+        <tag>工具链</tag>
+      </tags>
   </entry>
   <entry>
     <title>在ubuntu20.04安装LLVM</title>
@@ -390,6 +447,309 @@ cmake完成后可以看到编译文件已被写到build文件夹下。<br>
       </tags>
   </entry>
   <entry>
+    <title>在ubuntu20.04编译lldb-mi</title>
+    <url>/2021/12/28/compile-lldb-mi/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
+<p>lldb-mi(lldb machine interface)是一个C/C<ins>调试器，原来是LLVM项目中lldb的一部分，但是由于长时间没有人维护和更新，于是是从LLVM项目的lldb中分了出去，成为单独的一个工程。在linux环境下，使用vscode对C/C</ins>代码进行调试时，常用的调试器是GDB，除此之外，还有个选择就是lldb-mi。本文将介绍如何在本地对lldb-mi工程源码进行编译，从而生成可执行文件。编译lldb-mi，需要一个C++14编译器以及LLDB，而LLDB又依赖于Clang和LLVM，因此，在编译lldb-mi之前，需要先安装Clang，LLVM和LLDB，可以参考<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">这篇博客</a>进行安装。</p>
+<span id="more"></span>
+<h1 id="编译"><a class="markdownIt-Anchor" href="#编译"></a> 编译</h1>
+<p>输入以下命令，</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~/ #进入home目录</span><br><span class="line">mkdir buildspace #在home目录下建立buildspace目录</span><br><span class="line">cd ~/buildspace #进入buildspace目录</span><br><span class="line">mkdir llvm-inst #创建llvm-inst目录</span><br><span class="line">git clone https://github.com/lldb-tools/lldb-mi #将lldb-mi工程下载到当前目录（即buildspace目录）</span><br><span class="line">cd lldb-mi #进入lldb-mi工程目录里</span><br><span class="line">mkdir build #在当前目录（即lldb-mi目录）建立build目录，用来存放编译后生成的文件</span><br><span class="line">cmake -DCMAKE_PREFIX_PATH=~/buildspace/llvm-inst/ -GNinja .. #在当前目录（即build目录）的上一级目录（即lldb-mi目录）下生成cmake文件</span><br><span class="line">ninja #编译</span><br></pre></td></tr></table></figure>
+<p>执行完以上命令后，可以看到，所生成的lldb-mi可执行文件将位于lldb-mi/build/src目录下，这个就是lldb-mi调试器。然后，我们就可以开始在vscode中使用这个调试器对程序进行调试了。<br>
+<img src="/2021/12/28/compile-lldb-mi/2021-12-29-00-49-15.png" alt="2021-12-29-00-49-15"></p>
+<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
+<ol>
+<li><a href="https://github.com/lldb-tools/lldb-mi">Building against custom LLDB</a></li>
+<li><a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">在ubuntu20.04安装LLVM</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>编译器</category>
+      </categories>
+      <tags>
+        <tag>开发环境</tag>
+        <tag>工具链</tag>
+        <tag>lldb-mi</tag>
+        <tag>调试器</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>双口RAM及其VIVADO的IP核的使用</title>
+    <url>/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="双口ram概述"><a class="markdownIt-Anchor" href="#双口ram概述"></a> 双口RAM概述</h1>
+<p>双口RAM（dual port RAM）在异构系统中应用广泛，通过双口RAM，不同硬件架构的芯片可以实现数据的交互，从而实现通信。例如，一般情况下，ARM与DSP之间的通信，可以利用双口RAM实现，ARM通过EBI总线连接到双口RAM的A口，DSP通过EMIF总线（也可以是uPP总线，取决于速度需求）连接到双口RAM的B口，两者对同一块存储区域进行操作，即可实现两者的数据交互。</p>
+<span id="more"></span>
+<p>但是，因为双口RAM的A口和B口都可以对相同的内存地址进行操作，这就引出了一个问题——假如通信双方在两个端口对同一地址同时读写，就会引发冲突。要解决这个问题，办法有二。一是通信双方在时序上保证不会同时读写同一地址，将ARM和DSP可写地址范围进行分区，无论任何一方写完数据后都通过IO发送中断通知对方，对方进行数据读取（乒乓RAM操作），这样是比较可靠的；另外一个办法就是在fpga里设置写busy信号，实现两端写同步<a href="http://blog.csdn.net/DanielLee_ustb/article/details/46446359">1</a>。在FPGA中，构建双口RAM可以通过两种方法，一种是利用distributed RAM构建，另一种是利用Block RAM构建，关于两者的具体区别，可以参考这两篇文章<a href="http://blog.csdn.net/yzy19900402/article/details/45025901">2</a><a href="http://blog.csdn.net/jbb0523/article/details/6533760">3</a>。简而言之，Block RAM是是使用FPGA中的整块双口RAM资源，而distributed RAM则是用FPGA中的逻辑资源拼凑形成的。一般的原则是，较大的存储应用，建议用bram；零星的小ram，一般就用dram。</p>
+<p>在Vivado中，RAM IP核在Memories &amp; Strorage Elements\RAM &amp; ROMs和RAM &amp; ROMs &amp; BRAM文件夹下，如图所示，下面简要介绍一下Vivado的双口RAM IP核。<br>
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-23-22.png#pic_center" alt="图1.1" title="图1.1"></p>
+<h1 id="vivado-双口ram-ip核"><a class="markdownIt-Anchor" href="#vivado-双口ram-ip核"></a> Vivado 双口RAM IP核</h1>
+<h2 id="block-memory-generator概述"><a class="markdownIt-Anchor" href="#block-memory-generator概述"></a> Block Memory Generator概述</h2>
+<p>点击图1.1的Block Memory Generator项，利用BRAM来构建双口RAM。Block Memory Generator窗口如图2.1所示。图中，第1部分，在IP symbol选项卡，点击&quot;+&quot;号可以展开端口具体信号，如图2.2所示。第2部分，Component Name可以设置IP核的名字。第3部分，Basic选项卡，在Memory Type下拉列表中，可以设置内存的类型，如图2.3所示。Block Memory Gnerator一共可以产生5种不同类型的内存空间，其中block RAM有三种：单口RAM、简化双口RAM和真双口RAM<a href="https://www.xilinx.com/support/documentation/ip_documentation/blk_mem_gen/v8_2/pg058-blk-mem-gen.pdf">4</a>。单口RAM只有一个端口（A端口），可以对A端口进行读写。简化双口RAM有两个端口（A和B端口），但是A端口只能进行写入操作，不能进行读出操作，而B端口则只能进行读出操作，不能进行写入操作。真双口RAM有两个端口（A和B端口），A和B端口都能进行读写操作<a href="http://blog.csdn.net/c602273091/article/details/39694145">5</a>。<br>
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-16.png#pic_center" alt="图2.1" title="图2.1"><br>
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-48.png#pic_center" alt="图2.2" title="图2.2"><br>
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-15.png#pic_center" alt="图2.3" title="图2.3"></p>
+<h2 id="真双口ram的设置"><a class="markdownIt-Anchor" href="#真双口ram的设置"></a> 真双口RAM的设置</h2>
+<h3 id="basic设置"><a class="markdownIt-Anchor" href="#basic设置"></a> Basic设置</h3>
+<p><img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-36.png#pic_center" alt="图2.4" title="图2.4"></p>
+<h3 id="port设置"><a class="markdownIt-Anchor" href="#port设置"></a> Port设置</h3>
+<p>点击Port A Options选项卡，对A端口进行设置， 设置Write Width为16（即RAM单元为16位），Write Width为1024（即内存深度为1024，该端口可读写的RAM单元有1024个），Operating Mode（操作模式）一共有三种：Write First，Read First，No Change。在Write First模式中，在一个时钟周期里，写入内存单元的数据被同步输出到输出数据总线上；在Read First模式中，在一个时钟周期里，写入到内存单元的数据是当前输入数据总线上的数据，而输出到输出数据总线上的数据则是上一个时钟周期存储在内存单元中的数据。细节可参考PG058的49到50页4。Enable Port Type设置为Always Enabled，一直使能端口A。其它设置使用默认设置。如图2.5所示。<br>
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-04.png#pic_center" alt="图2.5" title="图2.5"><br>
+端口B设置为与A一致。在Other Options选项卡中，保留默认设置。Load Init File设置是否用Coe文件对内存区域初始化，这个在初始化ROM的时候会用到，这里不勾选，保持默认。最后，在Summary选项卡会显示消耗的资源。</p>
+<h1 id="双口ram例程"><a class="markdownIt-Anchor" href="#双口ram例程"></a> 双口RAM例程</h1>
+<p>​例程1，该例程是Altera官方例程<a href="https://www.altera.com.cn/support/support-resources/design-examples/design-software/verilog/ver-true-dual-port-ram-sclk.html">6</a>，采用寄存器构建双口RAM，代码如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">module <span class="title function_">true_dpram_sclk</span></span><br><span class="line"><span class="params">(</span></span><br><span class="line"><span class="params">    input [<span class="number">7</span>:<span class="number">0</span>] data_a, data_b,</span></span><br><span class="line"><span class="params">    input [<span class="number">5</span>:<span class="number">0</span>] addr_a, addr_b,</span></span><br><span class="line"><span class="params">    input we_a, we_b, clk,</span></span><br><span class="line"><span class="params">    output reg [<span class="number">7</span>:<span class="number">0</span>] q_a, q_b</span></span><br><span class="line"><span class="params">)</span>;</span><br><span class="line">    <span class="comment">// Declare the RAM variable</span></span><br><span class="line">    reg [<span class="number">7</span>:<span class="number">0</span>] ram[<span class="number">63</span>:<span class="number">0</span>];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Port A</span></span><br><span class="line">    always @ (posedge clk)</span><br><span class="line">    begin</span><br><span class="line">        <span class="title function_">if</span> <span class="params">(we_a)</span> </span><br><span class="line">        begin</span><br><span class="line">            ram[addr_a] &lt;= data_a;</span><br><span class="line">            q_a &lt;= data_a;</span><br><span class="line">        end</span><br><span class="line">        <span class="keyword">else</span> </span><br><span class="line">        begin</span><br><span class="line">            q_a &lt;= ram[addr_a];</span><br><span class="line">        end</span><br><span class="line">    end</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Port B</span></span><br><span class="line">    always @ (posedge clk)</span><br><span class="line">    begin</span><br><span class="line">        <span class="title function_">if</span> <span class="params">(we_b)</span></span><br><span class="line">        begin</span><br><span class="line">            ram[addr_b] &lt;= data_b;</span><br><span class="line">            q_b &lt;= data_b;</span><br><span class="line">        end</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        begin</span><br><span class="line">            q_b &lt;= ram[addr_b];</span><br><span class="line">        end</span><br><span class="line">    end</span><br><span class="line">    </span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
+<p>例程2，该例程是Xilinx官方例程<a href="https://www.xilinx.com/support/documentation/sw_manuals/xilinx2014_4/ug901-vivado-synthesis.pdf">7</a>，采用寄存器构建真双口RAM，代码如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Dual-Port Block RAM with Two Write Ports</span></span><br><span class="line"><span class="comment">// File: rams_16.v</span></span><br><span class="line"></span><br><span class="line">module <span class="title function_">v_rams_16</span> <span class="params">(clka,clkb,ena,enb,wea,web,addra,addrb,dia,dib,doa,dob)</span>;</span><br><span class="line"></span><br><span class="line">input clka,clkb,ena,enb,wea,web;</span><br><span class="line">input [<span class="number">9</span>:<span class="number">0</span>] addra,addrb;</span><br><span class="line">input [<span class="number">15</span>:<span class="number">0</span>] dia,dib;</span><br><span class="line">output [<span class="number">15</span>:<span class="number">0</span>] doa,dob;</span><br><span class="line">reg[<span class="number">15</span>:<span class="number">0</span>] ram [<span class="number">1023</span>:<span class="number">0</span>];</span><br><span class="line">reg[<span class="number">15</span>:<span class="number">0</span>] doa,dob;</span><br><span class="line"></span><br><span class="line">always @(posedge clka) begin <span class="title function_">if</span> <span class="params">(ena)</span></span><br><span class="line">begin</span><br><span class="line"> <span class="title function_">if</span> <span class="params">(wea)</span></span><br><span class="line"> ram[addra] &lt;= dia;</span><br><span class="line"> doa &lt;= ram[addra];</span><br><span class="line"> end</span><br><span class="line">end</span><br><span class="line"></span><br><span class="line">always @(posedge clkb) begin <span class="title function_">if</span> <span class="params">(enb)</span></span><br><span class="line">begin</span><br><span class="line"> <span class="title function_">if</span> <span class="params">(web)</span></span><br><span class="line"> ram[addrb] &lt;= dib;</span><br><span class="line"> dob &lt;= ram[addrb];</span><br><span class="line"> end</span><br><span class="line">end</span><br><span class="line"></span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
+<p>​例程3，该例程是网友博客中的例程<a href="http://blog.csdn.net/yanglong890124/article/details/32742297">8</a>，代码如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">module <span class="title function_">TOP</span><span class="params">(  </span></span><br><span class="line"><span class="params">input USER_CLK  </span></span><br><span class="line"><span class="params">    )</span>;  </span><br><span class="line">  </span><br><span class="line">`define DLY #<span class="number">1</span>  </span><br><span class="line">reg FPGA_Enable=<span class="number">0</span>;  </span><br><span class="line">reg[<span class="number">3</span>:<span class="number">0</span>] FPGA_Write_Enable=<span class="number">4&#x27;</span>h0;  </span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] FPGA_Address=<span class="number">0</span>;  </span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] FPGA_Write_Data=<span class="number">0</span>;  </span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data_reg=<span class="number">0</span>;  </span><br><span class="line">wire[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data;  </span><br><span class="line">  </span><br><span class="line">reg[<span class="number">10</span>:<span class="number">0</span>] count=<span class="number">0</span>;  </span><br><span class="line">always @ (posedge USER_CLK)  </span><br><span class="line">begin  </span><br><span class="line">    count &lt;= count + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">if</span>(count&lt;=<span class="number">100</span>)  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;</span>h0;  </span><br><span class="line">    end  </span><br><span class="line">    <span class="keyword">else</span> <span class="title function_">if</span><span class="params">((count &lt;= <span class="number">105</span>)&amp;&amp;(count &gt;<span class="number">100</span>))</span>  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;</span>hf;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= FPGA_Write_Data + <span class="number">1</span>;  </span><br><span class="line">    end  </span><br><span class="line">    <span class="keyword">else</span> <span class="title function_">if</span><span class="params">((count &lt;= <span class="number">110</span>)&amp;&amp;(count &gt;<span class="number">105</span>))</span>  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;</span>h0;  </span><br><span class="line">        FPGA_Address &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= <span class="number">0</span>;  </span><br><span class="line">    end  </span><br><span class="line">    <span class="keyword">else</span> <span class="title function_">if</span><span class="params">((count &lt;= <span class="number">117</span>)&amp;&amp;(count &gt;<span class="number">110</span>))</span>  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;</span>h0;  </span><br><span class="line">        FPGA_Read_Data_reg &lt;= FPGA_Read_Data;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">    end  </span><br><span class="line">    <span class="keyword">else</span> <span class="title function_">if</span><span class="params">(count == <span class="number">118</span>)</span>  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        count &lt;= count;  </span><br><span class="line">          </span><br><span class="line">    end  </span><br><span class="line">end  </span><br><span class="line">  </span><br><span class="line">BBBB <span class="title function_">your_instance_name</span> <span class="params">(  </span></span><br><span class="line"><span class="params">  .clka(USER_CLK), <span class="comment">// input clka  </span></span></span><br><span class="line"><span class="params">  .ena(FPGA_Enable), <span class="comment">// input ena  </span></span></span><br><span class="line"><span class="params">  .wea(FPGA_Write_Enable), <span class="comment">// input [3 : 0] wea  </span></span></span><br><span class="line"><span class="params">  .addra(FPGA_Address), <span class="comment">// input [31 : 0] addra  </span></span></span><br><span class="line"><span class="params">  .dina(FPGA_Write_Data), <span class="comment">// input [31 : 0] dina  </span></span></span><br><span class="line"><span class="params">  .douta(FPGA_Read_Data), <span class="comment">// output [31 : 0] douta  </span></span></span><br><span class="line"><span class="params">    </span></span><br><span class="line"><span class="params">    </span></span><br><span class="line"><span class="params">  .clkb(clkb), <span class="comment">// input clkb  </span></span></span><br><span class="line"><span class="params">  .enb(enb), <span class="comment">// input enb  </span></span></span><br><span class="line"><span class="params">  .web(web), <span class="comment">// input [3 : 0] web  </span></span></span><br><span class="line"><span class="params">  .addrb(addrb), <span class="comment">// input [31 : 0] addrb  </span></span></span><br><span class="line"><span class="params">  .dinb(dinb), <span class="comment">// input [31 : 0] dinb  </span></span></span><br><span class="line"><span class="params">  .doutb(doutb) <span class="comment">// output [31 : 0] doutb  </span></span></span><br><span class="line"><span class="params">)</span>;  </span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
+<p>​该例程中，在count为101（&gt;100）后开始往地址4到20写入1-5，然后在count为111（&gt;110）的时候读出写入的数据。</p>
+<h1 id="仿真"><a class="markdownIt-Anchor" href="#仿真"></a> 仿真</h1>
+<p>下面利用Modelsim和Vivado进行联合仿真，关于vivado如何与modelsim进行联合仿真可以参考这篇文章：</p>
+<p><a href="http://blog.chinaaet.com/crazybird/p/5100000539">vivado与modelsim的关联以及器件库编译</a></p>
+<p>有一点要注意的是，我用的是Vivado2017.1版本，这个版本只支持Modelsim10.5及以上的版本，如果是低版本的Modelsim，在用Vivado2017.1编译Modelsim的仿真库时，会出错。Modelsim10.5版本可以在这里下载：</p>
+<p><a href="http://bbs.eetop.cn/viewthread.php?tid=629292&amp;extra=&amp;page=1">modelsim 10.5 适用vivado 2017.1</a></p>
+<p>用Modelsim仿真时，会在sim_1/behav文件夹下产生3个.do文件，分别是xx_compile.do，xx_simulate.do，xx _wave.do文件。在设计的verilog文件修改之后，如果在Modelsim中直接restart，仿真的其实还是没有修改前的文件，要使修改的.v文件在Modelsim中生效，可以在Modelsim的命令窗口输入do xx_compile.do文件，对仿真的库文件以及设计文件（.v文件）重新编译，然后在输入do xx_simulate.do文件，才能仿真修改后的文件。输入do xx_compile.do命令对设计文件重新编译的时候，Modelsim会强制退出，这时由最后一句force quit命令引起的，只要把它删掉就行了。如果要保存波形文件，可以save format，另存为xx_wave.do文件。</p>
+<p>参考上面双口RAM的例程3进行功能仿真，RAM IP使用Write First模式，设计文件代码如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">`timescale <span class="number">1</span>ns / <span class="number">1</span>ps</span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Company: </span></span><br><span class="line"><span class="comment">// Engineer: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Create Date: 2017/12/09 22:36:48</span></span><br><span class="line"><span class="comment">// Design Name: </span></span><br><span class="line"><span class="comment">// Module Name: dual_port_ram_demo</span></span><br><span class="line"><span class="comment">// Project Name: </span></span><br><span class="line"><span class="comment">// Target Devices: </span></span><br><span class="line"><span class="comment">// Tool Versions: </span></span><br><span class="line"><span class="comment">// Description: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Dependencies: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Revision:</span></span><br><span class="line"><span class="comment">// Revision 0.01 - File Created</span></span><br><span class="line"><span class="comment">// Additional Comments:</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"></span><br><span class="line">module <span class="title function_">dual_port_ram_demo</span><span class="params">(</span></span><br><span class="line"><span class="params">input USER_CLK</span></span><br><span class="line"><span class="params">    )</span>;</span><br><span class="line">  </span><br><span class="line">`define DLY #<span class="number">1</span>  </span><br><span class="line"></span><br><span class="line"><span class="comment">//Port A declaration</span></span><br><span class="line">reg FPGA_Enable=<span class="number">0</span>;  </span><br><span class="line">reg FPGA_Write_Enable=<span class="number">0</span>;  </span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] FPGA_Address=<span class="number">0</span>;  </span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] FPGA_Write_Data=<span class="number">0</span>;  </span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data_reg=<span class="number">0</span>;  </span><br><span class="line">wire[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data;  </span><br><span class="line"></span><br><span class="line"><span class="comment">//Port B declaration</span></span><br><span class="line">reg enb=<span class="number">0</span>;</span><br><span class="line">reg[<span class="number">3</span>:<span class="number">0</span>] web=<span class="number">4&#x27;</span>h0;</span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] addrb=<span class="number">0</span>;</span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] dinb=<span class="number">0</span>;</span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] doutb_reg=<span class="number">0</span>;</span><br><span class="line">wire[<span class="number">31</span>:<span class="number">0</span>] doutb=<span class="number">0</span>;</span><br><span class="line">  </span><br><span class="line">reg[<span class="number">10</span>:<span class="number">0</span>] count=<span class="number">0</span>;  </span><br><span class="line">always @ (posedge USER_CLK)  </span><br><span class="line">begin  </span><br><span class="line">    count &lt;= count + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">if</span>(count&lt;=<span class="number">100</span>)  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">    end  </span><br><span class="line">    <span class="keyword">else</span> <span class="title function_">if</span><span class="params">((count &lt;= <span class="number">105</span>)&amp;&amp;(count &gt;<span class="number">100</span>))</span>  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= FPGA_Write_Data + <span class="number">1</span>;  </span><br><span class="line">    end  </span><br><span class="line">    <span class="keyword">else</span> <span class="title function_">if</span><span class="params">((count &lt;= <span class="number">110</span>)&amp;&amp;(count &gt;<span class="number">105</span>))</span>  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Address &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= <span class="number">0</span>;  </span><br><span class="line">    end  </span><br><span class="line">    <span class="keyword">else</span> <span class="title function_">if</span><span class="params">((count &lt;= <span class="number">117</span>)&amp;&amp;(count &gt;<span class="number">110</span>))</span>  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Read_Data_reg &lt;= FPGA_Read_Data;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">    end  </span><br><span class="line">    <span class="keyword">else</span> <span class="title function_">if</span><span class="params">(count == <span class="number">118</span>)</span>  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        count &lt;= count;  </span><br><span class="line">          </span><br><span class="line">    end  </span><br><span class="line">end  </span><br><span class="line">  </span><br><span class="line">dpRAM <span class="title function_">u1</span> <span class="params">(  </span></span><br><span class="line"><span class="params">  .clka(USER_CLK), <span class="comment">// input clka  </span></span></span><br><span class="line"><span class="params">  .ena(FPGA_Enable), <span class="comment">// input ena  </span></span></span><br><span class="line"><span class="params">  .wea(FPGA_Write_Enable), <span class="comment">// input [3 : 0] wea  </span></span></span><br><span class="line"><span class="params">  .addra(FPGA_Address), <span class="comment">// input [31 : 0] addra  </span></span></span><br><span class="line"><span class="params">  .dina(FPGA_Write_Data), <span class="comment">// input [31 : 0] dina  </span></span></span><br><span class="line"><span class="params">  .douta(FPGA_Read_Data), <span class="comment">// output [31 : 0] douta  </span></span></span><br><span class="line"><span class="params">    </span></span><br><span class="line"><span class="params">    </span></span><br><span class="line"><span class="params">  .clkb(USER_CLK), <span class="comment">// input clkb  </span></span></span><br><span class="line"><span class="params">  .enb(enb), <span class="comment">// input enb  </span></span></span><br><span class="line"><span class="params">  .web(web), <span class="comment">// input [3 : 0] web  </span></span></span><br><span class="line"><span class="params">  .addrb(addrb), <span class="comment">// input [31 : 0] addrb  </span></span></span><br><span class="line"><span class="params">  .dinb(dinb), <span class="comment">// input [31 : 0] dinb  </span></span></span><br><span class="line"><span class="params">  .doutb(doutb) <span class="comment">// output [31 : 0] doutb  </span></span></span><br><span class="line"><span class="params">)</span>;  </span><br><span class="line">endmodule  </span><br></pre></td></tr></table></figure>
+<p>​testbench文件如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">`timescale <span class="number">1</span>ns / <span class="number">1</span>ps</span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Company: </span></span><br><span class="line"><span class="comment">// Engineer: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Create Date: 2017/12/09 22:47:26</span></span><br><span class="line"><span class="comment">// Design Name: </span></span><br><span class="line"><span class="comment">// Module Name: simu</span></span><br><span class="line"><span class="comment">// Project Name: </span></span><br><span class="line"><span class="comment">// Target Devices: </span></span><br><span class="line"><span class="comment">// Tool Versions: </span></span><br><span class="line"><span class="comment">// Description: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Dependencies: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Revision:</span></span><br><span class="line"><span class="comment">// Revision 0.01 - File Created</span></span><br><span class="line"><span class="comment">// Additional Comments:</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"></span><br><span class="line">module <span class="title function_">simu</span><span class="params">(</span></span><br><span class="line"><span class="params"></span></span><br><span class="line"><span class="params">    )</span>;</span><br><span class="line"><span class="comment">//testbench 时钟信号</span></span><br><span class="line">reg clk = <span class="number">0</span>;</span><br><span class="line">always # <span class="number">10</span> clk &lt;= ~clk;</span><br><span class="line"><span class="comment">//调用dual_port_ram_demo模块</span></span><br><span class="line">dual_port_ram_demo <span class="title function_">demo1</span><span class="params">(clk)</span>;</span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
+<p>仿真结果如下：<br>
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-41.png#pic_center" alt="图4.1" title="图4.1"><br>
+程序在1时刻准备好地址和要写入RAM的数据，在2时刻写入RAM中，在3时刻端口才会输出2时刻写入RAM的数据，注意与PG058的图稍有不同。<br>
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-27-26.png#pic_center" alt="图4.2" title="图4.2"></p>
+<h1 id="后记"><a class="markdownIt-Anchor" href="#后记"></a> 后记</h1>
+<p>关于BRAM，推荐一个youtube视频，里面讲的非常清晰易懂。<br>
+<a href="https://www.youtube.com/watch?v=fqUuvwl4QJA">What is a Block RAM in an FPGA?</a></p>
+<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
+<p>[1] <a href="http://blog.csdn.net/DanielLee_ustb/article/details/46446359">基于FPGA的双口RAM设计方法</a><br>
+[2] <a href="http://blog.csdn.net/yzy19900402/article/details/45025901">关于Xilinx芯片中Block RAM和Distributed RAM 的区别</a><br>
+[3] <a href="http://blog.csdn.net/jbb0523/article/details/6533760">Block RAM 和Distributed RAM</a><br>
+[4] <a href="https://www.xilinx.com/support/documentation/ip_documentation/blk_mem_gen/v8_2/pg058-blk-mem-gen.pdf">Block Memory Generator v8.2 LogiCORE IP Product Guide (PG058)</a><br>
+[5] <a href="http://blog.csdn.net/c602273091/article/details/39694145">FPGA开发之RAM IP的使用</a><br>
+[6] <a href="https://www.altera.com.cn/support/support-resources/design-examples/design-software/verilog/ver-true-dual-port-ram-sclk.html">Verilog HDL：具有单时钟的真双端口RAM</a><br>
+[7] <a href="https://www.xilinx.com/support/documentation/sw_manuals/xilinx2014_4/ug901-vivado-synthesis.pdf">Vivado Design Suite User Guide: Synthesis (UG901)</a><br>
+[8] <a href="http://blog.csdn.net/yanglong890124/article/details/32742297">FPGA 内部双口块RAM 读写实现</a></p>
+]]></content>
+      <categories>
+        <category>FPGA</category>
+      </categories>
+      <tags>
+        <tag>FPAG</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>比特币区块结构</title>
+    <url>/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
+<p>比特币账本是以区块链的形式组织起来的，每个区块以<code>merkle tree</code>的形式记录着多条交易的具体信息， 而区块与区块间则通过哈希指针链接起来，从而实现了对所有历史交易的记录。本文将对比特币区块的所有相关概念进行简介。</p>
+<h2 id="-more-"><a class="markdownIt-Anchor" href="#-more-"></a> <span id="more"></span></h2>
+<p><code>以下是本篇文章正文内容</code></p>
+<h1 id="哈希指针"><a class="markdownIt-Anchor" href="#哈希指针"></a> 哈希指针</h1>
+<p>前面提到，比特币区块与区块间是通过哈希指针链接起来的，那么，哈希指针是什么呢？这里介绍一下这个概念。<code>哈希指针(Hash pointer)</code>，顾名思义，是一个带有哈希值的指针。其结构如下图所示，该指针不仅记录了其所指向的数据块的地址，同时也记录了该数据块的哈希值。<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-09-48.png#pic_center" alt="2022-06-17-18-09-48"></p>
+<h1 id="区块链"><a class="markdownIt-Anchor" href="#区块链"></a> 区块链</h1>
+<p>比特币的账本(<code>ledger</code>)是以区块链(<code>block chain</code>)的形式组织起来的，其结构如下图所示。每个区块里包含了一个字段<code>previousblockhash</code>，记录着上一个区块的哈希值。每往区块链里添加一个新的区块时，需要计算上一个区块的哈希值并填入新加的区块的<code>previousblockhash</code>字段中。<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-10-34.png#pic_center" alt="2022-06-17-18-10-34"><br>
+区块链的这种特殊的结构形式，使得它具有防篡改的属性。那么，区块链是如何体现出其防篡改属性的呢？以下图为例，假如有人恶意篡改了区块1的内容，那么为了保持一致，他必然要对篡改后的区块1的内容重新进行哈希运算，然后将所得到的哈希值填入区块2的<code>previousblockhash</code>字段，而因为区块2的<code>previousblockhash</code>字段改变了，他又不得不对区块2重新进行哈希运算并将得到的哈希值填入区块3的<code>previousblockhash</code>字段 。最终，他将不得不修改区块链链首的哈希指针。只要我们记录了这个指针，那么他将无法篡改这个指针的信息。结果就是，如果我们对最后一个区块(在下面的例子中是区块3)求哈希，那么结果一定和我们所保存的链首哈希指针不一致，从而就可以识别出区块链内容有被人篡改过。<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-11-12.png#pic_center" alt="2022-06-17-18-11-12"></p>
+<h1 id="merkle-tree"><a class="markdownIt-Anchor" href="#merkle-tree"></a> Merkle tree</h1>
+<p>每个比特币区块中记录了多条交易信息，这些交易是以<code>merkle tree</code>的形式组织起来的，如下图所示。首先会对每条交易求哈希，然后对得到的哈希两两配对，再求哈希，然后再将所求得的哈希两两配对，最终，将会得到一个哈希值，这个哈希值就是<code>merkleroot</code>。<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-11-52.png#pic_center" alt="2022-06-17-18-11-52"><br>
+以<code>merkle tree</code>的形式将区块内的所有交易组织起来，主要有两个好处。</p>
+<ol>
+<li>防篡改(tamper evident)</li>
+<li>验证身份(proof of membership)</li>
+</ol>
+<h2 id="防篡改"><a class="markdownIt-Anchor" href="#防篡改"></a> 防篡改</h2>
+<p>与前面区块链防篡改的机制类似，只要我们记住了<code>merkle tree</code>的根节点的哈希值<code>merkleroot</code>，我们就能防止篡改。具体过程如下，以下图为例，假如有人恶意篡改了交易1的信息，那么为了保持信息一致，他必须沿着交易1所在的分支一直往上，重新计算所有的哈希值，直到根节点。但是，因为我们在本地保存了<code>merkleroot</code>的值，所以攻击者在篡改根节点的其中一个哈希值后，他无法再进一步篡改<code>merkleroot</code>的值了，而我们验证时，只要计算一下根节点的哈希值，然后与本地保存的<code>merkleroot</code>比较一下，就能检测出这个区块的交易信息有被篡改过。所以，在区块链的基础之上，<code>merkle tree</code>进一步加强了防篡改的能力。<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-12-44.png#pic_center" alt="2022-06-17-18-12-44"></p>
+<h2 id="验证身份"><a class="markdownIt-Anchor" href="#验证身份"></a> 验证身份</h2>
+<p><code>merkle tree</code>的另一大优点是通过它可以很轻易地验证一条交易是否属于这个区块。以下图为例，假如某人想证明交易1属于这个区块。与前面一样，我们只需要记住<code>merkleroot</code>。当某人要证明交易1属于这个区块时，他需要给出一条分支，该分支的根节点的哈希值要等于我们所保存的<code>merkleroot</code>，叶子节点则是要证明的交易，下图里是交易1。我们只要沿着这条分支，对路径上所有的哈希值验算一遍，如果得到的所有哈希值都与分支上各个节点所记录的哈希值一致，那么就证明了交易1属于该区块。<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-13-16.png#pic_center" alt="2022-06-17-18-13-16"><br>
+从上面的例子可以看出，利用<code>merkle tree</code>可以很容易地验证交易1属于这个区块。反过来，要是一个交易不属于该区块，那么也很容易证明。以下图为例，假如某人想将不属于该区块的交易x伪装成属于该区块，那么他必须将这个伪交易插入到<code>merkle tree</code>的某个位置。假如他插入的是交易2的位置，那么在证明交易x属于这个区块时，我们可以要求他出示交易x在<code>merkle tree</code>上的前一个交易和后一个交易以及其所在的分支 。于是，他需要给出下图所示的几个分支，为了保持信息一致，他不得不沿着原来交易2所在的分支，对所有的哈希重新算一遍并进行篡改，而由于我们记住了<code>merkleroot</code>，他无法篡改这个值，所以只要我们对根节点的哈希进行验算，就会发现得到的哈希值与我们保存的<code>merkleroot</code>不一致，从而证明了交易x并不属于这个<code>merkle tree</code>，即不属于这个区块。<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-13-48.png#pic_center" alt="2022-06-17-18-13-48"></p>
+<h1 id="比特币区块链"><a class="markdownIt-Anchor" href="#比特币区块链"></a> 比特币区块链</h1>
+<p>比特币区块链结构图如下图所示，由图可以看出各个区块之间以<code>哈希指针</code>链接起来，区块内部各个交易则以<code>merkle tree</code>的形式组织起来。每个区块都记录两个哈希指针，一个是<code>previousblockhash</code>，指向上一个区块，记录着上一个区块的哈希值，另一个是<code>merkle root</code>，指向其所在区块的<code>merkle tree</code>的根节点，记录着该节点的哈希值。<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-14-33.png#pic_center" alt="2022-06-17-18-14-33"></p>
+<h1 id="比特币区块"><a class="markdownIt-Anchor" href="#比特币区块"></a> 比特币区块</h1>
+<p>比特币区块的结构如图所示，区块由两部分组成，一部分是<code>区块头</code>，记录着区块的一些关键的特征信息，受限于页面大小，下面图中只展示出一部分，后面会介绍不在图上的其它项。另一部分是<code>交易列表</code>，记录着该区块里每条交易的哈希值，这里的划分只是一种概念上的划分，实际上区块的数据结构中不会专门用两个不同数据结构来分别存放<code>区块头</code>和<code>交易列表</code>，而是会把它们统一记录在一个数据结构中。<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-15-13.png#pic_center" alt="2022-06-17-18-15-13"><br>
+比特币区块各字段如下表所示。</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hash</td>
+<td>当前区块Hash</td>
+</tr>
+<tr>
+<td>confirmations</td>
+<td>区块链网络确认数</td>
+</tr>
+<tr>
+<td>size</td>
+<td>区块大小</td>
+</tr>
+<tr>
+<td>height</td>
+<td>区块高度</td>
+</tr>
+<tr>
+<td>version</td>
+<td>区块版本</td>
+</tr>
+<tr>
+<td>versionHex</td>
+<td>区块版本的16进制表示</td>
+</tr>
+<tr>
+<td>merkleroot</td>
+<td>区块中所有交易的merkle根Hash</td>
+</tr>
+<tr>
+<td>tx</td>
+<td>交易列表</td>
+</tr>
+<tr>
+<td>time</td>
+<td>区块的时间戳</td>
+</tr>
+<tr>
+<td>mediantime</td>
+<td>过去11个区块的中值时间</td>
+</tr>
+<tr>
+<td>nonce</td>
+<td>32位的任意随机数，挖矿时用于工作量证明算法的一个扰动输入参数</td>
+</tr>
+<tr>
+<td>bits</td>
+<td>区块的难度目标</td>
+</tr>
+<tr>
+<td>chainwork</td>
+<td>区块链上的总计工作量，它是一个32位的整数，代表了区块链上所有区块的计算工作量</td>
+</tr>
+<tr>
+<td>previousblockhash</td>
+<td>前一个区块的Hash值</td>
+</tr>
+<tr>
+<td>nextblockhash</td>
+<td>下一个区块的Hash值</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h1 id="获取区块数据"><a class="markdownIt-Anchor" href="#获取区块数据"></a> 获取区块数据</h1>
+<p>前面介绍了比特币区块的结构以及里面的各个字段，下面介绍在实际网络中如何获取一个真实存在的区块的数据。目前网络上有多个区块链浏览器，这些区块链浏览器不光能查询区块的内容，还能实时地监测网上正在进行的交易，一个比较常用的在线区块链查询网站是<a href="https://www.blockchain.com/explorer">https://www.blockchain.com/explorer</a>。</p>
+<p>点击进入该网址，在Assets-&gt;Bitcoin页面，可以看到最新加入到区块链中的区块(Latest Blocks)，以及最新的交易情况(Latest Transactions)。滚动到该页面的最下方，点击进入Resources-&gt;APIs页面。<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-15-51.png#pic_center" alt="2022-06-17-18-15-51"><br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-16-12.png#pic_center" alt="2022-06-17-18-16-12"><br>
+在Resources-&gt;APIs页面，可以看到这个网站提供了很多不同的API和查询功能，点击查看Blockchain Data API的Documentation，这个Documentation就是关于如何查询区块数据的说明书。<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-16-54.png#pic_center" alt="2022-06-17-18-16-54"><br>
+在里面可以看到，我们既可以查询某个区块的内容，也可以查询某个交易的内容，要查询区块内容，只需要在浏览器输入<code>https://blockchain.info/rawblock/$block_hash</code>格式的URL然后跳转即可，其中<code>$block_hash</code>是该区块的哈希值。<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-17-11.png#pic_center" alt="2022-06-17-18-17-11"><br>
+点击查看前面的Assets-&gt;Bitcoin-&gt;Latest Blocks页面，查看最新的区块，作为例子，从其中选一个比较小的区块，如下图的Block 740337，查看该区块的内容，可以看到，其哈希值为<mark>000000000000000000055092e5f54d01ea178a879cef5f331f4b974172cccefe</mark>，则查询该区块内容的URL为<a href="https://blockchain.info/rawblock/000000000000000000055092e5f54d01ea178a879cef5f331f4b974172cccefe">https://blockchain.info/rawblock/000000000000000000055092e5f54d01ea178a879cef5f331f4b974172cccefe</a><br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-17-27.png#pic_center" alt="2022-06-17-18-17-27"><br>
+转到上面的URL后，我们看到的JSON格式的网页内容是乱序的，需要进行排序以便观察。将其内容复制到<a href="https://www.bejson.com/json/format/">https://www.bejson.com/json/format/)</a>这个网址，格式化校验之后，点击保存校验数据，然后即可看到格式化后的JSON文件内容，如下图所示。<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-17-45.png#pic_center" alt="2022-06-17-18-17-45"><br>
+上面的JSON文件可以到以下<a href="https://gitee.com/yuke-yang/bitcoin">地址</a>中下载，文件名为<font color="SteelBlue">Block 740370.json</font>。</p>
+<h1 id="coinbase交易"><a class="markdownIt-Anchor" href="#coinbase交易"></a> coinbase交易</h1>
+<p>每个区块的第一条交易是<code>coinbase交易</code>。<code>coinbase交易</code>会生成新的比特币，要生成新的比特币，只能通过<code>coinbase交易</code>。与普通的交易相比，<code>coinbase交易</code>有如下的几个特点：</p>
+<ul>
+<li>只有一个输入和一个输出</li>
+<li>因为coinbase交易只是铸造新的比特币，而不花费任何现有的比特币，因此其输入并不赎回任何的之前的输出，这样，输入的prev_out字段就会包含一个空的哈希指针</li>
+<li>当前的输出值比6BTC要稍大。输出值就是矿工从这个区块所获得的回报(reward)。reward由两部分组成，一部分是固定的挖矿奖励(block reward)，目前的值为6.25BTC，在某一段时间内，不管哪个矿工挖到一个新的区块，其所得到的block reward基本都是固定的，这部分收益在不同的区块间不会有差别，但是值得注意的是，每挖到210000个新的区块后(大约4年)，这个值就会减半；另一部分就是矿工从区块中的所有交易所收取的交易费(fee reward)，这部分收益在不同的区块之间就会有所不同，取决于区块中所包含的交易的数目以及每条交易所收取的交易费。</li>
+</ul>
+<p>以上面的JSON文件为例，摘取其交易列表的第一条交易(即<code>coinbase交易</code>)出来，从下面可以看到，这个区块的<code>coinbase交易</code>新造了6.25150003枚比特币，其中block reward为6.25150003BTC，fee reward为0。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="string">&quot;tx&quot;</span>: [&#123;</span><br><span class="line">    <span class="string">&quot;hash&quot;</span>: <span class="string">&quot;f58dc5d553b86f47fb901757e3be85b2b08f3f36317fc1e690fb2ca7cbe37156&quot;</span>,</span><br><span class="line">    <span class="string">&quot;ver&quot;</span>: <span class="number">2</span>,</span><br><span class="line">    <span class="string">&quot;vin_sz&quot;</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="string">&quot;vout_sz&quot;</span>: <span class="number">2</span>,</span><br><span class="line">    <span class="string">&quot;size&quot;</span>: <span class="number">217</span>,</span><br><span class="line">    <span class="string">&quot;weight&quot;</span>: <span class="number">760</span>,</span><br><span class="line">    <span class="string">&quot;fee&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;relayed_by&quot;</span>: <span class="string">&quot;0.0.0.0&quot;</span>,</span><br><span class="line">    <span class="string">&quot;lock_time&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;tx_index&quot;</span>: <span class="number">3041508898170271</span>,</span><br><span class="line">    <span class="string">&quot;double_spend&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">    <span class="string">&quot;time&quot;</span>: <span class="number">1654947331</span>,</span><br><span class="line">    <span class="string">&quot;block_index&quot;</span>: <span class="number">740337</span>,</span><br><span class="line">    <span class="string">&quot;block_height&quot;</span>: <span class="number">740337</span>,</span><br><span class="line">    <span class="string">&quot;inputs&quot;</span>: [&#123;</span><br><span class="line">        <span class="string">&quot;sequence&quot;</span>: <span class="number">4294967295</span>,</span><br><span class="line">        <span class="string">&quot;witness&quot;</span>: <span class="string">&quot;01200000000000000000000000000000000000000000000000000000000000000000&quot;</span>,</span><br><span class="line">        <span class="string">&quot;script&quot;</span>: <span class="string">&quot;03f14b0b04037ea4622f466f756e6472792055534120506f6f6c202364726f70676f6c642f0c027cef00003c1706000000&quot;</span>,</span><br><span class="line">        <span class="string">&quot;index&quot;</span>: <span class="number">0</span>,</span><br><span class="line">        <span class="string">&quot;prev_out&quot;</span>: &#123;</span><br><span class="line">            <span class="string">&quot;tx_index&quot;</span>: <span class="number">0</span>,</span><br><span class="line">            <span class="string">&quot;value&quot;</span>: <span class="number">0</span>,</span><br><span class="line">            <span class="string">&quot;n&quot;</span>: <span class="number">4294967295</span>,</span><br><span class="line">            <span class="string">&quot;type&quot;</span>: <span class="number">0</span>,</span><br><span class="line">            <span class="string">&quot;spent&quot;</span>: <span class="literal">true</span>,</span><br><span class="line">            <span class="string">&quot;script&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">            <span class="string">&quot;spending_outpoints&quot;</span>: [&#123;</span><br><span class="line">                <span class="string">&quot;tx_index&quot;</span>: <span class="number">3041508898170271</span>,</span><br><span class="line">                <span class="string">&quot;n&quot;</span>: <span class="number">0</span></span><br><span class="line">            &#125;]</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;],</span><br><span class="line">    <span class="string">&quot;out&quot;</span>: [&#123;</span><br><span class="line">        <span class="string">&quot;type&quot;</span>: <span class="number">0</span>,</span><br><span class="line">        <span class="string">&quot;spent&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">        <span class="string">&quot;value&quot;</span>: <span class="number">625150003</span>,</span><br><span class="line">        <span class="string">&quot;spending_outpoints&quot;</span>: [],</span><br><span class="line">        <span class="string">&quot;n&quot;</span>: <span class="number">0</span>,</span><br><span class="line">        <span class="string">&quot;tx_index&quot;</span>: <span class="number">3041508898170271</span>,</span><br><span class="line">        <span class="string">&quot;script&quot;</span>: <span class="string">&quot;76a9145e9b23809261178723055968d134a947f47e799f88ac&quot;</span>,</span><br><span class="line">        <span class="string">&quot;addr&quot;</span>: <span class="string">&quot;19dENFt4wVwos6xtgwStA6n8bbA57WCS58&quot;</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;type&quot;</span>: <span class="number">0</span>,</span><br><span class="line">        <span class="string">&quot;spent&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">        <span class="string">&quot;value&quot;</span>: <span class="number">0</span>,</span><br><span class="line">        <span class="string">&quot;spending_outpoints&quot;</span>: [],</span><br><span class="line">        <span class="string">&quot;n&quot;</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="string">&quot;tx_index&quot;</span>: <span class="number">3041508898170271</span>,</span><br><span class="line">        <span class="string">&quot;script&quot;</span>: <span class="string">&quot;6a24aa21a9edeb61edfb90d450a17115e960c6e6b216442b28c0ff48a9e390dfa2a767e80ec0&quot;</span></span><br><span class="line">    &#125;]</span><br><span class="line">&#125;, </span><br></pre></td></tr></table></figure>
+<p>该<code>coinbase交易</code>的细节可以到<a href="https://www.blockchain.com/btc/tx/f58dc5d553b86f47fb901757e3be85b2b08f3f36317fc1e690fb2ca7cbe37156">https://www.blockchain.com/btc/tx/f58dc5d553b86f47fb901757e3be85b2b08f3f36317fc1e690fb2ca7cbe37156</a>查看，如下图所示。这个URL的最后一部分是该交易的哈希，假如我们要查询其它交易的细节，将其它交易的哈希替换这个URL的最后一部分(该交易的哈希)即可。<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-18-35.png#pic_center" alt="2022-06-17-18-18-35"><br>
+下图又是另外一个例子<a href="https://www.blockchain.com/btc/block/000000000000000000032e39bbd3a6af9b311982a256acf1dab5518b2eb79c9a">https://www.blockchain.com/btc/block/000000000000000000032e39bbd3a6af9b311982a256acf1dab5518b2eb79c9a</a>，从图中可以看出，Block Reward是6.25000000BTC，而Fee Reward是0.00080987，因此挖得此区块的总的收益(revenue)是6.25150003。<br>
+<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8C%BA%E5%9D%97%E7%BB%93%E6%9E%84/2022-06-17-18-19-04.png#pic_center" alt="2022-06-17-18-19-04"></p>
+<h1 id="总结"><a class="markdownIt-Anchor" href="#总结"></a> 总结</h1>
+<p>本文介绍了与比特币区块链有关的数据结构以及相关概念，包括<code>哈希指针</code>，<code>merkle tree</code>，<code>比特币区块链</code>，<code>比特币区块</code>，介绍了它们所具有的一些属性，它们是比特币网络的基本部件(building block)，要理解比特币网络，首先必须要正确理解这些概念。</p>
+<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
+<p>[1] <a href="http://www.woshipm.com/blockchain/1022259.html">通俗易懂揭秘比特币区块的内部结构</a><br>
+[2] <a href="https://segmentfault.com/a/1190000017055507">Bitcoin 区块和交易数据结构</a><br>
+[3] <a href="https://zhuanlan.zhihu.com/p/42584683">bitcoin区块结构分析</a><br>
+[4] <a href="https://www.liaoxuefeng.com/wiki/1207298049439968/1207297665661664#:~:text=%E6%AF%94%E7%89%B9%E5%B8%81%E7%9A%84%E5%8C%BA%E5%9D%97,%E5%B9%B6%E4%BA%A7%E7%94%9F%E6%96%B0%E7%9A%84UTXO%E3%80%82">区块结构</a><br>
+[5] <a href="https://blog.csdn.net/u013137970/article/details/69891985">比特币区块结构解析</a><br>
+[6] <font color="CornflowerBlue">Bitcoin and Cryptocurrency Technologies </font>by Arvind Narayanan, Joseph Bonneau etl. Section 3.4</p>
+]]></content>
+      <categories>
+        <category>比特币</category>
+      </categories>
+      <tags>
+        <tag>比特币</tag>
+        <tag>多重签名</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>浅析比特币脚本</title>
+    <url>/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
+<p>在比特币网络中，每个用户的身份是通过公钥来识别的，由此实现了一定程度的用户的匿名性。那么，直觉上，自然而然地我们会认为每一笔交易是通过公钥来指明支付的对象，毕竟现在公钥就等价于用户的身份证号码。然而实际上并非如此，每一笔交易的输出实际上只是指明了一个脚本(script)，通过脚本，间接地指明这笔交易会把多少比特币转给谁。那么为什么交易的输出不是直接用公钥来指明比特币的支付对象，而要通过脚本来指明呢？</p>
+<span id="more"></span>
+<p>实际上这是为了保证两点，其一，支付对象的匿名性；其二，所支付的比特币只能被支付对象所使用。举个例子，如下图所示，假如Alice在交易a的输出中，将十个比特币给了Bob，在交易b中，Bob又将这十个比特币转给了Carol，那么Alice在交易a中应该怎么做才能保证这十个比特币在后续的交易中只能被Bob使用，而不是被别人偷走？<br>
+<img src="/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/2022-06-17-16-19-26.png#pic_center" alt="2022-06-17-16-19-26"></p>
+<p>Alice应该在交易输出中给出Bob的公钥哈希，并且要求，假如Bob要使用这个十个比特币，那就必须要提供Bob的公钥以及Bob的数字签名，只有当Bob给出的公钥的哈希与Alice给的相等，并且Bob的数字签名有效时，才能使用这十个比特币。为什么Alice不是在交易输出中直接指明Bob的公钥，而是指明Bob的公钥哈希？这是为了实现匿名性，具体原因可以参考这篇博客<a href="https://happypeter.github.io/binfo/address.html#:~:text=%E6%AF%94%E7%89%B9%E5%B8%81%E9%87%87%E7%94%A8%E7%9A%84%E6%98%AF,%E5%AE%9E%E9%99%85%E4%B8%AD%E4%B8%8D%E5%8F%AF%E8%83%BD%E5%AE%9E%E7%8E%B0%E3%80%82">为何使用地址而不是公钥？</a>。</p>
+<p>当Alice在交易输出中使用Bob的公钥哈希时，Alice可以证明这笔支付是给了Bob；而当Bob在后续的交易公开给出公钥和他的数字签名时，可以向大家证明他是Bob，从而解锁Alice所支付的比特币，注意，Bob需要在后续交易中公开公钥，而不是简单地给出他的公钥哈希，这样才能让别人在验证他的数字签名是有效的同时，也证明上一次Alice所支付的地址的确是Bob的公钥哈希。Alice支付的过程就是通过给出输出脚本来实现的，而Bob解锁Alice所支付给他的比特币的过程则是通过输入脚本来实现的。当Bob要解锁Alice支付的比特币时，Bob会给出输入脚本，这个输入脚本会和Alice给出的输出脚本拼接到一起，组成一个完整的脚本，然后执行脚本，如果结果是True，那么就解锁成功，Bob的这次交易就能被成功地添加到区块中，否则这次交易无效，不会被添加到区块中。</p>
+<h1 id="比特币脚本语言结构"><a class="markdownIt-Anchor" href="#比特币脚本语言结构"></a> 比特币脚本语言结构</h1>
+<p>从上面一节可以看出，Bob要完成一次交易，需要执行一个比特币脚本，该脚本由输入脚本(scriptSig)和输出脚本(scriptPubKey)两部分组成，输出脚本由Alice在之前的交易(交易a)的输出中给出，输入脚本则由Bob在本次交易(交易b)中给出。比特币脚本使用方法主要有以下几种。</p>
+<ol>
+<li>P2PK (Pay to Public Key)</li>
+<li>P2PKH (Pay to Public Key Hash)</li>
+<li>P2SH (Pay to Script Hash)</li>
+<li>多重签名</li>
+<li>Proof of Burn</li>
+</ol>
+<p>在本文中介绍的例子将会使用第二种(P2PKH)，这种是最常用的方法，有关其它方法的细节，可以参考<a href="https://blog.csdn.net/ice_fire_x/article/details/104173840">比特币脚本原理和使用方法</a>一文，这里不再细述。一个P2PKH输出脚本(scriptPubKey)的例子如下所示，在上面交易例子中由Alice在交易a的输出中给出，输出脚本里包含了Bob的公钥哈希(69e02e18…)，以及一些操作，后面会提到这些操作。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">OP_DUP</span><br><span class="line">OP_HASH160</span><br><span class="line">69e02e18...</span><br><span class="line">OP_EQUALVERIFY</span><br><span class="line">OP_CHECKSIG</span><br></pre></td></tr></table></figure>
+<p>一个输入脚本(scriptSig)的例子如下所示，在上面的交易例子中由Bob在交易b的输入中给出。这里的输入由两部分组成，一是Bob用他自己的私钥对本次交易(即交易b)进行签名所得到的数字签名(sig, signature)，另一部分就是Bob的公钥(pubKey, public key)。给出公钥主要有两个目的，一个是证明Alice在交易a中支付的对象的确是Bob，前面提到，Alice在交易a中只是给出了一个公钥哈希，但是并没有明确指明Bob的公钥，那么别人怎么能知道Alice给的这个公钥哈希就是Bob的公钥哈希呢？因此，为了证明这点，Bob需要在交易b公开他的公钥，然后取哈希，一旦得到的哈希与Alice给的相等，那就证明了Alice给的公钥哈希的确是Bob的公钥哈希，换言之，Alice这十个比特币的确是支付给Bob的。另外一个目的就是为了进行数字验签，Bob需要给出公钥，别人才能用他的公钥和数字签名进行验签，才能确认他的数字签名有效，即他的确是Bob。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;sig&gt;</span><br><span class="line">&lt;pubKey&gt;</span><br></pre></td></tr></table></figure>
+<p>Bob在进行交易b时，需要证明他是Bob，以解锁交易a输出中给Bob的十个比特币，这个证明的过程是通过执行脚本来实现的。Bob会将Alice在交易a输出中给出的输出脚本拼接到他给的输入脚本后面，组成一个完整的脚本，然后执行该脚本，拼接后Bob所执行的完整的脚本如下所示。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;sig&gt;</span><br><span class="line">&lt;pubKey&gt;</span><br><span class="line">------------------------</span><br><span class="line">OP_DUP</span><br><span class="line">OP_HASH160</span><br><span class="line">69e02e18...</span><br><span class="line">OP_EQUALVERIFY</span><br><span class="line">OP_CHECKSIG</span><br></pre></td></tr></table></figure>
+<h1 id="脚本执行过程"><a class="markdownIt-Anchor" href="#脚本执行过程"></a> 脚本执行过程</h1>
+<p>比特币脚本所使用的语言是一门基于堆栈的语言，脚本的每一行要么是数据，要么是指令，执行过程从脚本的第一行开始，自上到下。如果是数据的话，就将其压入到堆栈中，如果是指令的话，就执行该指令。</p>
+<p>还是以上面的例子来进行说明，当Bob在交易b要解锁Alice在交易a支付给他的十个比特币时，Bob需要执行上面的这个完整的比特币脚本，执行过程如下。</p>
+<ul>
+<li>第一步，将Bob在交易b的输入脚本中给出的他对当前交易(即交易b)的数字签名&lt;sig&gt;压入堆栈。</li>
+<li>第二步，将Bob在交易b的输入脚本中给出的他自己的公钥&lt;pubKey&gt;压入堆栈。</li>
+<li>第三步，执行OP_DUP，该操作将会复制Bob的公钥并添加到栈顶。</li>
+<li>第四步，执行OP_HASH160，该操作将对当前栈顶的Bob的公钥拷贝进行哈希运算，得到Bob的公钥哈希&lt;pubKeyHash&gt;，并将其替换当前栈顶的Bob的公钥拷贝。</li>
+<li>第五步，将Alice在输出脚本中给出的Bob的公钥哈希&lt;pubKeyHash?&gt;(在上面的例子中是69e02e18…)弹入到堆栈中。</li>
+<li>第六步，执行OP_EQUALVERIFY，判断Alice给出的公钥哈希&lt;pubKeyHash?&gt;，和第四步对Bob的公钥进行哈希运算后得到的公钥哈希&lt;pubKeyHash&gt;进行对比，判断两者是否相等，相等则继续往下执行，否则认为本次交易失败。</li>
+<li>第七步，假如第六步的操作成功，那么将执行这一步。到这一步时，堆栈中只剩下Bob在交易b的输入脚本中给出的他的公钥(&lt;pubKey&gt;)，以及他用自己的私钥对交易b进行签名所得到的数字签名(&lt;sig&gt;)。执行OP_CHECKSIG，该操作将进行数字验签。验签过程大致如下，用Bob给出的公钥(&lt;pubKey&gt;)对他给出的他对交易b的数字签名进行解密，得到一个哈希值hash = decrypt(publicKey, signature)，然后再对交易b进行哈希运算，得到另一个哈希值hash’，假如hash和hash’相等，那么数字验签成功，即Bob证明了他是Bob，可以开始使用Alice在交易a中给他的十个比特币了，本次交易有效，将被加入到新创建的区块中；否则验签失败，本次交易被丢弃。关于数字验签，可以参考<a href="https://www.liaoxuefeng.com/wiki/1252599548343744/1304227943022626">签名算法</a>以及<a href="https://segmentfault.com/a/1190000024523772">一文彻底搞懂加密、数字签名和数字证书！</a>这两篇文章。</li>
+</ul>
+<p>上面的执行过程可以用下图表示，大家可以参考这张图，结合上面的描述来理解整个过程。<br>
+<img src="/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/2022-06-17-16-21-56.png#pic_center" alt="2022-06-17-16-21-56"></p>
+<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
+<ol>
+<li><a href="https://happypeter.github.io/binfo/address.html#:~:text=%E6%AF%94%E7%89%B9%E5%B8%81%E9%87%87%E7%94%A8%E7%9A%84%E6%98%AF,%E5%AE%9E%E9%99%85%E4%B8%AD%E4%B8%8D%E5%8F%AF%E8%83%BD%E5%AE%9E%E7%8E%B0%E3%80%82">为何使用地址而不是公钥？</a></li>
+<li><a href="https://blog.csdn.net/ice_fire_x/article/details/104173840">比特币脚本原理和使用方法</a></li>
+<li><a href="https://www.liaoxuefeng.com/wiki/1252599548343744/1304227943022626">签名算法</a></li>
+<li><a href="https://segmentfault.com/a/1190000024523772">一文彻底搞懂加密、数字签名和数字证书！</a></li>
+<li><a href="https://www.liaoxuefeng.com/article/1124144362997184">深入理解比特币交易的脚本</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/25461051">理解比特币脚本</a></li>
+<li><a href="https://bitcoinbook.cs.princeton.edu/">Bitcoin and Cryptocurrency Technologies</a> by Arvind Narayanan, Joseph Bonneau etl.</li>
+</ol>
+]]></content>
+      <categories>
+        <category>比特币</category>
+      </categories>
+      <tags>
+        <tag>比特币</tag>
+        <tag>脚本</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>比特币多重签名</title>
     <url>/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/</url>
     <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="概述"><a class="markdownIt-Anchor" href="#概述"></a> 概述</h1>
@@ -461,212 +821,6 @@ cmake完成后可以看到编译文件已被写到build文件夹下。<br>
       <tags>
         <tag>比特币</tag>
         <tag>多重签名</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>浅析比特币脚本</title>
-    <url>/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
-<p>在比特币网络中，每个用户的身份是通过公钥来识别的，由此实现了一定程度的用户的匿名性。那么，直觉上，自然而然地我们会认为每一笔交易是通过公钥来指明支付的对象，毕竟现在公钥就等价于用户的身份证号码。然而实际上并非如此，每一笔交易的输出实际上只是指明了一个脚本(script)，通过脚本，间接地指明这笔交易会把多少比特币转给谁。那么为什么交易的输出不是直接用公钥来指明比特币的支付对象，而要通过脚本来指明呢？</p>
-<span id="more"></span>
-<p>实际上这是为了保证两点，其一，支付对象的匿名性；其二，所支付的比特币只能被支付对象所使用。举个例子，如下图所示，假如Alice在交易a的输出中，将十个比特币给了Bob，在交易b中，Bob又将这十个比特币转给了Carol，那么Alice在交易a中应该怎么做才能保证这十个比特币在后续的交易中只能被Bob使用，而不是被别人偷走？<br>
-<img src="/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/2022-06-17-16-19-26.png#pic_center" alt="2022-06-17-16-19-26"></p>
-<p>Alice应该在交易输出中给出Bob的公钥哈希，并且要求，假如Bob要使用这个十个比特币，那就必须要提供Bob的公钥以及Bob的数字签名，只有当Bob给出的公钥的哈希与Alice给的相等，并且Bob的数字签名有效时，才能使用这十个比特币。为什么Alice不是在交易输出中直接指明Bob的公钥，而是指明Bob的公钥哈希？这是为了实现匿名性，具体原因可以参考这篇博客<a href="https://happypeter.github.io/binfo/address.html#:~:text=%E6%AF%94%E7%89%B9%E5%B8%81%E9%87%87%E7%94%A8%E7%9A%84%E6%98%AF,%E5%AE%9E%E9%99%85%E4%B8%AD%E4%B8%8D%E5%8F%AF%E8%83%BD%E5%AE%9E%E7%8E%B0%E3%80%82">为何使用地址而不是公钥？</a>。</p>
-<p>当Alice在交易输出中使用Bob的公钥哈希时，Alice可以证明这笔支付是给了Bob；而当Bob在后续的交易公开给出公钥和他的数字签名时，可以向大家证明他是Bob，从而解锁Alice所支付的比特币，注意，Bob需要在后续交易中公开公钥，而不是简单地给出他的公钥哈希，这样才能让别人在验证他的数字签名是有效的同时，也证明上一次Alice所支付的地址的确是Bob的公钥哈希。Alice支付的过程就是通过给出输出脚本来实现的，而Bob解锁Alice所支付给他的比特币的过程则是通过输入脚本来实现的。当Bob要解锁Alice支付的比特币时，Bob会给出输入脚本，这个输入脚本会和Alice给出的输出脚本拼接到一起，组成一个完整的脚本，然后执行脚本，如果结果是True，那么就解锁成功，Bob的这次交易就能被成功地添加到区块中，否则这次交易无效，不会被添加到区块中。</p>
-<h1 id="比特币脚本语言结构"><a class="markdownIt-Anchor" href="#比特币脚本语言结构"></a> 比特币脚本语言结构</h1>
-<p>从上面一节可以看出，Bob要完成一次交易，需要执行一个比特币脚本，该脚本由输入脚本(scriptSig)和输出脚本(scriptPubKey)两部分组成，输出脚本由Alice在之前的交易(交易a)的输出中给出，输入脚本则由Bob在本次交易(交易b)中给出。比特币脚本使用方法主要有以下几种。</p>
-<ol>
-<li>P2PK (Pay to Public Key)</li>
-<li>P2PKH (Pay to Public Key Hash)</li>
-<li>P2SH (Pay to Script Hash)</li>
-<li>多重签名</li>
-<li>Proof of Burn</li>
-</ol>
-<p>在本文中介绍的例子将会使用第二种(P2PKH)，这种是最常用的方法，有关其它方法的细节，可以参考<a href="https://blog.csdn.net/ice_fire_x/article/details/104173840">比特币脚本原理和使用方法</a>一文，这里不再细述。一个P2PKH输出脚本(scriptPubKey)的例子如下所示，在上面交易例子中由Alice在交易a的输出中给出，输出脚本里包含了Bob的公钥哈希(69e02e18…)，以及一些操作，后面会提到这些操作。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">OP_DUP</span><br><span class="line">OP_HASH160</span><br><span class="line">69e02e18...</span><br><span class="line">OP_EQUALVERIFY</span><br><span class="line">OP_CHECKSIG</span><br></pre></td></tr></table></figure>
-<p>一个输入脚本(scriptSig)的例子如下所示，在上面的交易例子中由Bob在交易b的输入中给出。这里的输入由两部分组成，一是Bob用他自己的私钥对本次交易(即交易b)进行签名所得到的数字签名(sig, signature)，另一部分就是Bob的公钥(pubKey, public key)。给出公钥主要有两个目的，一个是证明Alice在交易a中支付的对象的确是Bob，前面提到，Alice在交易a中只是给出了一个公钥哈希，但是并没有明确指明Bob的公钥，那么别人怎么能知道Alice给的这个公钥哈希就是Bob的公钥哈希呢？因此，为了证明这点，Bob需要在交易b公开他的公钥，然后取哈希，一旦得到的哈希与Alice给的相等，那就证明了Alice给的公钥哈希的确是Bob的公钥哈希，换言之，Alice这十个比特币的确是支付给Bob的。另外一个目的就是为了进行数字验签，Bob需要给出公钥，别人才能用他的公钥和数字签名进行验签，才能确认他的数字签名有效，即他的确是Bob。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;sig&gt;</span><br><span class="line">&lt;pubKey&gt;</span><br></pre></td></tr></table></figure>
-<p>Bob在进行交易b时，需要证明他是Bob，以解锁交易a输出中给Bob的十个比特币，这个证明的过程是通过执行脚本来实现的。Bob会将Alice在交易a输出中给出的输出脚本拼接到他给的输入脚本后面，组成一个完整的脚本，然后执行该脚本，拼接后Bob所执行的完整的脚本如下所示。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;sig&gt;</span><br><span class="line">&lt;pubKey&gt;</span><br><span class="line">------------------------</span><br><span class="line">OP_DUP</span><br><span class="line">OP_HASH160</span><br><span class="line">69e02e18...</span><br><span class="line">OP_EQUALVERIFY</span><br><span class="line">OP_CHECKSIG</span><br></pre></td></tr></table></figure>
-<h1 id="脚本执行过程"><a class="markdownIt-Anchor" href="#脚本执行过程"></a> 脚本执行过程</h1>
-<p>比特币脚本所使用的语言是一门基于堆栈的语言，脚本的每一行要么是数据，要么是指令，执行过程从脚本的第一行开始，自上到下。如果是数据的话，就将其压入到堆栈中，如果是指令的话，就执行该指令。</p>
-<p>还是以上面的例子来进行说明，当Bob在交易b要解锁Alice在交易a支付给他的十个比特币时，Bob需要执行上面的这个完整的比特币脚本，执行过程如下。</p>
-<ul>
-<li>第一步，将Bob在交易b的输入脚本中给出的他对当前交易(即交易b)的数字签名&lt;sig&gt;压入堆栈。</li>
-<li>第二步，将Bob在交易b的输入脚本中给出的他自己的公钥&lt;pubKey&gt;压入堆栈。</li>
-<li>第三步，执行OP_DUP，该操作将会复制Bob的公钥并添加到栈顶。</li>
-<li>第四步，执行OP_HASH160，该操作将对当前栈顶的Bob的公钥拷贝进行哈希运算，得到Bob的公钥哈希&lt;pubKeyHash&gt;，并将其替换当前栈顶的Bob的公钥拷贝。</li>
-<li>第五步，将Alice在输出脚本中给出的Bob的公钥哈希&lt;pubKeyHash?&gt;(在上面的例子中是69e02e18…)弹入到堆栈中。</li>
-<li>第六步，执行OP_EQUALVERIFY，判断Alice给出的公钥哈希&lt;pubKeyHash?&gt;，和第四步对Bob的公钥进行哈希运算后得到的公钥哈希&lt;pubKeyHash&gt;进行对比，判断两者是否相等，相等则继续往下执行，否则认为本次交易失败。</li>
-<li>第七步，假如第六步的操作成功，那么将执行这一步。到这一步时，堆栈中只剩下Bob在交易b的输入脚本中给出的他的公钥(&lt;pubKey&gt;)，以及他用自己的私钥对交易b进行签名所得到的数字签名(&lt;sig&gt;)。执行OP_CHECKSIG，该操作将进行数字验签。验签过程大致如下，用Bob给出的公钥(&lt;pubKey&gt;)对他给出的他对交易b的数字签名进行解密，得到一个哈希值hash = decrypt(publicKey, signature)，然后再对交易b进行哈希运算，得到另一个哈希值hash’，假如hash和hash’相等，那么数字验签成功，即Bob证明了他是Bob，可以开始使用Alice在交易a中给他的十个比特币了，本次交易有效，将被加入到新创建的区块中；否则验签失败，本次交易被丢弃。关于数字验签，可以参考<a href="https://www.liaoxuefeng.com/wiki/1252599548343744/1304227943022626">签名算法</a>以及<a href="https://segmentfault.com/a/1190000024523772">一文彻底搞懂加密、数字签名和数字证书！</a>这两篇文章。</li>
-</ul>
-<p>上面的执行过程可以用下图表示，大家可以参考这张图，结合上面的描述来理解整个过程。<br>
-<img src="/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/2022-06-17-16-21-56.png#pic_center" alt="2022-06-17-16-21-56"></p>
-<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
-<ol>
-<li><a href="https://happypeter.github.io/binfo/address.html#:~:text=%E6%AF%94%E7%89%B9%E5%B8%81%E9%87%87%E7%94%A8%E7%9A%84%E6%98%AF,%E5%AE%9E%E9%99%85%E4%B8%AD%E4%B8%8D%E5%8F%AF%E8%83%BD%E5%AE%9E%E7%8E%B0%E3%80%82">为何使用地址而不是公钥？</a></li>
-<li><a href="https://blog.csdn.net/ice_fire_x/article/details/104173840">比特币脚本原理和使用方法</a></li>
-<li><a href="https://www.liaoxuefeng.com/wiki/1252599548343744/1304227943022626">签名算法</a></li>
-<li><a href="https://segmentfault.com/a/1190000024523772">一文彻底搞懂加密、数字签名和数字证书！</a></li>
-<li><a href="https://www.liaoxuefeng.com/article/1124144362997184">深入理解比特币交易的脚本</a></li>
-<li><a href="https://zhuanlan.zhihu.com/p/25461051">理解比特币脚本</a></li>
-<li><a href="https://bitcoinbook.cs.princeton.edu/">Bitcoin and Cryptocurrency Technologies</a> by Arvind Narayanan, Joseph Bonneau etl.</li>
-</ol>
-]]></content>
-      <categories>
-        <category>比特币</category>
-      </categories>
-      <tags>
-        <tag>比特币</tag>
-        <tag>脚本</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>在ubuntu20.04安装最新版GCC</title>
-    <url>/2021/12/10/install-latest-gcc/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
-<p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#more">编译LLVM</a>过程中，出现了很多头文件无法解析的错误，根据<a href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，原因是因为GCC版本过低，将GCC升级至最新版11.2.0就可以解决这个问题了。本文将介绍如何升级GCC到最新版(当前为11.2.0)。<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-23-33-08.png" alt="2021-12-10-23-33-08"></p>
-<span id="more"></span>
-<h1 id="下载gcc最新源码包"><a class="markdownIt-Anchor" href="#下载gcc最新源码包"></a> 下载gcc最新源码包</h1>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/gcc/gcc-11.2.0/gcc-11.2.0.tar.gz</span><br></pre></td></tr></table></figure>
-<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-24-58.png" alt="2021-12-10-19-24-58"></p>
-<h1 id="解压缩"><a class="markdownIt-Anchor" href="#解压缩"></a> 解压缩</h1>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">tar -xzvf gcc-11.2.0.tar.gz</span><br></pre></td></tr></table></figure>
-<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-27-42.png" alt="2021-12-10-19-27-42"></p>
-<h1 id="进入解压缩目录"><a class="markdownIt-Anchor" href="#进入解压缩目录"></a> 进入解压缩目录</h1>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd gcc-11.2.0</span><br></pre></td></tr></table></figure>
-<h1 id="运行预备库下载脚本"><a class="markdownIt-Anchor" href="#运行预备库下载脚本"></a> 运行预备库下载脚本</h1>
-<p>运行download_prerequisites脚本,这个脚本会自动帮你下载所需要的依赖文件和库：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
-<p>在运行该脚本时，出现以下错误，无法下载依赖文件库<code>gmp-6.1.0.tar.bz2</code>。<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-37-55.png" alt="2021-12-10-19-37-55"><br>
-解决办法为改从清华镜像源下载，</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/gmp/gmp-6.1.0.tar.bz2 #从清华镜像源下载gmp-6.1.0.tar.bz2文件</span><br><span class="line">tar xvfj gmp-6.1.0.tar.bz2 #解压缩文件</span><br><span class="line">ln -s gmp-6.1.0 gmp #在当前目录下创建名为gmp的快捷方式，链接到gmp-6.1.0文件夹</span><br></pre></td></tr></table></figure>
-<p>改从清华镜像源下载后速度真的很快。<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-44-43.png" alt="2021-12-10-19-44-43"><br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-45-18.png" alt="2021-12-10-19-45-18"><br>
-继续执行脚本下载依赖文件，出现以下错误，无法下载依赖文件库<code>mpfr-3.1.6.tar.bz2</code>。<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-50-42.png" alt="2021-12-10-19-50-42"><br>
-解决办法为改从清华镜像源下载，</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/mpfr/mpfr-3.1.6.tar.bz2 #从清华镜像源下载mpfr-3.1.6.tar.bz2文件</span><br><span class="line">tar xvfj mpfr-3.1.6.tar.bz2 #解压缩文件</span><br><span class="line">ln -s mpfr-3.1.6 mpfr #在当前目录下创建名为mpfr的快捷方式，链接到mpfr-3.1.6文件夹</span><br></pre></td></tr></table></figure>
-<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-19-54-01.png" alt="2021-12-10-19-54-01"><br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-19-54-59.png" alt="2021-12-10-19-54-59"><br>
-继续执行脚本下载，</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
-<p>出现以下错误，无法下载<code>mpc-1.0.3.tar.gz</code>文件，<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-20-04-14.png" alt="2021-12-10-20-04-14"><br>
-解决办法为改从清华镜像源下载，</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/gnu/mpc/mpc-1.0.3.tar.gz</span><br><span class="line">tar xvfz mpc-1.0.3.tar.gz</span><br><span class="line">ln -s mpc-1.0.3 mpc #在当前目录下创建名为mpc的快捷方式，链接到mpc-1.0.3文件夹</span><br></pre></td></tr></table></figure>
-<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-07-46.png" alt="2021-12-10-20-07-46"><br>
-继续执行下载脚本，</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./contrib/download_prerequisites </span><br></pre></td></tr></table></figure>
-<p>出现以下错误，无法下载<code>isl-0.18.tar.bz2</code>文件，<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-20-23-02.png" alt="2021-12-10-20-23-02"><br>
-因为这个文件在清华镜像源上没有，因此解决办法为从GNU官网通过http下载：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2</span><br><span class="line">tar xvfj isl-0.18.tar.bz2</span><br><span class="line">ln -s isl-0.18 isl</span><br></pre></td></tr></table></figure>
-<h1 id="创建编译目录"><a class="markdownIt-Anchor" href="#创建编译目录"></a> 创建编译目录</h1>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mkdir gcc-build</span><br><span class="line">cd $_</span><br></pre></td></tr></table></figure>
-<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-20-30-04.png" alt="2021-12-10-20-30-04"></p>
-<h1 id="生成makefile文件"><a class="markdownIt-Anchor" href="#生成makefile文件"></a> 生成Makefile文件</h1>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">../configure -enable-checking=release -enable-languages=c,c++ -disable-multilib #../configure表示返回上级目录执行configure命令</span><br></pre></td></tr></table></figure>
-<p><code>–enable-languages</code>表示你要让你的gcc支持那些语言，<code>–disable-multilib</code>表示不生成编译为其他平台可执行代码的交叉编译器。<code>–disable-checking</code>表示生成的编译器在编译过程中不做额外检查，也可以使用<code>–enable-checking=xxx</code>来增加一些检查。</p>
-<h1 id="编译"><a class="markdownIt-Anchor" href="#编译"></a> 编译</h1>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">make -j8</span><br></pre></td></tr></table></figure>
-<p>这里-j8表示的是使用8核进行编译，因为我的电脑CPU为8核。因为make默认是serial build的，如果不加-j选项，就不会开启多核parallel build，这样的话速度会慢很多，所以这里我开启了8核编译。即便如此，这一步花费时间也非常长，我在虚拟机里用了将近两个小时完成这一步，而且虚拟机一定要留出至少20GB的空间，不然可能会出现磁盘不足的问题。<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-20-38-17.png" alt="2021-12-10-20-38-17"></p>
-<h1 id="安装"><a class="markdownIt-Anchor" href="#安装"></a> 安装</h1>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo su root #安装GCC需要root权限，这里先切换为root用户</span><br><span class="line">make install #安装</span><br><span class="line">source /etc/profile #安装完成后手动刷新一下profile</span><br><span class="line">gcc -v #检查当前gcc版本</span><br></pre></td></tr></table></figure>
-<p>可以看到，当前的gcc版本更新到了11.2.0，至此安装成功。<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-22-35-17.png" alt="2021-12-10-22-35-17"></p>
-<h1 id="环境变量设置"><a class="markdownIt-Anchor" href="#环境变量设置"></a> 环境变量设置</h1>
-<p>在安装GCC完成后，可以将其永久地加入到系统路径中，输入以下命令：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo su yukeyang #这里yukeyang替换成你的用户名，先从root用户切换回超级用户</span><br><span class="line">cd ~/ #cd进入当前用户(我的是yukeyang)的home目录</span><br><span class="line">code .bashrc #用vscode打开.bashrc文件</span><br></pre></td></tr></table></figure>
-<p><img src="/2021/12/10/install-latest-gcc/2021-12-10-22-46-15.png" alt="2021-12-10-22-46-15"><br>
-GCC可执行程序所在路径为：<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-23-24-28.png" alt="2021-12-10-23-24-28"><br>
-因此，将以下两行加入到.bashrc文件中。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export PATH=/usr/local/bin:$PATH #设置GCC可执行程序路径</span><br><span class="line">export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH #设置动态链接库路径</span><br></pre></td></tr></table></figure>
-<p>至此就完成了所有步骤了，更多的环境变量设置，可以参考<a href="https://www.cnblogs.com/jessepeng/p/11674780.html">这篇博客</a>。<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-23-26-40.png" alt="2021-12-10-23-26-40"></p>
-<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
-<ol>
-<li><a href="https://cloud.tencent.com/developer/article/1532384">centos 编译安装gcc8.1</a></li>
-<li><a href="https://solarianprogrammer.com/2016/10/07/building-gcc-ubuntu-linux/">Building GCC 10 on Ubuntu Linux</a></li>
-<li><a href="https://blog.csdn.net/21aspnet/article/details/105708122">安装最新的GCC</a></li>
-<li><a href="https://www.cnblogs.com/jessepeng/p/11674780.html">[Linux] 非root安装GCC9.1.0</a></li>
-</ol>
-]]></content>
-      <categories>
-        <category>编译器</category>
-      </categories>
-      <tags>
-        <tag>开发环境</tag>
-        <tag>工具链</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>双口RAM及其VIVADO的IP核的使用</title>
-    <url>/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="双口ram概述"><a class="markdownIt-Anchor" href="#双口ram概述"></a> 双口RAM概述</h1>
-<p>双口RAM（dual port RAM）在异构系统中应用广泛，通过双口RAM，不同硬件架构的芯片可以实现数据的交互，从而实现通信。例如，一般情况下，ARM与DSP之间的通信，可以利用双口RAM实现，ARM通过EBI总线连接到双口RAM的A口，DSP通过EMIF总线（也可以是uPP总线，取决于速度需求）连接到双口RAM的B口，两者对同一块存储区域进行操作，即可实现两者的数据交互。</p>
-<span id="more"></span>
-<p>但是，因为双口RAM的A口和B口都可以对相同的内存地址进行操作，这就引出了一个问题——假如通信双方在两个端口对同一地址同时读写，就会引发冲突。要解决这个问题，办法有二。一是通信双方在时序上保证不会同时读写同一地址，将ARM和DSP可写地址范围进行分区，无论任何一方写完数据后都通过IO发送中断通知对方，对方进行数据读取（乒乓RAM操作），这样是比较可靠的；另外一个办法就是在fpga里设置写busy信号，实现两端写同步<a href="http://blog.csdn.net/DanielLee_ustb/article/details/46446359">1</a>。在FPGA中，构建双口RAM可以通过两种方法，一种是利用distributed RAM构建，另一种是利用Block RAM构建，关于两者的具体区别，可以参考这两篇文章<a href="http://blog.csdn.net/yzy19900402/article/details/45025901">2</a><a href="http://blog.csdn.net/jbb0523/article/details/6533760">3</a>。简而言之，Block RAM是是使用FPGA中的整块双口RAM资源，而distributed RAM则是用FPGA中的逻辑资源拼凑形成的。一般的原则是，较大的存储应用，建议用bram；零星的小ram，一般就用dram。</p>
-<p>在Vivado中，RAM IP核在Memories &amp; Strorage Elements\RAM &amp; ROMs和RAM &amp; ROMs &amp; BRAM文件夹下，如图所示，下面简要介绍一下Vivado的双口RAM IP核。<br>
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-23-22.png#pic_center" alt="图1.1" title="图1.1"></p>
-<h1 id="vivado-双口ram-ip核"><a class="markdownIt-Anchor" href="#vivado-双口ram-ip核"></a> Vivado 双口RAM IP核</h1>
-<h2 id="block-memory-generator概述"><a class="markdownIt-Anchor" href="#block-memory-generator概述"></a> Block Memory Generator概述</h2>
-<p>点击图1.1的Block Memory Generator项，利用BRAM来构建双口RAM。Block Memory Generator窗口如图2.1所示。图中，第1部分，在IP symbol选项卡，点击&quot;+&quot;号可以展开端口具体信号，如图2.2所示。第2部分，Component Name可以设置IP核的名字。第3部分，Basic选项卡，在Memory Type下拉列表中，可以设置内存的类型，如图2.3所示。Block Memory Gnerator一共可以产生5种不同类型的内存空间，其中block RAM有三种：单口RAM、简化双口RAM和真双口RAM<a href="https://www.xilinx.com/support/documentation/ip_documentation/blk_mem_gen/v8_2/pg058-blk-mem-gen.pdf">4</a>。单口RAM只有一个端口（A端口），可以对A端口进行读写。简化双口RAM有两个端口（A和B端口），但是A端口只能进行写入操作，不能进行读出操作，而B端口则只能进行读出操作，不能进行写入操作。真双口RAM有两个端口（A和B端口），A和B端口都能进行读写操作<a href="http://blog.csdn.net/c602273091/article/details/39694145">5</a>。<br>
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-16.png#pic_center" alt="图2.1" title="图2.1"><br>
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-48.png#pic_center" alt="图2.2" title="图2.2"><br>
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-15.png#pic_center" alt="图2.3" title="图2.3"></p>
-<h2 id="真双口ram的设置"><a class="markdownIt-Anchor" href="#真双口ram的设置"></a> 真双口RAM的设置</h2>
-<h3 id="basic设置"><a class="markdownIt-Anchor" href="#basic设置"></a> Basic设置</h3>
-<p><img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-36.png#pic_center" alt="图2.4" title="图2.4"></p>
-<h3 id="port设置"><a class="markdownIt-Anchor" href="#port设置"></a> Port设置</h3>
-<p>点击Port A Options选项卡，对A端口进行设置， 设置Write Width为16（即RAM单元为16位），Write Width为1024（即内存深度为1024，该端口可读写的RAM单元有1024个），Operating Mode（操作模式）一共有三种：Write First，Read First，No Change。在Write First模式中，在一个时钟周期里，写入内存单元的数据被同步输出到输出数据总线上；在Read First模式中，在一个时钟周期里，写入到内存单元的数据是当前输入数据总线上的数据，而输出到输出数据总线上的数据则是上一个时钟周期存储在内存单元中的数据。细节可参考PG058的49到50页4。Enable Port Type设置为Always Enabled，一直使能端口A。其它设置使用默认设置。如图2.5所示。<br>
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-04.png#pic_center" alt="图2.5" title="图2.5"><br>
-端口B设置为与A一致。在Other Options选项卡中，保留默认设置。Load Init File设置是否用Coe文件对内存区域初始化，这个在初始化ROM的时候会用到，这里不勾选，保持默认。最后，在Summary选项卡会显示消耗的资源。</p>
-<h1 id="双口ram例程"><a class="markdownIt-Anchor" href="#双口ram例程"></a> 双口RAM例程</h1>
-<p>​例程1，该例程是Altera官方例程<a href="https://www.altera.com.cn/support/support-resources/design-examples/design-software/verilog/ver-true-dual-port-ram-sclk.html">6</a>，采用寄存器构建双口RAM，代码如下：</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">module <span class="title function_">true_dpram_sclk</span></span><br><span class="line"><span class="params">(</span></span><br><span class="line"><span class="params">    input [<span class="number">7</span>:<span class="number">0</span>] data_a, data_b,</span></span><br><span class="line"><span class="params">    input [<span class="number">5</span>:<span class="number">0</span>] addr_a, addr_b,</span></span><br><span class="line"><span class="params">    input we_a, we_b, clk,</span></span><br><span class="line"><span class="params">    output reg [<span class="number">7</span>:<span class="number">0</span>] q_a, q_b</span></span><br><span class="line"><span class="params">)</span>;</span><br><span class="line">    <span class="comment">// Declare the RAM variable</span></span><br><span class="line">    reg [<span class="number">7</span>:<span class="number">0</span>] ram[<span class="number">63</span>:<span class="number">0</span>];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Port A</span></span><br><span class="line">    always @ (posedge clk)</span><br><span class="line">    begin</span><br><span class="line">        <span class="title function_">if</span> <span class="params">(we_a)</span> </span><br><span class="line">        begin</span><br><span class="line">            ram[addr_a] &lt;= data_a;</span><br><span class="line">            q_a &lt;= data_a;</span><br><span class="line">        end</span><br><span class="line">        <span class="keyword">else</span> </span><br><span class="line">        begin</span><br><span class="line">            q_a &lt;= ram[addr_a];</span><br><span class="line">        end</span><br><span class="line">    end</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Port B</span></span><br><span class="line">    always @ (posedge clk)</span><br><span class="line">    begin</span><br><span class="line">        <span class="title function_">if</span> <span class="params">(we_b)</span></span><br><span class="line">        begin</span><br><span class="line">            ram[addr_b] &lt;= data_b;</span><br><span class="line">            q_b &lt;= data_b;</span><br><span class="line">        end</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        begin</span><br><span class="line">            q_b &lt;= ram[addr_b];</span><br><span class="line">        end</span><br><span class="line">    end</span><br><span class="line">    </span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
-<p>例程2，该例程是Xilinx官方例程<a href="https://www.xilinx.com/support/documentation/sw_manuals/xilinx2014_4/ug901-vivado-synthesis.pdf">7</a>，采用寄存器构建真双口RAM，代码如下：</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Dual-Port Block RAM with Two Write Ports</span></span><br><span class="line"><span class="comment">// File: rams_16.v</span></span><br><span class="line"></span><br><span class="line">module <span class="title function_">v_rams_16</span> <span class="params">(clka,clkb,ena,enb,wea,web,addra,addrb,dia,dib,doa,dob)</span>;</span><br><span class="line"></span><br><span class="line">input clka,clkb,ena,enb,wea,web;</span><br><span class="line">input [<span class="number">9</span>:<span class="number">0</span>] addra,addrb;</span><br><span class="line">input [<span class="number">15</span>:<span class="number">0</span>] dia,dib;</span><br><span class="line">output [<span class="number">15</span>:<span class="number">0</span>] doa,dob;</span><br><span class="line">reg[<span class="number">15</span>:<span class="number">0</span>] ram [<span class="number">1023</span>:<span class="number">0</span>];</span><br><span class="line">reg[<span class="number">15</span>:<span class="number">0</span>] doa,dob;</span><br><span class="line"></span><br><span class="line">always @(posedge clka) begin <span class="title function_">if</span> <span class="params">(ena)</span></span><br><span class="line">begin</span><br><span class="line"> <span class="title function_">if</span> <span class="params">(wea)</span></span><br><span class="line"> ram[addra] &lt;= dia;</span><br><span class="line"> doa &lt;= ram[addra];</span><br><span class="line"> end</span><br><span class="line">end</span><br><span class="line"></span><br><span class="line">always @(posedge clkb) begin <span class="title function_">if</span> <span class="params">(enb)</span></span><br><span class="line">begin</span><br><span class="line"> <span class="title function_">if</span> <span class="params">(web)</span></span><br><span class="line"> ram[addrb] &lt;= dib;</span><br><span class="line"> dob &lt;= ram[addrb];</span><br><span class="line"> end</span><br><span class="line">end</span><br><span class="line"></span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
-<p>​例程3，该例程是网友博客中的例程<a href="http://blog.csdn.net/yanglong890124/article/details/32742297">8</a>，代码如下：</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">module <span class="title function_">TOP</span><span class="params">(  </span></span><br><span class="line"><span class="params">input USER_CLK  </span></span><br><span class="line"><span class="params">    )</span>;  </span><br><span class="line">  </span><br><span class="line">`define DLY #<span class="number">1</span>  </span><br><span class="line">reg FPGA_Enable=<span class="number">0</span>;  </span><br><span class="line">reg[<span class="number">3</span>:<span class="number">0</span>] FPGA_Write_Enable=<span class="number">4&#x27;</span>h0;  </span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] FPGA_Address=<span class="number">0</span>;  </span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] FPGA_Write_Data=<span class="number">0</span>;  </span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data_reg=<span class="number">0</span>;  </span><br><span class="line">wire[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data;  </span><br><span class="line">  </span><br><span class="line">reg[<span class="number">10</span>:<span class="number">0</span>] count=<span class="number">0</span>;  </span><br><span class="line">always @ (posedge USER_CLK)  </span><br><span class="line">begin  </span><br><span class="line">    count &lt;= count + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">if</span>(count&lt;=<span class="number">100</span>)  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;</span>h0;  </span><br><span class="line">    end  </span><br><span class="line">    <span class="keyword">else</span> <span class="title function_">if</span><span class="params">((count &lt;= <span class="number">105</span>)&amp;&amp;(count &gt;<span class="number">100</span>))</span>  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;</span>hf;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= FPGA_Write_Data + <span class="number">1</span>;  </span><br><span class="line">    end  </span><br><span class="line">    <span class="keyword">else</span> <span class="title function_">if</span><span class="params">((count &lt;= <span class="number">110</span>)&amp;&amp;(count &gt;<span class="number">105</span>))</span>  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;</span>h0;  </span><br><span class="line">        FPGA_Address &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= <span class="number">0</span>;  </span><br><span class="line">    end  </span><br><span class="line">    <span class="keyword">else</span> <span class="title function_">if</span><span class="params">((count &lt;= <span class="number">117</span>)&amp;&amp;(count &gt;<span class="number">110</span>))</span>  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;</span>h0;  </span><br><span class="line">        FPGA_Read_Data_reg &lt;= FPGA_Read_Data;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">    end  </span><br><span class="line">    <span class="keyword">else</span> <span class="title function_">if</span><span class="params">(count == <span class="number">118</span>)</span>  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        count &lt;= count;  </span><br><span class="line">          </span><br><span class="line">    end  </span><br><span class="line">end  </span><br><span class="line">  </span><br><span class="line">BBBB <span class="title function_">your_instance_name</span> <span class="params">(  </span></span><br><span class="line"><span class="params">  .clka(USER_CLK), <span class="comment">// input clka  </span></span></span><br><span class="line"><span class="params">  .ena(FPGA_Enable), <span class="comment">// input ena  </span></span></span><br><span class="line"><span class="params">  .wea(FPGA_Write_Enable), <span class="comment">// input [3 : 0] wea  </span></span></span><br><span class="line"><span class="params">  .addra(FPGA_Address), <span class="comment">// input [31 : 0] addra  </span></span></span><br><span class="line"><span class="params">  .dina(FPGA_Write_Data), <span class="comment">// input [31 : 0] dina  </span></span></span><br><span class="line"><span class="params">  .douta(FPGA_Read_Data), <span class="comment">// output [31 : 0] douta  </span></span></span><br><span class="line"><span class="params">    </span></span><br><span class="line"><span class="params">    </span></span><br><span class="line"><span class="params">  .clkb(clkb), <span class="comment">// input clkb  </span></span></span><br><span class="line"><span class="params">  .enb(enb), <span class="comment">// input enb  </span></span></span><br><span class="line"><span class="params">  .web(web), <span class="comment">// input [3 : 0] web  </span></span></span><br><span class="line"><span class="params">  .addrb(addrb), <span class="comment">// input [31 : 0] addrb  </span></span></span><br><span class="line"><span class="params">  .dinb(dinb), <span class="comment">// input [31 : 0] dinb  </span></span></span><br><span class="line"><span class="params">  .doutb(doutb) <span class="comment">// output [31 : 0] doutb  </span></span></span><br><span class="line"><span class="params">)</span>;  </span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
-<p>​该例程中，在count为101（&gt;100）后开始往地址4到20写入1-5，然后在count为111（&gt;110）的时候读出写入的数据。</p>
-<h1 id="仿真"><a class="markdownIt-Anchor" href="#仿真"></a> 仿真</h1>
-<p>下面利用Modelsim和Vivado进行联合仿真，关于vivado如何与modelsim进行联合仿真可以参考这篇文章：</p>
-<p><a href="http://blog.chinaaet.com/crazybird/p/5100000539">vivado与modelsim的关联以及器件库编译</a></p>
-<p>有一点要注意的是，我用的是Vivado2017.1版本，这个版本只支持Modelsim10.5及以上的版本，如果是低版本的Modelsim，在用Vivado2017.1编译Modelsim的仿真库时，会出错。Modelsim10.5版本可以在这里下载：</p>
-<p><a href="http://bbs.eetop.cn/viewthread.php?tid=629292&amp;extra=&amp;page=1">modelsim 10.5 适用vivado 2017.1</a></p>
-<p>用Modelsim仿真时，会在sim_1/behav文件夹下产生3个.do文件，分别是xx_compile.do，xx_simulate.do，xx _wave.do文件。在设计的verilog文件修改之后，如果在Modelsim中直接restart，仿真的其实还是没有修改前的文件，要使修改的.v文件在Modelsim中生效，可以在Modelsim的命令窗口输入do xx_compile.do文件，对仿真的库文件以及设计文件（.v文件）重新编译，然后在输入do xx_simulate.do文件，才能仿真修改后的文件。输入do xx_compile.do命令对设计文件重新编译的时候，Modelsim会强制退出，这时由最后一句force quit命令引起的，只要把它删掉就行了。如果要保存波形文件，可以save format，另存为xx_wave.do文件。</p>
-<p>参考上面双口RAM的例程3进行功能仿真，RAM IP使用Write First模式，设计文件代码如下：</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">`timescale <span class="number">1</span>ns / <span class="number">1</span>ps</span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Company: </span></span><br><span class="line"><span class="comment">// Engineer: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Create Date: 2017/12/09 22:36:48</span></span><br><span class="line"><span class="comment">// Design Name: </span></span><br><span class="line"><span class="comment">// Module Name: dual_port_ram_demo</span></span><br><span class="line"><span class="comment">// Project Name: </span></span><br><span class="line"><span class="comment">// Target Devices: </span></span><br><span class="line"><span class="comment">// Tool Versions: </span></span><br><span class="line"><span class="comment">// Description: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Dependencies: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Revision:</span></span><br><span class="line"><span class="comment">// Revision 0.01 - File Created</span></span><br><span class="line"><span class="comment">// Additional Comments:</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"></span><br><span class="line">module <span class="title function_">dual_port_ram_demo</span><span class="params">(</span></span><br><span class="line"><span class="params">input USER_CLK</span></span><br><span class="line"><span class="params">    )</span>;</span><br><span class="line">  </span><br><span class="line">`define DLY #<span class="number">1</span>  </span><br><span class="line"></span><br><span class="line"><span class="comment">//Port A declaration</span></span><br><span class="line">reg FPGA_Enable=<span class="number">0</span>;  </span><br><span class="line">reg FPGA_Write_Enable=<span class="number">0</span>;  </span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] FPGA_Address=<span class="number">0</span>;  </span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] FPGA_Write_Data=<span class="number">0</span>;  </span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data_reg=<span class="number">0</span>;  </span><br><span class="line">wire[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data;  </span><br><span class="line"></span><br><span class="line"><span class="comment">//Port B declaration</span></span><br><span class="line">reg enb=<span class="number">0</span>;</span><br><span class="line">reg[<span class="number">3</span>:<span class="number">0</span>] web=<span class="number">4&#x27;</span>h0;</span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] addrb=<span class="number">0</span>;</span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] dinb=<span class="number">0</span>;</span><br><span class="line">reg[<span class="number">31</span>:<span class="number">0</span>] doutb_reg=<span class="number">0</span>;</span><br><span class="line">wire[<span class="number">31</span>:<span class="number">0</span>] doutb=<span class="number">0</span>;</span><br><span class="line">  </span><br><span class="line">reg[<span class="number">10</span>:<span class="number">0</span>] count=<span class="number">0</span>;  </span><br><span class="line">always @ (posedge USER_CLK)  </span><br><span class="line">begin  </span><br><span class="line">    count &lt;= count + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">if</span>(count&lt;=<span class="number">100</span>)  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">    end  </span><br><span class="line">    <span class="keyword">else</span> <span class="title function_">if</span><span class="params">((count &lt;= <span class="number">105</span>)&amp;&amp;(count &gt;<span class="number">100</span>))</span>  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= FPGA_Write_Data + <span class="number">1</span>;  </span><br><span class="line">    end  </span><br><span class="line">    <span class="keyword">else</span> <span class="title function_">if</span><span class="params">((count &lt;= <span class="number">110</span>)&amp;&amp;(count &gt;<span class="number">105</span>))</span>  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Address &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= <span class="number">0</span>;  </span><br><span class="line">    end  </span><br><span class="line">    <span class="keyword">else</span> <span class="title function_">if</span><span class="params">((count &lt;= <span class="number">117</span>)&amp;&amp;(count &gt;<span class="number">110</span>))</span>  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Read_Data_reg &lt;= FPGA_Read_Data;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">    end  </span><br><span class="line">    <span class="keyword">else</span> <span class="title function_">if</span><span class="params">(count == <span class="number">118</span>)</span>  </span><br><span class="line">    begin  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        count &lt;= count;  </span><br><span class="line">          </span><br><span class="line">    end  </span><br><span class="line">end  </span><br><span class="line">  </span><br><span class="line">dpRAM <span class="title function_">u1</span> <span class="params">(  </span></span><br><span class="line"><span class="params">  .clka(USER_CLK), <span class="comment">// input clka  </span></span></span><br><span class="line"><span class="params">  .ena(FPGA_Enable), <span class="comment">// input ena  </span></span></span><br><span class="line"><span class="params">  .wea(FPGA_Write_Enable), <span class="comment">// input [3 : 0] wea  </span></span></span><br><span class="line"><span class="params">  .addra(FPGA_Address), <span class="comment">// input [31 : 0] addra  </span></span></span><br><span class="line"><span class="params">  .dina(FPGA_Write_Data), <span class="comment">// input [31 : 0] dina  </span></span></span><br><span class="line"><span class="params">  .douta(FPGA_Read_Data), <span class="comment">// output [31 : 0] douta  </span></span></span><br><span class="line"><span class="params">    </span></span><br><span class="line"><span class="params">    </span></span><br><span class="line"><span class="params">  .clkb(USER_CLK), <span class="comment">// input clkb  </span></span></span><br><span class="line"><span class="params">  .enb(enb), <span class="comment">// input enb  </span></span></span><br><span class="line"><span class="params">  .web(web), <span class="comment">// input [3 : 0] web  </span></span></span><br><span class="line"><span class="params">  .addrb(addrb), <span class="comment">// input [31 : 0] addrb  </span></span></span><br><span class="line"><span class="params">  .dinb(dinb), <span class="comment">// input [31 : 0] dinb  </span></span></span><br><span class="line"><span class="params">  .doutb(doutb) <span class="comment">// output [31 : 0] doutb  </span></span></span><br><span class="line"><span class="params">)</span>;  </span><br><span class="line">endmodule  </span><br></pre></td></tr></table></figure>
-<p>​testbench文件如下：</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">`timescale <span class="number">1</span>ns / <span class="number">1</span>ps</span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Company: </span></span><br><span class="line"><span class="comment">// Engineer: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Create Date: 2017/12/09 22:47:26</span></span><br><span class="line"><span class="comment">// Design Name: </span></span><br><span class="line"><span class="comment">// Module Name: simu</span></span><br><span class="line"><span class="comment">// Project Name: </span></span><br><span class="line"><span class="comment">// Target Devices: </span></span><br><span class="line"><span class="comment">// Tool Versions: </span></span><br><span class="line"><span class="comment">// Description: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Dependencies: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Revision:</span></span><br><span class="line"><span class="comment">// Revision 0.01 - File Created</span></span><br><span class="line"><span class="comment">// Additional Comments:</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"></span><br><span class="line">module <span class="title function_">simu</span><span class="params">(</span></span><br><span class="line"><span class="params"></span></span><br><span class="line"><span class="params">    )</span>;</span><br><span class="line"><span class="comment">//testbench 时钟信号</span></span><br><span class="line">reg clk = <span class="number">0</span>;</span><br><span class="line">always # <span class="number">10</span> clk &lt;= ~clk;</span><br><span class="line"><span class="comment">//调用dual_port_ram_demo模块</span></span><br><span class="line">dual_port_ram_demo <span class="title function_">demo1</span><span class="params">(clk)</span>;</span><br><span class="line">endmodule</span><br></pre></td></tr></table></figure>
-<p>仿真结果如下：<br>
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-41.png#pic_center" alt="图4.1" title="图4.1"><br>
-程序在1时刻准备好地址和要写入RAM的数据，在2时刻写入RAM中，在3时刻端口才会输出2时刻写入RAM的数据，注意与PG058的图稍有不同。<br>
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-27-26.png#pic_center" alt="图4.2" title="图4.2"></p>
-<h1 id="后记"><a class="markdownIt-Anchor" href="#后记"></a> 后记</h1>
-<p>关于BRAM，推荐一个youtube视频，里面讲的非常清晰易懂。<br>
-<a href="https://www.youtube.com/watch?v=fqUuvwl4QJA">What is a Block RAM in an FPGA?</a></p>
-<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
-<p>[1] <a href="http://blog.csdn.net/DanielLee_ustb/article/details/46446359">基于FPGA的双口RAM设计方法</a><br>
-[2] <a href="http://blog.csdn.net/yzy19900402/article/details/45025901">关于Xilinx芯片中Block RAM和Distributed RAM 的区别</a><br>
-[3] <a href="http://blog.csdn.net/jbb0523/article/details/6533760">Block RAM 和Distributed RAM</a><br>
-[4] <a href="https://www.xilinx.com/support/documentation/ip_documentation/blk_mem_gen/v8_2/pg058-blk-mem-gen.pdf">Block Memory Generator v8.2 LogiCORE IP Product Guide (PG058)</a><br>
-[5] <a href="http://blog.csdn.net/c602273091/article/details/39694145">FPGA开发之RAM IP的使用</a><br>
-[6] <a href="https://www.altera.com.cn/support/support-resources/design-examples/design-software/verilog/ver-true-dual-port-ram-sclk.html">Verilog HDL：具有单时钟的真双端口RAM</a><br>
-[7] <a href="https://www.xilinx.com/support/documentation/sw_manuals/xilinx2014_4/ug901-vivado-synthesis.pdf">Vivado Design Suite User Guide: Synthesis (UG901)</a><br>
-[8] <a href="http://blog.csdn.net/yanglong890124/article/details/32742297">FPGA 内部双口块RAM 读写实现</a></p>
-]]></content>
-      <categories>
-        <category>FPGA</category>
-      </categories>
-      <tags>
-        <tag>FPAG</tag>
       </tags>
   </entry>
 </search>
