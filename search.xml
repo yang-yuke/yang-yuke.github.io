@@ -823,4 +823,17 @@ cmake完成后可以看到编译文件已被写到build文件夹下。<br>
         <tag>脚本</tag>
       </tags>
   </entry>
+  <entry>
+    <title>python笔记</title>
+    <url>/2023/10/15/python%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><p>#Python操作符和操作数</p>
+]]></content>
+      <categories>
+        <category>Python</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+        <tag>笔记</tag>
+      </tags>
+  </entry>
 </search>

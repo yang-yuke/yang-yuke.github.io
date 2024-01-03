@@ -20,25 +20,15 @@
     var CONFIG = {"hostname":"yang-yuke.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="前言 lldb-mi(lldb machine interface)是一个C&#x2F;C调试器，原来是LLVM项目中lldb的一部分，但是由于长时间没有人维护和更新，于是是从LLVM项目的lldb中分了出去，成为单独的一个工程。在linux环境下，使用vscode对C&#x2F;C代码进行调试时，常用的调试器是GDB，除此之外，还有个选择就是lldb-mi。本文将介绍如何在本地对lldb-mi工程源码进行编译，从">
-<meta property="og:type" content="article">
-<meta property="og:title" content="在ubuntu20.04编译lldb-mi">
-<meta property="og:url" content="https://yang-yuke.github.io/2021/12/28/compile-lldb-mi/index.html">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Yuke&#39;s blog">
+<meta property="og:url" content="https://yang-yuke.github.io/archives/2023/10/index.html">
 <meta property="og:site_name" content="Yuke&#39;s blog">
-<meta property="og:description" content="前言 lldb-mi(lldb machine interface)是一个C&#x2F;C调试器，原来是LLVM项目中lldb的一部分，但是由于长时间没有人维护和更新，于是是从LLVM项目的lldb中分了出去，成为单独的一个工程。在linux环境下，使用vscode对C&#x2F;C代码进行调试时，常用的调试器是GDB，除此之外，还有个选择就是lldb-mi。本文将介绍如何在本地对lldb-mi工程源码进行编译，从">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://yang-yuke.github.io/2021/12/28/compile-lldb-mi/2021-12-29-00-49-15.png">
-<meta property="article:published_time" content="2021-12-28T15:32:28.000Z">
-<meta property="article:modified_time" content="2022-06-15T15:22:50.075Z">
 <meta property="article:author" content="Yuke">
-<meta property="article:tag" content="开发环境">
-<meta property="article:tag" content="工具链">
-<meta property="article:tag" content="lldb-mi">
-<meta property="article:tag" content="调试器">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://yang-yuke.github.io/2021/12/28/compile-lldb-mi/2021-12-29-00-49-15.png">
 
-<link rel="canonical" href="https://yang-yuke.github.io/2021/12/28/compile-lldb-mi/">
+<link rel="canonical" href="https://yang-yuke.github.io/archives/2023/10/">
 
 
 <script id="page-configurations">
@@ -46,12 +36,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : true,
+    isPost : false,
     lang   : 'zh-CN'
   };
 </script>
 
-  <title>在ubuntu20.04编译lldb-mi | Yuke's blog</title>
+  <title>归档 | Yuke's blog</title>
   
 
 
@@ -196,137 +186,50 @@
         <div class="content-wrap">
           
 
-          <div class="content post posts-expand">
+          <div class="content archive">
             
 
-    
   
   
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yang-yuke.github.io/2021/12/28/compile-lldb-mi/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Yuke">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Yuke's blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          在ubuntu20.04编译lldb-mi
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-12-28 23:32:28" itemprop="dateCreated datePublished" datetime="2021-12-28T23:32:28+08:00">2021-12-28</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-06-15 23:22:50" itemprop="dateModified" datetime="2022-06-15T23:22:50+08:00">2022-06-15</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BC%96%E8%AF%91%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">编译器</span></a>
-                </span>
-            </span>
-
-          
-            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span id="busuanzi_value_page_pv"></span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
+  
+  <div class="post-block">
+    <div class="posts-collapse">
+      <div class="collection-title">
+        <span class="collection-header">嗯..! 目前共计 13 篇日志。 继续努力。</span>
+      </div>
 
       
-        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
-<p>lldb-mi(lldb machine interface)是一个C/C<ins>调试器，原来是LLVM项目中lldb的一部分，但是由于长时间没有人维护和更新，于是是从LLVM项目的lldb中分了出去，成为单独的一个工程。在linux环境下，使用vscode对C/C</ins>代码进行调试时，常用的调试器是GDB，除此之外，还有个选择就是lldb-mi。本文将介绍如何在本地对lldb-mi工程源码进行编译，从而生成可执行文件。编译lldb-mi，需要一个C++14编译器以及LLDB，而LLDB又依赖于Clang和LLVM，因此，在编译lldb-mi之前，需要先安装Clang，LLVM和LLDB，可以参考<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">这篇博客</a>进行安装。</p>
-<span id="more"></span>
-<h1 id="编译"><a class="markdownIt-Anchor" href="#编译"></a> 编译</h1>
-<p>输入以下命令，</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">cd ~/ #进入home目录</span><br><span class="line">mkdir buildspace #在home目录下建立buildspace目录</span><br><span class="line">cd ~/buildspace #进入buildspace目录</span><br><span class="line">mkdir llvm-inst #创建llvm-inst目录</span><br><span class="line">git clone https://github.com/lldb-tools/lldb-mi #将lldb-mi工程下载到当前目录（即buildspace目录）</span><br><span class="line">cd lldb-mi #进入lldb-mi工程目录里</span><br><span class="line">mkdir build #在当前目录（即lldb-mi目录）建立build目录，用来存放编译后生成的文件</span><br><span class="line">cmake -DCMAKE_PREFIX_PATH=~/buildspace/llvm-inst/ -GNinja .. #在当前目录（即build目录）的上一级目录（即lldb-mi目录）下生成cmake文件</span><br><span class="line">ninja #编译</span><br></pre></td></tr></table></figure>
-<p>执行完以上命令后，可以看到，所生成的lldb-mi可执行文件将位于lldb-mi/build/src目录下，这个就是lldb-mi调试器。然后，我们就可以开始在vscode中使用这个调试器对程序进行调试了。<br>
-<img src="/2021/12/28/compile-lldb-mi/2021-12-29-00-49-15.png" alt="2021-12-29-00-49-15"></p>
-<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
-<ol>
-<li><a target="_blank" rel="noopener" href="https://github.com/lldb-tools/lldb-mi">Building against custom LLDB</a></li>
-<li><a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">在ubuntu20.04安装LLVM</a></li>
-</ol>
-
+    <div class="collection-year">
+      <span class="collection-header">2023</span>
     </div>
 
-    
-    
-    
-        
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
 
-<div>
-<ul class="post-copyright">
-  <li class="post-copyright-author">
-    <strong>本文作者： </strong>Yuke
-  </li>
-  <li class="post-copyright-link">
-    <strong>本文链接：</strong>
-    <a href="https://yang-yuke.github.io/2021/12/28/compile-lldb-mi/" title="在ubuntu20.04编译lldb-mi">https://yang-yuke.github.io/2021/12/28/compile-lldb-mi/</a>
-  </li>
-  <li class="post-copyright-license">
-    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
-  </li>
-</ul>
-</div>
+      <div class="post-meta">
+        <time itemprop="dateCreated"
+              datetime="2023-10-15T18:28:41+08:00"
+              content="2023-10-15">
+          10-15
+        </time>
+      </div>
 
+      <div class="post-title">
+          <a class="post-title-link" href="/2023/10/15/python%E7%AC%94%E8%AE%B0/" itemprop="url">
+            <span itemprop="name">python笔记</span>
+          </a>
+      </div>
 
-      <footer class="post-footer">
-          <div class="post-tags">
-              <a href="/tags/%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/" rel="tag"># 开发环境</a>
-              <a href="/tags/%E5%B7%A5%E5%85%B7%E9%93%BE/" rel="tag"># 工具链</a>
-              <a href="/tags/lldb-mi/" rel="tag"># lldb-mi</a>
-              <a href="/tags/%E8%B0%83%E8%AF%95%E5%99%A8/" rel="tag"># 调试器</a>
-          </div>
-
-        
-
-
-        
-    <div class="post-nav">
-      <div class="post-nav-item">
-    <a href="/2021/12/16/compile-and-install-lldb/" rel="prev" title="在ubuntu20.04编译及安装LLDB">
-      <i class="fa fa-chevron-left"></i> 在ubuntu20.04编译及安装LLDB
-    </a></div>
-      <div class="post-nav-item">
-    <a href="/2022/06/16/LTE%E7%BD%91%E7%BB%9CRLC%E5%B1%82%E7%9A%84polling%E6%9C%BA%E5%88%B6/" rel="next" title="LTE网络RLC层的polling机制">
-      LTE网络RLC层的polling机制 <i class="fa fa-chevron-right"></i>
-    </a></div>
-    </div>
-      </footer>
-    
+    </header>
   </article>
+
+
+    </div>
+  </div>
   
   
+  
+
   
 
 
@@ -379,7 +282,6 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text"> 前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BC%96%E8%AF%91"><span class="nav-number">2.</span> <span class="nav-text"> 编译</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">3.</span> <span class="nav-text"> 参考文献</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
