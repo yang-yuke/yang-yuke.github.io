@@ -192,6 +192,82 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://yang-yuke.github.io/2024/01/08/shell-if-statement/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yuke">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yuke's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2024/01/08/shell-if-statement/" class="post-title-link" itemprop="url">shell if statement</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2024-01-08 00:04:09 / Modified: 00:11:12" itemprop="dateCreated datePublished" datetime="2024-01-08T00:04:09+08:00">2024-01-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/shell/" itemprop="url" rel="index"><span itemprop="name">shell</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="foreword"><a class="markdownIt-Anchor" href="#foreword"></a> Foreword</h1>
+<p>This blog article is about the practice in this <a target="_blank" rel="noopener" href="https://ryanstutorials.net/bash-scripting-tutorial/bash-if-statements.php">tutorial blog</a> on bash if statement.</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2024/01/08/shell-if-statement/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="https://yang-yuke.github.io/2024/01/06/shell_attach_date_to_filename/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -897,89 +973,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://yang-yuke.github.io/2021/12/10/install-latest-gcc/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Yuke">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Yuke's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/12/10/install-latest-gcc/" class="post-title-link" itemprop="url">在ubuntu20.04安装最新版GCC</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2021-12-10 19:17:45" itemprop="dateCreated datePublished" datetime="2021-12-10T19:17:45+08:00">2021-12-10</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-06-15 23:22:53" itemprop="dateModified" datetime="2022-06-15T23:22:53+08:00">2022-06-15</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BC%96%E8%AF%91%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">编译器</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
-<p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#more">编译LLVM</a>过程中，出现了很多头文件无法解析的错误，根据<a target="_blank" rel="noopener" href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，原因是因为GCC版本过低，将GCC升级至最新版11.2.0就可以解决这个问题了。本文将介绍如何升级GCC到最新版(当前为11.2.0)。<br>
-<img src="/2021/12/10/install-latest-gcc/2021-12-10-23-33-08.png" alt="2021-12-10-23-33-08"></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/12/10/install-latest-gcc/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1049,7 +1042,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-count">14</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>

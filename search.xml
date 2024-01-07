@@ -869,4 +869,34 @@ cmake完成后可以看到编译文件已被写到build文件夹下。<br>
         <tag>多重签名</tag>
       </tags>
   </entry>
+  <entry>
+    <title>shell if statement</title>
+    <url>/2024/01/08/shell-if-statement/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="foreword"><a class="markdownIt-Anchor" href="#foreword"></a> Foreword</h1>
+<p>This blog article is about the practice in this <a href="https://ryanstutorials.net/bash-scripting-tutorial/bash-if-statements.php">tutorial blog</a> on bash if statement.</p>
+<span id="more"></span>
+<h1 id="practice-1"><a class="markdownIt-Anchor" href="#practice-1"></a> Practice 1</h1>
+<p><strong>Issue description</strong>: Create a Bash script which will take 2 numbers as command line arguments. It will print to the screen the larger of the two numbers.</p>
+<p>The solution shell script <code>if_test1.sh</code> is as follows.</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">if [ $1 -gt $2 ]</span><br><span class="line">then</span><br><span class="line">        echo $1</span><br><span class="line">else</span><br><span class="line">        echo $2</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+<h1 id="practice-2"><a class="markdownIt-Anchor" href="#practice-2"></a> Practice 2</h1>
+<p><strong>Issue description</strong>: Create a Bash script which will accept a file as a command line argument and analyse it in certain ways. eg. you could check if the file is executable or writable. You should print a certain message if true and another if false.</p>
+<p>The solution shell script <code>if_test2.sh</code> is as follows.</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">if [ -w $1 ] || [ -x $1 ]</span><br><span class="line">then</span><br><span class="line">        echo the file is writable or executable</span><br><span class="line">else</span><br><span class="line">        echo the file is neither writable nor executable</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+<h1 id="practice-3"><a class="markdownIt-Anchor" href="#practice-3"></a> Practice 3</h1>
+<p><strong>Issue description</strong>: Create a Bash script which will print a message based upon which day of the week it is (eg. ‘Happy hump day’ for Wedensday, ‘TGIF’ for Friday etc).</p>
+<p>The solution shell script <code>if_test3.sh</code> is as follows.</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">DATE=$( date +%A )</span><br><span class="line"></span><br><span class="line">case $DATE in</span><br><span class="line">        Monday)</span><br><span class="line">                echo first day to work</span><br><span class="line">                ;;</span><br><span class="line">        Tuesday)</span><br><span class="line">                echo still a long way to weekend</span><br><span class="line">                ;;</span><br><span class="line">        Wednesday)</span><br><span class="line">                echo Happy hump day</span><br><span class="line">                ;;</span><br><span class="line">        Thursday)</span><br><span class="line">                echo look forward to weekend</span><br><span class="line">                ;;</span><br><span class="line">        Friday)</span><br><span class="line">                echo TGIF</span><br><span class="line">                ;;</span><br><span class="line">        Saturday)</span><br><span class="line">                echo happy weekend</span><br><span class="line">                ;;</span><br><span class="line">        Sunday)</span><br><span class="line">                echo sunny day</span><br><span class="line">                ;;</span><br><span class="line">        *)</span><br><span class="line">                echo unknown day</span><br><span class="line">                ;;</span><br><span class="line">esac</span><br></pre></td></tr></table></figure>
+<h1 id="reference"><a class="markdownIt-Anchor" href="#reference"></a> Reference</h1>
+<ol>
+<li><a href="https://ryanstutorials.net/bash-scripting-tutorial/bash-if-statements.php">bash if statement</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>shell</category>
+      </categories>
+      <tags>
+        <tag>shell</tag>
+      </tags>
+  </entry>
 </search>
