@@ -20,15 +20,15 @@
     var CONFIG = {"hostname":"yang-yuke.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="本文将从UE角度对LTE网络RLC层的polling机制进行详细阐述。 # 前言 在LTE网络中，RLC层提供了两种服务模式，一种是保证数据无损传输(lossless)的AM模式(acknowledged mode)，另一种是不保证数据可靠传输的UM模式(unacknowledged mode)。在AM模式下，RLC层要保证数据可靠传输，因此，此时的RLC协议是一种可靠性数据传输协议(r">
+  <meta name="description" content="前言 在LTE网络中，RLC层提供了两种服务模式，一种是保证数据无损传输(lossless)的AM模式(acknowledged mode)，另一种是不保证数据可靠传输的UM模式(unacknowledged mode)。在AM模式下，RLC层要保证数据可靠传输，因此，此时的RLC协议是一种可靠性数据传输协议(reliable data transmission protocol, RDP">
 <meta property="og:type" content="article">
 <meta property="og:title" content="LTE网络RLC层的polling机制">
 <meta property="og:url" content="https://yang-yuke.github.io/2022/06/16/LTE%E7%BD%91%E7%BB%9CRLC%E5%B1%82%E7%9A%84polling%E6%9C%BA%E5%88%B6/index.html">
 <meta property="og:site_name" content="Yuke&#39;s blog">
-<meta property="og:description" content="本文将从UE角度对LTE网络RLC层的polling机制进行详细阐述。 # 前言 在LTE网络中，RLC层提供了两种服务模式，一种是保证数据无损传输(lossless)的AM模式(acknowledged mode)，另一种是不保证数据可靠传输的UM模式(unacknowledged mode)。在AM模式下，RLC层要保证数据可靠传输，因此，此时的RLC协议是一种可靠性数据传输协议(r">
+<meta property="og:description" content="前言 在LTE网络中，RLC层提供了两种服务模式，一种是保证数据无损传输(lossless)的AM模式(acknowledged mode)，另一种是不保证数据可靠传输的UM模式(unacknowledged mode)。在AM模式下，RLC层要保证数据可靠传输，因此，此时的RLC协议是一种可靠性数据传输协议(reliable data transmission protocol, RDP">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-06-15T16:21:20.000Z">
-<meta property="article:modified_time" content="2025-11-27T13:49:36.300Z">
+<meta property="article:modified_time" content="2025-11-27T13:56:16.733Z">
 <meta property="article:author" content="Yuke">
 <meta property="article:tag" content="LTE">
 <meta property="article:tag" content="RLC">
@@ -229,7 +229,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2025-11-27 21:49:36" itemprop="dateModified" datetime="2025-11-27T21:49:36+08:00">2025-11-27</time>
+                <time title="Modified: 2025-11-27 21:56:16" itemprop="dateModified" datetime="2025-11-27T21:56:16+08:00">2025-11-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -259,13 +259,11 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><blockquote>
-<p>本文将从UE角度对LTE网络RLC层的polling机制进行详细阐述。 # 前言
-在LTE网络中，RLC层提供了两种服务模式，一种是保证数据无损传输(lossless)的<code>AM模式</code>(acknowledged
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言">前言</h1>
+<p>在LTE网络中，RLC层提供了两种服务模式，一种是保证数据无损传输(lossless)的<code>AM模式</code>(acknowledged
 mode)，另一种是不保证数据可靠传输的<code>UM模式</code>(unacknowledged
 mode)。在<code>AM模式</code>下，RLC层要保证数据可靠传输，因此，此时的RLC协议是一种<code>可靠性数据传输协议</code>(reliable
 data transmission protocol, RDP)。</p>
-</blockquote>
 <p>RDP是网络协议中常用的一种协议，TCP协议就是其中之一。与TCP协议相比，RLC位于无线通信协议栈的更底层，对时延的要求更高。因此，为了更快地实现数据的无损传输，RLC层引入了<code>polling</code>(问询)机制。
 <span id="more"></span></p>
 <hr>
@@ -448,7 +446,7 @@ PDU。<a href="#fnref:2" rev="footnote"> ↩︎</a></span>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#polling%E7%9A%84%E7%9B%AE%E7%9A%84"><span class="nav-number">1.</span> <span class="nav-text">Polling的目的</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#polling%E7%9A%84%E8%A7%A6%E5%8F%91%E6%9D%A1%E4%BB%B6"><span class="nav-number">2.</span> <span class="nav-text">Polling的触发条件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">4.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#polling%E7%9A%84%E7%9B%AE%E7%9A%84"><span class="nav-number">2.</span> <span class="nav-text">Polling的目的</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#polling%E7%9A%84%E8%A7%A6%E5%8F%91%E6%9D%A1%E4%BB%B6"><span class="nav-number">3.</span> <span class="nav-text">Polling的触发条件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">5.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
