@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://yang-yuke.github.io/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/</loc>
+    <loc>https://yang-yuke.github.io/2022/06/16/LTE%E7%BD%91%E7%BB%9CRLC%E5%B1%82%E7%9A%84polling%E6%9C%BA%E5%88%B6/</loc>
     
     <lastmod>2025-11-27</lastmod>
     
@@ -11,7 +11,7 @@
   </url>
   
   <url>
-    <loc>https://yang-yuke.github.io/2022/06/16/LTE%E7%BD%91%E7%BB%9CRLC%E5%B1%82%E7%9A%84polling%E6%9C%BA%E5%88%B6/</loc>
+    <loc>https://yang-yuke.github.io/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/</loc>
     
     <lastmod>2025-11-27</lastmod>
     
@@ -173,6 +173,20 @@
 
   
   <url>
+    <loc>https://yang-yuke.github.io/tags/computer-networking/</loc>
+    <lastmod>2025-11-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://yang-yuke.github.io/tags/SMTP/</loc>
+    <lastmod>2025-11-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://yang-yuke.github.io/tags/LTE/</loc>
     <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
@@ -188,20 +202,6 @@
   
   <url>
     <loc>https://yang-yuke.github.io/tags/RLC/</loc>
-    <lastmod>2025-11-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://yang-yuke.github.io/tags/computer-networking/</loc>
-    <lastmod>2025-11-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://yang-yuke.github.io/tags/SMTP/</loc>
     <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -271,14 +271,14 @@
   </url>
   
   <url>
-    <loc>https://yang-yuke.github.io/tags/FPAG/</loc>
+    <loc>https://yang-yuke.github.io/tags/%E8%84%9A%E6%9C%AC/</loc>
     <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://yang-yuke.github.io/tags/%E8%84%9A%E6%9C%AC/</loc>
+    <loc>https://yang-yuke.github.io/tags/FPAG/</loc>
     <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -287,14 +287,14 @@
 
   
   <url>
-    <loc>https://yang-yuke.github.io/categories/LTE/</loc>
+    <loc>https://yang-yuke.github.io/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/</loc>
     <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://yang-yuke.github.io/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/</loc>
+    <loc>https://yang-yuke.github.io/categories/LTE/</loc>
     <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>

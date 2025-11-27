@@ -1,6 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Telnet使用SMTP服务登录邮箱并发送邮件</title>
+    <url>/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><blockquote>
+<p>本文介绍SMTP协议的一个简单的网络实验。 # SMTP协议简介 SMTP（定义于RFC
+5321）是互联网电子邮件的核心。SMTP将邮件从发件人的邮件服务器传输到收件人的邮件服务器。SMTP的出现比HTTP早得多。（最初的SMTP
+RFC文档可以追溯到1982年，而SMTP协议的出现时间还要早得多。）
+<span id="more"></span></p>
+</blockquote>
+<p>尽管SMTP拥有许多优秀的特性，其在互联网上的普及程度也证明了这一点，但它毕竟是一项具有某些过时特征的遗留技术。例如，它限制所有邮件的正文（而不仅仅是邮件头）只能使用简单的7比特ASCII编码。这种限制在20世纪80年代初期是合理的，当时传输容量有限，而且没有人会通过电子邮件发送大型附件或大型图像、音频或视频文件。但如今，在多媒体时代，7比特ASCII的限制就显得有些不便了——它要求二进制多媒体数据在通过SMTP发送之前必须编码为ASCII编码；它要求在SMTP传输后将相应的ASCII消息解码回二进制。而HTTP协议并不要求多媒体数据在传输前进行ASCII编码。</p>
+<p>这里介绍一下SMTP的一个简单的实验过程，有关STMP协议的更多介绍可以参考文献[1]<sup id="fnref:1"><a href="#fn:1" rel="footnote"><span class="hint--top hint--error hint--medium hint--rounded hint--bounce" aria-label="Computer Networking_ A Top-Down Approach-Pearson (2021) 第2.3.1节 SMTP. By James W. Kurose, Keith W. Ross
+">[1]</span></a></sup>。本实验过程参考了文献[2]<sup id="fnref:2"><a href="#fn:2" rel="footnote"><span class="hint--top hint--error hint--medium hint--rounded hint--bounce" aria-label="[Telnet 使用 SMTP 服务登录邮箱并发送邮件](https://cloud.tencent.com/developer/article/1927198)">[2]</span></a></sup>。</p>
+<hr>
+<h1 id="实验准备">实验准备</h1>
+<p>准备两个163邮箱，并开启SMTP服务。如下图所示。 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-44-24.png" alt="2025-11-27-20-44-24"></p>
+<p>开启IMAP/SMTP服务以及POP3/SMTP服务。 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-44-54.png" alt="2025-11-27-20-44-54"></p>
+<hr>
+<h1 id="实验步骤">实验步骤</h1>
+<ol type="1">
+<li><p>使用telnet连接smtp服务器 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">telnet smtp.163.com  25   //直接进入回显模式</span><br></pre></td></tr></table></figure></p></li>
+<li><p>查看连接是否建立 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">helo localhost</span><br></pre></td></tr></table></figure></p></li>
+<li><p>登录 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">auth login</span><br></pre></td></tr></table></figure>
+输入账号和授权密码，账号和授权密码要以base64编码的形式输入，授权密码不是邮箱密码，要在163邮箱主页开启邮箱的SMTP服务后再获取。</p></li>
+</ol>
+<figure>
+<img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-45-48.png" alt="2025-11-27-20-45-48">
+<figcaption aria-hidden="true">2025-11-27-20-45-48</figcaption>
+</figure>
+<p>邮箱： 18*******32@163.com</p>
+<p>授权密码(在打开IMAP/SMTP服务时会弹出，记下此授权密码，在登录时需要用到该密码)：
+<img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-30.png" alt="2025-11-27-20-46-30"></p>
+<p>若已有授权密码，也可以新增授权密码。 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-38.png" alt="2025-11-27-20-46-38"></p>
+<p>接下来输入邮件信息，其中mail from必须是发送邮箱的账号，rcpt
+to必须是接收邮箱的账号，否则会被认为是无效邮件而无法发送。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#邮件头，必须是正确的</span></span><br><span class="line">mail from: &lt;aa27975599672021@163.com&gt;</span><br><span class="line">rcpt to:  &lt;aa27975599672022@163.com&gt;</span><br><span class="line"><span class="comment">#开始输入邮件正文</span></span><br><span class="line">data</span><br><span class="line">from: &lt;aa27975599672021@163.com&gt;</span><br><span class="line">to:  &lt;aa27975599672022@163.com&gt;</span><br><span class="line">subject:hello,aa27975599672022@163.com</span><br><span class="line"><span class="comment">#空一行</span></span><br><span class="line">hello</span><br><span class="line"><span class="comment">#空一行，后面输入一个点后回车表示结束</span></span><br><span class="line">.</span><br></pre></td></tr></table></figure>
+<p>发送过程 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-49.png" alt="2025-11-27-20-46-49"></p>
+<p>在接收邮箱中查看，可以看到接收到了所发送的邮件 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-58.png" alt="2025-11-27-20-46-58"></p>
+<hr>
+<h1 id="参考">参考</h1>
+<div id="footnotes">
+<hr>
+<div id="footnotelist">
+<ol style="list-style: none; padding-left: 0; margin-left: 40px">
+<li id="fn:1">
+<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">1.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;">Computer
+Networking_ A Top-Down Approach-Pearson (2021) 第2.3.1节 SMTP. By James
+W. Kurose, Keith W. Ross<a href="#fnref:1" rev="footnote"> ↩︎</a></span>
+</li>
+<li id="fn:2">
+<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">2.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;"><a href="https://cloud.tencent.com/developer/article/1927198">Telnet
+使用 SMTP 服务登录邮箱并发送邮件</a><a href="#fnref:2" rev="footnote">
+↩︎</a></span>
+</li>
+</ol>
+</div>
+</div>
+
+]]></content>
+      <categories>
+        <category>计算机网络</category>
+      </categories>
+      <tags>
+        <tag>computer networking</tag>
+        <tag>SMTP</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LTE MAC token bucket algorithm</title>
     <url>/2021/11/27/LTE-MAC-token-bucket-algorithm/</url>
     <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="abbreviation">Abbreviation</h1>
@@ -130,177 +196,6 @@ WETHERALL [3] 36.321. By 3GPP specialist panel.</p>
       </tags>
   </entry>
   <entry>
-    <title>LTE网络RLC层的polling机制</title>
-    <url>/2022/06/16/LTE%E7%BD%91%E7%BB%9CRLC%E5%B1%82%E7%9A%84polling%E6%9C%BA%E5%88%B6/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><blockquote>
-<p>本文将从UE角度对LTE网络RLC层的polling机制进行详细阐述。 # 前言
-在LTE网络中，RLC层提供了两种服务模式，一种是保证数据无损传输(lossless)的<code>AM模式</code>(acknowledged
-mode)，另一种是不保证数据可靠传输的<code>UM模式</code>(unacknowledged
-mode)。在<code>AM模式</code>下，RLC层要保证数据可靠传输，因此，此时的RLC协议是一种<code>可靠性数据传输协议</code>(reliable
-data transmission protocol, RDP)。</p>
-</blockquote>
-<p>RDP是网络协议中常用的一种协议，TCP协议就是其中之一。与TCP协议相比，RLC位于无线通信协议栈的更底层，对时延的要求更高。因此，为了更快地实现数据的无损传输，RLC层引入了<code>polling</code>(问询)机制。
-<span id="more"></span> --- # Polling的目的
-UE<sup id="fnref:1"><a href="#fn:1" rel="footnote"><span class="hint--top hint--error hint--medium hint--rounded hint--bounce" aria-label="User equipment，在蜂窝网络中指终端设备，大部分场景下是手机，也可能是智能手表，智能仪表等其它无线终端设备。
-">[1]</span></a></sup>
-在向网络发送数据的过程中，由于物理层存在一定的误码率(BLER)，有一些包(packet,
-即RLC
-PDU)有时候可能会在传输过程中发送失败或者丢失。但是，哪一些包发送失败了，从UE侧是无法知道的。因此，为了实现数据的可靠传输，UE需要网络侧的反馈，告诉UE在网络侧哪一些包已经收到，哪一些还没有收到，从而让UE能够重传那些网络还没收到的包，这个反馈就是<code>状态报告</code>(status
-report)。</p>
-<p>但是网络侧怎么能够知道什么时候给UE发送<code>状态报告</code>呢？如果网络侧频繁不停地给UE发送<code>状态报告</code>，那么虽然UE能够很及时地知道网络侧接收情况，但是这样就浪费了很多下行资源；而如果网络侧周期性地给UE发送<code>状态报告</code>，那么UE侧又无法及时得知网络侧的接收情况。引入<code>Polling</code>就是为了这个目的。UE需要向网络询问，哪一些包收到了，哪一些还没收到，这样网络就会回复<code>状态报告</code>，UE就能及时地重传那些没被网络收到(acknowledged)的包。</p>
-<table style="width:6%;">
-<colgroup>
-<col style="width: 5%">
-</colgroup>
-<thead>
-<tr>
-<th># Polling的触发条件 在每个RLC data
-PDU的header部分，有一个P位的标志位，这个标志位就代表<code>polling</code>。当P位为1时，表示UE向网络侧发送<code>polling</code>，期望对方回复<code>状态报告</code>，反之亦然。在以下任一条件满足的情况下，UE都会触发<code>polling</code>：</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td># 总结
-本文从UE侧角度介绍了LTE网络RLC层的一个基本功能——<code>polling</code>机制。<code>polling</code>机制只在<code>AM模式</code>下才会生效，其目的是为了能及时得知网络侧的接收情况，从而及时地向网络重传丢失的数据包，保证数据的低时延可靠传输。最后介绍了<code>polling</code>的触发条件。</td>
-</tr>
-</tbody>
-</table>
-<h1 id="参考文献">参考文献</h1>
-<p>[1] 3GPP协议 36322 section 5.2.2 [2] <font color="DodgerBlue">Radio
-Protocols for LTE and LTE-Advanced (2012)</font> by SeungJune Yi,
-SungDuck Chun, etl. section 5.4.4 [3] 深入理解LTE-A. 温金辉著. section
-36.3.3.2</p>
-<div id="footnotes">
-<hr>
-<div id="footnotelist">
-<ol style="list-style: none; padding-left: 0; margin-left: 40px">
-<li id="fn:1">
-<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">1.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;">User
-equipment，在蜂窝网络中指终端设备，大部分场景下是手机，也可能是智能手表，智能仪表等其它无线终端设备。<a href="#fnref:1" rev="footnote">
-↩︎</a></span>
-</li>
-<li id="fn:2">
-<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">2.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;">Sequence
-number，每一包RLC data PDU都有一个sequence
-number，在一段时间内可以唯一标识这包RLC data
-PDU。<a href="#fnref:2" rev="footnote"> ↩︎</a></span>
-</li>
-</ol>
-</div>
-</div>
-
-]]></content>
-      <categories>
-        <category>LTE</category>
-      </categories>
-      <tags>
-        <tag>LTE</tag>
-        <tag>RLC</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Telnet使用SMTP服务登录邮箱并发送邮件</title>
-    <url>/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><blockquote>
-<p>本文介绍SMTP协议的一个简单的网络实验。 # SMTP协议简介 SMTP（定义于RFC
-5321）是互联网电子邮件的核心。SMTP将邮件从发件人的邮件服务器传输到收件人的邮件服务器。SMTP的出现比HTTP早得多。（最初的SMTP
-RFC文档可以追溯到1982年，而SMTP协议的出现时间还要早得多。）
-<span id="more"></span></p>
-</blockquote>
-<p>尽管SMTP拥有许多优秀的特性，其在互联网上的普及程度也证明了这一点，但它毕竟是一项具有某些过时特征的遗留技术。例如，它限制所有邮件的正文（而不仅仅是邮件头）只能使用简单的7比特ASCII编码。这种限制在20世纪80年代初期是合理的，当时传输容量有限，而且没有人会通过电子邮件发送大型附件或大型图像、音频或视频文件。但如今，在多媒体时代，7比特ASCII的限制就显得有些不便了——它要求二进制多媒体数据在通过SMTP发送之前必须编码为ASCII编码；它要求在SMTP传输后将相应的ASCII消息解码回二进制。而HTTP协议并不要求多媒体数据在传输前进行ASCII编码。</p>
-<p>这里介绍一下SMTP的一个简单的实验过程，有关STMP协议的更多介绍可以参考文献[1]<sup id="fnref:1"><a href="#fn:1" rel="footnote"><span class="hint--top hint--error hint--medium hint--rounded hint--bounce" aria-label="Computer Networking_ A Top-Down Approach-Pearson (2021) 第2.3.1节 SMTP. By James W. Kurose, Keith W. Ross
-">[1]</span></a></sup>。本实验过程参考了文献[2]<sup id="fnref:2"><a href="#fn:2" rel="footnote"><span class="hint--top hint--error hint--medium hint--rounded hint--bounce" aria-label="[Telnet 使用 SMTP 服务登录邮箱并发送邮件](https://cloud.tencent.com/developer/article/1927198)">[2]</span></a></sup>。</p>
-<hr>
-<h1 id="实验准备">实验准备</h1>
-<p>准备两个163邮箱，并开启SMTP服务。如下图所示。 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-44-24.png" alt="2025-11-27-20-44-24"></p>
-<p>开启IMAP/SMTP服务以及POP3/SMTP服务。 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-44-54.png" alt="2025-11-27-20-44-54"></p>
-<hr>
-<h1 id="实验步骤">实验步骤</h1>
-<ol type="1">
-<li><p>使用telnet连接smtp服务器 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">telnet smtp.163.com  25   //直接进入回显模式</span><br></pre></td></tr></table></figure></p></li>
-<li><p>查看连接是否建立 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">helo localhost</span><br></pre></td></tr></table></figure></p></li>
-<li><p>登录 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">auth login</span><br></pre></td></tr></table></figure>
-输入账号和授权密码，账号和授权密码要以base64编码的形式输入，授权密码不是邮箱密码，要在163邮箱主页开启邮箱的SMTP服务后再获取。</p></li>
-</ol>
-<figure>
-<img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-45-48.png" alt="2025-11-27-20-45-48">
-<figcaption aria-hidden="true">2025-11-27-20-45-48</figcaption>
-</figure>
-<p>邮箱： 18*******32@163.com</p>
-<p>授权密码(在打开IMAP/SMTP服务时会弹出，记下此授权密码，在登录时需要用到该密码)：
-<img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-30.png" alt="2025-11-27-20-46-30"></p>
-<p>若已有授权密码，也可以新增授权密码。 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-38.png" alt="2025-11-27-20-46-38"></p>
-<p>接下来输入邮件信息，其中mail from必须是发送邮箱的账号，rcpt
-to必须是接收邮箱的账号，否则会被认为是无效邮件而无法发送。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#邮件头，必须是正确的</span></span><br><span class="line">mail from: &lt;aa27975599672021@163.com&gt;</span><br><span class="line">rcpt to:  &lt;aa27975599672022@163.com&gt;</span><br><span class="line"><span class="comment">#开始输入邮件正文</span></span><br><span class="line">data</span><br><span class="line">from: &lt;aa27975599672021@163.com&gt;</span><br><span class="line">to:  &lt;aa27975599672022@163.com&gt;</span><br><span class="line">subject:hello,aa27975599672022@163.com</span><br><span class="line"><span class="comment">#空一行</span></span><br><span class="line">hello</span><br><span class="line"><span class="comment">#空一行，后面输入一个点后回车表示结束</span></span><br><span class="line">.</span><br></pre></td></tr></table></figure>
-<p>发送过程 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-49.png" alt="2025-11-27-20-46-49"></p>
-<p>在接收邮箱中查看，可以看到接收到了所发送的邮件 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-58.png" alt="2025-11-27-20-46-58"></p>
-<hr>
-<h1 id="参考">参考</h1>
-<div id="footnotes">
-<hr>
-<div id="footnotelist">
-<ol style="list-style: none; padding-left: 0; margin-left: 40px">
-<li id="fn:1">
-<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">1.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;">Computer
-Networking_ A Top-Down Approach-Pearson (2021) 第2.3.1节 SMTP. By James
-W. Kurose, Keith W. Ross<a href="#fnref:1" rev="footnote"> ↩︎</a></span>
-</li>
-<li id="fn:2">
-<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">2.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;"><a href="https://cloud.tencent.com/developer/article/1927198">Telnet
-使用 SMTP 服务登录邮箱并发送邮件</a><a href="#fnref:2" rev="footnote">
-↩︎</a></span>
-</li>
-</ol>
-</div>
-</div>
-
-]]></content>
-      <categories>
-        <category>计算机网络</category>
-      </categories>
-      <tags>
-        <tag>computer networking</tag>
-        <tag>SMTP</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>在ubuntu20.04编译及安装LLDB</title>
-    <url>/2021/12/16/compile-and-install-lldb/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言">前言</h1>
-<p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>已经介绍了如何在本地编译及安装llvm，但是当时只是编译和安装了<code>llvm;clang;libcxx;libcxxabi</code>这四个库，本文将介绍如何编译及安装lldb。
-<span id="more"></span> # 配置及安装LLDB
-在进行下面的步骤时，假设你已经下载了llvm整个工程，并且安装了所需的依赖工具。如果你还没进行这些操作，可以参考<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>一文的<code>本地编译安装LLVM</code>一节的<code>前提条件</code>和<code>下载LLVM源文件</code>这两部分内容，先完成这两步。</p>
-<p>完成上述步骤后，输入以下命令。首先cd进入llvm-project工程，然后生成cmake文件。<code>-S llvm</code>表示源文件所在文件夹为当前路径下的llvm文件夹；<code>-B build</code>表示生成的cmake文件将放到当前路径下的build文件夹；<code>-G Ninja</code>表示生成的cmake文件将给Ninja在编译时使用。
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure> 在编译到第[4169/4171]个文件时，会出现以下错误。 <img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-22-28.png" alt="2021-12-18-17-22-28"> 参考<a href="https://blog.csdn.net/Vin_tt/article/details/110421022">这篇文章</a>解决这个问题，输入以下命令:
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project/build</span><br><span class="line">sudo mkdir swapfile</span><br><span class="line">cd /swapfile</span><br><span class="line">sudo dd if=/dev/zero of=swap bs=1024 count=20000000</span><br><span class="line">sudo mkswap -f swap</span><br><span class="line">sudo swapon swap</span><br></pre></td></tr></table></figure> <img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-56-57.png" alt="2021-12-18-17-56-57">
-可以看到，剩下的三个文件都被成功地编译了。编译出来生成的应用程序位于llvm-project/build/bin路径下，将其拷贝到/usr/local/bin/文件夹下即可。
-<img src="/2021/12/16/compile-and-install-lldb/2021-12-18-18-17-50.png" alt="2021-12-18-18-17-50"> # 后记
-这部分讲的是后续的失败经历，以及没有解决的问题。</p>
-<p>上述编译命令在编译lldb过程中会有debug信息，其体积会很大，而且编译出来的文件在llvm-project/build文件夹下面，还需要<code>ninja install</code>命令将其安装至默认路径下，但是由于体积过大，在安装时容易出问题。最好是编译release版本，并且在生成cmake文件的时候指明安装路径，命令如下：
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;clang;lldb&quot;</span> <span class="comment">#1,这条命令与下面这条命令2选1</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;clang;lldb&quot;</span> ./llvm <span class="comment">#2,这条命令与上面的命令2选1</span></span></span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_BUILD_TYPE=&quot;Release&quot; -DLLDB_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=&quot;/usr/local/llvm&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_BUILD_TYPE=&quot;Release&quot; -DLLDB_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=&quot;/usr/local/llvm&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure>
-编译完成后，生成的文件位于llvm-project/build文件夹内，我们要把它们安装到/usr/local/路径下，因此，需要输入以下命令
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ninja install</span><br></pre></td></tr></table></figure>
-然后就会开始将lldb安装到/usr/local/路径下,在安装到第[203/1128]个文件时，出现了<code>fatal error: ld terminated with signal 9 [Killed]</code>错误，参照上面的方法，在build文件夹创建swapfile尝试解决。
-<img src="/2021/12/16/compile-and-install-lldb/2021-12-21-23-18-01.png" alt="2021-12-21-23-18-01">
-在安装剩下的文件时，安装到[375/927]个文件时仍然出现了以上错误。 <img src="/2021/12/16/compile-and-install-lldb/2021-12-22-08-27-51.png" alt="2021-12-22-08-27-51"> 再次尝试用上述方法安装剩下的文件。 <img src="/2021/12/16/compile-and-install-lldb/2021-12-22-08-39-08.png" alt="2021-12-22-08-39-08"> 依旧出现以上问题，最终只得作罢。 <img src="/2021/12/16/compile-and-install-lldb/2021-12-22-09-05-29.png" alt="2021-12-22-09-05-29"></p>
-<h1 id="参考文献">参考文献</h1>
-<ol type="1">
-<li><a href="https://lldb.llvm.org/resources/build.html#building-lldb-with-cmake">Building
-LLDB with CMake</a></li>
-<li><a href="https://blog.csdn.net/Vin_tt/article/details/110421022">LLVM编译collect2:
-fatal error: ld terminated with signal 9</a></li>
-</ol>
-]]></content>
-      <categories>
-        <category>编译器</category>
-      </categories>
-      <tags>
-        <tag>开发环境</tag>
-        <tag>工具链</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LTE网络MAC层令牌桶算法</title>
     <url>/2022/06/17/LTE%E7%BD%91%E7%BB%9CMAC%E5%B1%82%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%AE%97%E6%B3%95/</url>
     <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="引言">引言</h1>
@@ -409,6 +304,142 @@ etl. Section 5.4.2</p>
       <tags>
         <tag>LTE</tag>
         <tag>MAC</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>LTE网络RLC层的polling机制</title>
+    <url>/2022/06/16/LTE%E7%BD%91%E7%BB%9CRLC%E5%B1%82%E7%9A%84polling%E6%9C%BA%E5%88%B6/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><blockquote>
+<p>本文将从UE角度对LTE网络RLC层的polling机制进行详细阐述。 # 前言
+在LTE网络中，RLC层提供了两种服务模式，一种是保证数据无损传输(lossless)的<code>AM模式</code>(acknowledged
+mode)，另一种是不保证数据可靠传输的<code>UM模式</code>(unacknowledged
+mode)。在<code>AM模式</code>下，RLC层要保证数据可靠传输，因此，此时的RLC协议是一种<code>可靠性数据传输协议</code>(reliable
+data transmission protocol, RDP)。</p>
+</blockquote>
+<p>RDP是网络协议中常用的一种协议，TCP协议就是其中之一。与TCP协议相比，RLC位于无线通信协议栈的更底层，对时延的要求更高。因此，为了更快地实现数据的无损传输，RLC层引入了<code>polling</code>(问询)机制。
+<span id="more"></span></p>
+<hr>
+<h1 id="polling的目的">Polling的目的</h1>
+<p>UE<sup id="fnref:1"><a href="#fn:1" rel="footnote"><span class="hint--top hint--error hint--medium hint--rounded hint--bounce" aria-label="User equipment，在蜂窝网络中指终端设备，大部分场景下是手机，也可能是智能手表，智能仪表等其它无线终端设备。
+">[1]</span></a></sup>
+在向网络发送数据的过程中，由于物理层存在一定的误码率(BLER)，有一些包(packet,
+即RLC
+PDU)有时候可能会在传输过程中发送失败或者丢失。但是，哪一些包发送失败了，从UE侧是无法知道的。因此，为了实现数据的可靠传输，UE需要网络侧的反馈，告诉UE在网络侧哪一些包已经收到，哪一些还没有收到，从而让UE能够重传那些网络还没收到的包，这个反馈就是<code>状态报告</code>(status
+report)。</p>
+<p>但是网络侧怎么能够知道什么时候给UE发送<code>状态报告</code>呢？如果网络侧频繁不停地给UE发送<code>状态报告</code>，那么虽然UE能够很及时地知道网络侧接收情况，但是这样就浪费了很多下行资源；而如果网络侧周期性地给UE发送<code>状态报告</code>，那么UE侧又无法及时得知网络侧的接收情况。引入<code>Polling</code>就是为了这个目的。UE需要向网络询问，哪一些包收到了，哪一些还没收到，这样网络就会回复<code>状态报告</code>，UE就能及时地重传那些没被网络收到(acknowledged)的包。</p>
+<hr>
+<h1 id="polling的触发条件">Polling的触发条件</h1>
+<p>在每个RLC data
+PDU的header部分，有一个P位的标志位，这个标志位就代表<code>polling</code>。当P位为1时，表示UE向网络侧发送<code>polling</code>，期望对方回复<code>状态报告</code>，反之亦然。在以下任一条件满足的情况下，UE都会触发<code>polling</code>：</p>
+<ul>
+<li>PDU_WITHOUT_POLL &gt;= <em>pollPDU</em></li>
+<li>BYTE_WITHOUT_POLL &gt;= <em>pollByte</em></li>
+<li>在发送完当前的RLC data PDU后，buffer里不再剩余任何待发送的RLC data
+PDU</li>
+<li><em>t-PollRetransmit</em> 定时器超时</li>
+</ul>
+<p>UE每发送一个新的RLC data
+PDU时，PDU_WITHOUT_POLL会加1；BYTE_WITHOUT_POLL也会增加sizeof(RLC PDU
+payload)。在更新了PDU_WITHOUT_POLL和BYTE_WITHOUT_POLL后，假如PDU_WITHOUT_POLL
+<span class="math inline">\(\geqslant\)</span>
+<em>pollPDU</em>，或者BYTE_WITHOUT_POLL <span class="math inline">\(\geqslant\)</span> <em>pollByte</em>
+，那么UE需要将该RLC PDU
+header的P位置1，向网络发送<code>polling</code>。这两个条件保证了UE每向网络发送一部分数据后，都能及时地知道这些数据在网络侧的接收情况。<em>pollPDU</em>
+和 <em>pollByte</em> 由网络配置，通过RRC层向RLC层下发。</p>
+<p>当UE发送buffer里最后一个新传RLC data
+PDU时，也应该置P位为1。这也是符合直觉的。因为在发送完最后一个新传RLC
+data
+PDU后，UE有可能很长时间都不会发送新的数据了，这时候前两个条件就无法触发了。因此，这时候需要向网络发送<code>polling</code>，获取网络的接收状态报告，然后及时地将前面还没发送成功的包给发送出去。</p>
+<p>假如在上面的<code>polling</code>触发，并且重传RLC
+PDU后，网络侧还是有一些包没收到，而此时UE不再有新的包发送了，那么网络侧岂不是再也收不到这些没收到的包了？针对这个问题，RLC层提供了最后一个polling触发条件，保证了在这种场景下，UE还能向网络发送这些丢失的包。UE在RLC层有一个
+<em>t-PollRetransmit</em>
+定时器，每当UE发送了<code>polling</code>后，都会启动
+<em>t-PollRetransmit</em> 定时器(或者重启，假如此时定时器还在运行)。当
+<em>t-PollRetransmit</em> 定时器超时时，假如</p>
+<ul>
+<li>buffer(包括RLC data PDU新传队列和重传队列)为空</li>
+<li>或者无法发送新传RLC PDU(比如此时因为收不到给VT(A)的ACK，导致window
+stall了)</li>
+</ul>
+<p>那么UE需要向网络重传一包RLC data PDU，并将该RLC data
+PDU的P位置1，向网络发送<code>polling</code>，这样就保证了在无法发送新传的数据时，UE还能收到网络的<code>状态报告</code>，从而重传之前丢失的包，补齐网络侧的接收窗口，而不至于让网络侧长时间无法完全收到这些包。UE在这种场景下向网络侧重传的RLC
+data PDU，可以选择以下两种之一：</p>
+<ul>
+<li>SN<sup id="fnref:2"><a href="#fn:2" rel="footnote"><span class="hint--top hint--error hint--medium hint--rounded hint--bounce" aria-label="Sequence number，每一包RLC data PDU都有一个sequence number，在一段时间内可以唯一标识这包RLC data PDU。">[2]</span></a></sup>为VT(S)
+– 1的RLC data PDU，即发送窗口最右侧的那个RLC data PDU</li>
+<li>发送窗口中任何一个还没被网络侧确认已经收到的RLC data PDU</li>
+</ul>
+<hr>
+<h1 id="总结">总结</h1>
+<p>本文从UE侧角度介绍了LTE网络RLC层的一个基本功能——<code>polling</code>机制。<code>polling</code>机制只在<code>AM模式</code>下才会生效，其目的是为了能及时得知网络侧的接收情况，从而及时地向网络重传丢失的数据包，保证数据的低时延可靠传输。最后介绍了<code>polling</code>的触发条件。</p>
+<hr>
+<h1 id="参考文献">参考文献</h1>
+<p>[1] 3GPP协议 36322 section 5.2.2 [2] <font color="DodgerBlue">Radio
+Protocols for LTE and LTE-Advanced (2012)</font> by SeungJune Yi,
+SungDuck Chun, etl. section 5.4.4 [3] 深入理解LTE-A. 温金辉著. section
+36.3.3.2</p>
+<div id="footnotes">
+<hr>
+<div id="footnotelist">
+<ol style="list-style: none; padding-left: 0; margin-left: 40px">
+<li id="fn:1">
+<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">1.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;">User
+equipment，在蜂窝网络中指终端设备，大部分场景下是手机，也可能是智能手表，智能仪表等其它无线终端设备。<a href="#fnref:1" rev="footnote">
+↩︎</a></span>
+</li>
+<li id="fn:2">
+<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">2.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;">Sequence
+number，每一包RLC data PDU都有一个sequence
+number，在一段时间内可以唯一标识这包RLC data
+PDU。<a href="#fnref:2" rev="footnote"> ↩︎</a></span>
+</li>
+</ol>
+</div>
+</div>
+
+]]></content>
+      <categories>
+        <category>LTE</category>
+      </categories>
+      <tags>
+        <tag>LTE</tag>
+        <tag>RLC</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>在ubuntu20.04编译及安装LLDB</title>
+    <url>/2021/12/16/compile-and-install-lldb/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言">前言</h1>
+<p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>已经介绍了如何在本地编译及安装llvm，但是当时只是编译和安装了<code>llvm;clang;libcxx;libcxxabi</code>这四个库，本文将介绍如何编译及安装lldb。
+<span id="more"></span> # 配置及安装LLDB
+在进行下面的步骤时，假设你已经下载了llvm整个工程，并且安装了所需的依赖工具。如果你还没进行这些操作，可以参考<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>一文的<code>本地编译安装LLVM</code>一节的<code>前提条件</code>和<code>下载LLVM源文件</code>这两部分内容，先完成这两步。</p>
+<p>完成上述步骤后，输入以下命令。首先cd进入llvm-project工程，然后生成cmake文件。<code>-S llvm</code>表示源文件所在文件夹为当前路径下的llvm文件夹；<code>-B build</code>表示生成的cmake文件将放到当前路径下的build文件夹；<code>-G Ninja</code>表示生成的cmake文件将给Ninja在编译时使用。
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure> 在编译到第[4169/4171]个文件时，会出现以下错误。 <img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-22-28.png" alt="2021-12-18-17-22-28"> 参考<a href="https://blog.csdn.net/Vin_tt/article/details/110421022">这篇文章</a>解决这个问题，输入以下命令:
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project/build</span><br><span class="line">sudo mkdir swapfile</span><br><span class="line">cd /swapfile</span><br><span class="line">sudo dd if=/dev/zero of=swap bs=1024 count=20000000</span><br><span class="line">sudo mkswap -f swap</span><br><span class="line">sudo swapon swap</span><br></pre></td></tr></table></figure> <img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-56-57.png" alt="2021-12-18-17-56-57">
+可以看到，剩下的三个文件都被成功地编译了。编译出来生成的应用程序位于llvm-project/build/bin路径下，将其拷贝到/usr/local/bin/文件夹下即可。
+<img src="/2021/12/16/compile-and-install-lldb/2021-12-18-18-17-50.png" alt="2021-12-18-18-17-50"> # 后记
+这部分讲的是后续的失败经历，以及没有解决的问题。</p>
+<p>上述编译命令在编译lldb过程中会有debug信息，其体积会很大，而且编译出来的文件在llvm-project/build文件夹下面，还需要<code>ninja install</code>命令将其安装至默认路径下，但是由于体积过大，在安装时容易出问题。最好是编译release版本，并且在生成cmake文件的时候指明安装路径，命令如下：
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;clang;lldb&quot;</span> <span class="comment">#1,这条命令与下面这条命令2选1</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;clang;lldb&quot;</span> ./llvm <span class="comment">#2,这条命令与上面的命令2选1</span></span></span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_BUILD_TYPE=&quot;Release&quot; -DLLDB_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=&quot;/usr/local/llvm&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_BUILD_TYPE=&quot;Release&quot; -DLLDB_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=&quot;/usr/local/llvm&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure>
+编译完成后，生成的文件位于llvm-project/build文件夹内，我们要把它们安装到/usr/local/路径下，因此，需要输入以下命令
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ninja install</span><br></pre></td></tr></table></figure>
+然后就会开始将lldb安装到/usr/local/路径下,在安装到第[203/1128]个文件时，出现了<code>fatal error: ld terminated with signal 9 [Killed]</code>错误，参照上面的方法，在build文件夹创建swapfile尝试解决。
+<img src="/2021/12/16/compile-and-install-lldb/2021-12-21-23-18-01.png" alt="2021-12-21-23-18-01">
+在安装剩下的文件时，安装到[375/927]个文件时仍然出现了以上错误。 <img src="/2021/12/16/compile-and-install-lldb/2021-12-22-08-27-51.png" alt="2021-12-22-08-27-51"> 再次尝试用上述方法安装剩下的文件。 <img src="/2021/12/16/compile-and-install-lldb/2021-12-22-08-39-08.png" alt="2021-12-22-08-39-08"> 依旧出现以上问题，最终只得作罢。 <img src="/2021/12/16/compile-and-install-lldb/2021-12-22-09-05-29.png" alt="2021-12-22-09-05-29"></p>
+<h1 id="参考文献">参考文献</h1>
+<ol type="1">
+<li><a href="https://lldb.llvm.org/resources/build.html#building-lldb-with-cmake">Building
+LLDB with CMake</a></li>
+<li><a href="https://blog.csdn.net/Vin_tt/article/details/110421022">LLVM编译collect2:
+fatal error: ld terminated with signal 9</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>编译器</category>
+      </categories>
+      <tags>
+        <tag>开发环境</tag>
+        <tag>工具链</tag>
       </tags>
   </entry>
   <entry>
@@ -528,112 +559,6 @@ if statement</a></p>
       </categories>
       <tags>
         <tag>shell</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>在ubuntu20.04安装LLVM</title>
-    <url>/2021/12/04/ubuntu-install-llvm/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="简介">简介</h1>
-<p>在ubuntu20.04上安装LLVM，主要有四种方法。 *
-方法一：运行官方的自动安装脚本进行安装 * 方法二：通过包管理器进行安装 *
-方法三：使用官方预编译二进制文件进行安装 * 方法四：从源码编译安装
-<span id="more"></span>
-第一种方法最为简单，只需要一条命令，执行一下脚本，就不要进行任何操作了。第二种方法较第一种要麻烦一点点，但是也比较简单。第三种办法要麻烦点，但是会比较快，简单来说就是直接到网上下载预编译好的binary文件，将其下载到ubuntu20.04系统中，然后解压，再把解压后的所有文件全部拷贝到系统的/usr/local文件夹下，然后就可以使用了。第四种方法最为麻烦，而且很慢，简单来说就是从网上下载LLVM工程的源代码到ubuntu系统，然后在本机上编译，编译完成再安装。</p>
-<p>如果只是为了使用LLVM的工具链，个人建议采用方法一或者二和三(我安装的时候使用的是方法三)，简单快捷。如果为了体验一下在本地编译LLVM工程那种更原汁原味的感觉，可以采用方法四，但是这种方法比较麻烦，因为需要安装一些依赖工具，并且在本地编译LLVM耗时严重，整个过程将会相当漫长，所以如果时间预算不是很充足，又或者电脑配置不太好的情况下，我不建议采用方法四。当然，这里四种方法的过程我都会介绍。
-# 使用官方安装脚本安装
-首先介绍第一种方法，这种方法又有两个选择，第一个是可以选择安装最新版本的，另外一个就是安装某个特定版本。参考下图，来自<a href="https://apt.llvm.org/">官网</a>的介绍。 <img src="/2021/12/04/ubuntu-install-llvm/2021-12-08-23-55-45.png" alt="2021-12-08-23-55-45"> &gt;For convenience there is an automatic
-installation script available that installs LLVM for you. To install the
-latest stable version: bash -c "$(wget -O -
-https://apt.llvm.org/llvm.sh)" &gt; &gt;To install a specific version of
-LLVM: wget https://apt.llvm.org/llvm.sh chmod +x llvm.sh sudo ./llvm.sh
-<version number> ## 安装最新稳定版LLVM
-在ubuntu命令终端执行以下命令，将会运行官网上的llvm.sh这个shell脚本，自动给你安装最新的稳定版本的llvm了。
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">bash -c &quot;$(wget -O - https://apt.llvm.org/llvm.sh)&quot;</span><br></pre></td></tr></table></figure> ## 安装特定版LLVM
-假如我们想用老的版本的话，我们也可以指明某个特定的版本进行安装，在ubuntu命令终端执行以下命令：
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://apt.llvm.org/llvm.sh</span><br><span class="line">chmod +x llvm.sh</span><br><span class="line">sudo ./llvm.sh &lt;version number&gt;</span><br></pre></td></tr></table></figure> 其中，&lt;version
-number&gt;需要替换成你想安装的那个版本的版本号。例如，假如我们想安装13版本的LLVM时，执行以下命令：
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://apt.llvm.org/llvm.sh</span><br><span class="line">chmod +x llvm.sh</span><br><span class="line">sudo ./llvm.sh 13</span><br></pre></td></tr></table></figure> # 使用包管理器安装
-使用包管理器安装，我们需要先修改<code>/etc/apt/source.list</code>，参考以下<a href="https://apt.llvm.org/">官方内容</a>，我们需要先在<code>/etc/apt/source.list</code>加入以下内容，
-<img src="/2021/12/04/ubuntu-install-llvm/2021-12-09-00-15-09.png" alt="2021-12-09-00-15-09"> <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">deb http://apt.llvm.org/focal/ llvm-toolchain-focal main</span><br><span class="line">deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal main</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">12</span></span><br><span class="line">deb http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main</span><br><span class="line">deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">13</span></span><br><span class="line">deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main</span><br><span class="line">deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main</span><br></pre></td></tr></table></figure>
-加上以上内容后，我们有三种方法可以安装LLVM。 ## 方法一
-执行以下shell命令，执行后将会安装LLVM release 13。 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">apt update</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">LLVM</span></span><br><span class="line">apt install libllvm-13-ocaml-dev libllvm13 llvm-13 llvm-13-dev llvm-13-doc llvm-13-examples llvm-13-runtime</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Clang and co</span></span><br><span class="line">apt install clang-13 clang-tools-13 clang-13-doc libclang-common-13-dev libclang-13-dev libclang1-13 clang-format-13 python-clang-13 clangd-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libfuzzer</span></span><br><span class="line">apt install libfuzzer-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">lldb</span></span><br><span class="line">apt install lldb-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">lld (linker)</span></span><br><span class="line">apt install lld-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libc++</span></span><br><span class="line">apt install libc++-13-dev libc++abi-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">OpenMP</span></span><br><span class="line">apt install libomp-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libclc</span></span><br><span class="line">apt install libclc-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libunwind</span></span><br><span class="line">apt install libunwind-13-dev</span><br></pre></td></tr></table></figure> ##
-方法二
-参考官网，执行以下shell命令，执行后将会为我们安装最新版本的LLVM（当前版本为version
-14） <img src="/2021/12/04/ubuntu-install-llvm/2021-12-09-00-40-49.png" alt="2021-12-09-00-40-49"> <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">apt-get install clang-format clang-tidy clang-tools clang clangd libc++-dev libc++1 libc++abi-dev libc++abi1 libclang-dev libclang1 liblldb-dev libllvm-ocaml-dev libomp-dev libomp5 lld lldb llvm-dev llvm-runtime llvm python-clang</span><br></pre></td></tr></table></figure> ## 方法三
-这种方法是用来安装特定稳定版本的LLVM的，参考官网。 <img src="/2021/12/04/ubuntu-install-llvm/2021-12-09-00-42-26.png" alt="2021-12-09-00-42-26">
-以安装13版本为例，首先我们需要获取文档签名，执行以下shell命令，
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Fingerprint: 6084 F3CF 814B 57C1 CF12 EFD5 15CF 4D18 AF4F 7421</span></span><br></pre></td></tr></table></figure>
-获取签名后，我们就可以安装LLVM了。假如我们只想安装其中的clang，lld和lldb库(13
-release)，我们可以执行以下shell命令， <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">apt-get install clang-13 lldb-13 lld-13</span><br></pre></td></tr></table></figure>
-假如我们想安装所有的关键的库，那就不要执行上述命令，而是执行以下shell命令，
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">LLVM</span></span><br><span class="line">apt-get install libllvm-13-ocaml-dev libllvm13 llvm-13 llvm-13-dev llvm-13-doc llvm-13-examples llvm-13-runtime</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Clang and co</span></span><br><span class="line">apt-get install clang-13 clang-tools-13 clang-13-doc libclang-common-13-dev libclang-13-dev libclang1-13 clang-format-13 python-clang-13 clangd-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libfuzzer</span></span><br><span class="line">apt-get install libfuzzer-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">lldb</span></span><br><span class="line">apt-get install lldb-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">lld (linker)</span></span><br><span class="line">apt-get install lld-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libc++</span></span><br><span class="line">apt-get install libc++-13-dev libc++abi-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">OpenMP</span></span><br><span class="line">apt-get install libomp-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libclc</span></span><br><span class="line">apt-get install libclc-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libunwind</span></span><br><span class="line">apt-get install libunwind-13-dev</span><br></pre></td></tr></table></figure> # 使用预编译二进制文件安装 ## 下载文件
-接下来介绍方法三，使用预编译二进制文件安装。顾名思义，预编译二进制文件就是说别人已经帮你编译好LLVM工程，生成了二进制文件，你所需的只是将其下载下来，然后放到合适的位置，就可以使用了。从哪里下载LLVM预编译二进制文件呢？这里我提供两个可选的地址。一个是<a href="https://github.com/llvm/llvm-project/releases/tag/llvmorg-13.0.0">官方Github仓库</a>，LLVM项目组已经将他们的工程放到了这个Github仓库里了，我们只要从里面下载<code>clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz</code>(假如你的操作系统是ubuntu20.04版本的话)或者<code>clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz</code>(假如你的操作系统是ubuntu16.04版本的话)，将其下载到ubuntu系统本地即可。由于国内访问Github网速较慢，而我们所下载的压缩文件大小为500MB左右，为了节省时间起见，我个人建议从另一个地址下载，那就是国内的<a href="https://mirrors.tuna.tsinghua.edu.cn/github-release/llvm/llvm-project/LatestRelease/">清华镜像源</a>。
-## 安装文件
-下载好二进制文件到ubuntu系统本地后，我们需要先将文件解压，然后再安装。先解压文件，解压的命令如下。
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">xz -d clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz #此处你下载的包是clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz，这里是第一步解压</span><br><span class="line">tar -xvf clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz #此处已经是上一步解压完了，文件夹里剩下的是.tar文件</span><br></pre></td></tr></table></figure>
-然后再将解压后文件夹下的5个文件夹（bin,include,share,lib,libexec）及里面的所有文件全部复制到/usr/local目录下即可，复制命令如下。
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/* /usr/local/ #此处的*代表这个目录下的五个文件都要被复制</span><br></pre></td></tr></table></figure>
-也可以一个一个文件夹地复制，命令如下。注意，如果/usr/local/没有对应的文件夹(e.g.
-libexec)时，需要先创建该文件夹，然后再复制解压到对应文件夹里面。
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/bin/* /usr/local/bin/ #此处的*代表这个目录下的五个文件都要被复制</span><br><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/include/* /usr/local/include/ #此处的*代表这个目录下的五个文件都要被复制</span><br><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/share/* /usr/local/share/ #此处的*代表这个目录下的五个文件都要被复制</span><br><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/lib/* /usr/local/lib/ #此处的*代表这个目录下的五个文件都要被复制</span><br><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/libexec/* /usr/local/libexec/ #此处的*代表这个目录下的五个文件都要被复制</span><br></pre></td></tr></table></figure> 完成以上步骤后，我们就可以使用clang了，先测试一下。
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">clang --version</span><br></pre></td></tr></table></figure> <img src="/2021/12/04/ubuntu-install-llvm/2021-12-04-17-16-26.png" alt="2021-12-04-17-16-26">
-可以看到，我们已经成功安装clang，版本为13.0.0，接下来就可以愉快地使用了。
-## 小结 总结来说，就是执行以下命令, <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mkdir -p /usr/local</span><br><span class="line">cd /usr/local</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">不从Github下载，而是从清华镜像源下载</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">sudo wget https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.0/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz</span></span><br><span class="line">sudo wget https://mirrors.tuna.tsinghua.edu.cn/github-release/llvm/llvm-project/LatestRelease/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz</span><br><span class="line">sudo tar xvf clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz</span><br><span class="line">sudo mv clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04 llvm</span><br><span class="line">export PATH=&quot;$PATH:/usr/local/llvm/bin&quot;</span><br></pre></td></tr></table></figure> # 本地编译安装LLVM ##
-前提条件
-下面介绍方法四，在安装前，需要先安装以下工具，这些工具会在编译LLVM工程过程中使用到，参考<a href="https://llvm.org/docs/GettingStarted.html">官网</a>说明： <img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-03-12.png" alt="2021-12-10-14-03-12"> * CMake &gt;= 3.13.4 * GCC &gt;= 5.1.0 *
-Python &gt;= 3.6 * zlib &gt;= 1.2.3.4 * GNU Make &gt;= 3.79 * Ninja
-&gt;= 1.10.0</version></p>
-<p>在ubuntu系统上<a href="https://zhuanlan.zhihu.com/p/321882707">安装Ninja</a>和<a href="https://blog.csdn.net/lj402159806/article/details/76408597">安装CMake</a>非常简单，执行以下命令即可，
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt install ninja-build</span><br><span class="line">sudo apt install cmake</span><br></pre></td></tr></table></figure> ## 下载LLVM源文件
-下载LLVM工程源文件到本地，然后在本地编译，再安装。首先我们需要下载LLVM工程源代码，这里我们可以选择从官方Github仓库下载或者是从清华镜像源下载，个人建议从清华镜像源下载，因为这样会快很多。
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/llvm/llvm-project.git #地址一，从官方Github仓库下载</span><br><span class="line">git clone https://mirrors.tuna.tsinghua.edu.cn/git/llvm-project.git #地址二，从清华镜像源下载</span><br></pre></td></tr></table></figure> 下载完成后可以看到llvm-project文件夹了。 <img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-11-04.png" alt="2021-12-10-14-11-04"> ## 配置LLVM
-下载完LLVM项目源文件后，下一步就是编译这些源文件了。这里推荐使用Ninja来编译，速度会快很多，当然也可以使用其他编译系统生成工具，比如Unix
-Makefiles等。在使用Ninja进行编译之前，我们还需要生成编译过程所需编译文件，这些文件会告诉Ninja如何对LLVM-project进行编译。
-<img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-17-16.png" alt="2021-12-10-14-17-16"> 运行以下shell命令： <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project #cd进入llvm-project文件夹</span><br><span class="line">mkdir build #在llvm-project文件夹创建build文件夹</span><br><span class="line">cd build #cd进入build文件夹</span><br><span class="line">cmake -G Ninja ../llvm #在当前目录(build)生成Ninja编译过程所需的文件，cmake的源文件目录为llvm-project下的llvm文件夹</span><br></pre></td></tr></table></figure>
-上面的第四条命令，格式为<code>cmake -G &lt;generator&gt; [options] ../llvm</code>,这里的generator我选择的是Ninja。options则表示可选的选项，常用的有<code>-DLLVM_ENABLE_PROJECTS</code>，表示除了LLVM，你还想编译哪些LLVM子项目。比如，如果除了LLVM外，你还想编译Clang，libcxx和libcxxabi，那么你可以使用编译选项<code>-DLLVM_ENABLE_PROJECTS="clang" -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi"</code>，上述的第四条命令就是：
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang&quot; -DLLVM_ENABLE_RUNTIMES=&quot;libcxx;libcxxabi&quot; ../llvm </span><br></pre></td></tr></table></figure>
-也可以不运行上面的shell命令，而是运行下面的shell命令（参考<a href="https://github.com/llvm/llvm-project">官网指导</a>）：
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project #cd进入llvm-project文件夹</span><br><span class="line">mkdir build #在llvm-project文件夹创建build文件夹</span><br><span class="line">cmake -S llvm -B build -G Ninja #对llvm文件夹下的源文件进行cmake，生成的文件放在build目录下，生成的文件将在Ninja编译过程使用</span><br></pre></td></tr></table></figure>
-上面的第三条命令，格式为<code>cmake -S llvm -B build -G &lt;generator&gt; [options]</code>,-S表示cmake的源文件所在文件夹，这里是llvm。-B表示cmake后生成的文件所在的文件夹，这里是build文件夹。-G表示将要使用这些生成的cmake文件来编译的工具，这里是Ninja。如果不清楚这些cmake短选项的含义的话，可以<code>cmake -help</code>查看一下帮助。后面的<code>[options]</code>则表示其它的cmake选项，常用的有<code>-DLLVM_ENABLE_PROJECTS='...'</code>，具体含义如前所述。假如我们除了llvm子项目以外，还想编译其它的子项目，比如Clang，libcxx，libcxxabi，那我们可以使用<code>-DLLVM_ENABLE_PROJECTS="clang;libcxx;libcxxabi"</code>选项，上面第三条shell命令就是:
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;libcxx;libcxxabi&quot;</span><br></pre></td></tr></table></figure> <img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-45-31.png" alt="2021-12-10-14-45-31">
-cmake完成后可以看到编译文件已被写到build文件夹下。 <img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-15-01-48.png" alt="2021-12-10-15-01-48"> ## 编译LLVM
-生成Ninja编译LLVM所需的文件后，下一步就是编译llvm了，参考<a href="https://github.com/llvm/llvm-project">官网</a>，输入以下命令：
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake --build build</span><br></pre></td></tr></table></figure>
-上述命令的格式为<code>cmake --build build [-- [options] &lt;target&gt;]</code>，--build指明编译后文件写入的文件夹，这里是build文件夹。--target选项指明所使用的编译工具，假如安装了Ninja的话，默认的target是Ninja。也可以输入以下命令，显式地调用Ninja:
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd build</span><br><span class="line">ninja -j 8</span><br></pre></td></tr></table></figure> <img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-12-39-32.png" alt="2021-12-11-12-39-32">
-在编译到第3257个文件的时候，可能会发生如下错误： <img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-19-07-48.png" alt="2021-12-10-19-07-48">
-原因是因为我的GCC版本太低了，还是9.3.0版本。根据<a href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，升级到11.2.0版（也是当前的最新版）就可以解决这个问题了，因此，需要<a href="https://yang-yuke.github.io/2021/12/10/install-latest-gcc/">升级GCC到最新版</a>。
-<img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-19-05-59.png" alt="2021-12-10-19-05-59"> 在升级到最新版GCC后，再重复上面的编译命令：
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;libcxx;libcxxabi&quot;</span><br><span class="line">cd build</span><br><span class="line">ninja -j 8</span><br></pre></td></tr></table></figure> 依然出现了大量以下错误， <img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-16-24-36.png" alt="2021-12-11-16-24-36">
-这些错误是在编译libcxxabi库的cpp文件时出现的，说明有可能是我们在cmake配置编译的时候出了问题，回到<a href="https://llvm.org/docs/GettingStarted.html">LLVM官网Get
-started页面</a>，发现与<a href="https://github.com/llvm/llvm-project">LLVM Github Get
-started</a>上对<code>DLLVM_ENABLE_PROJECTS</code>编译选项的细节描述有点出入，<code>"libcxx;libcxxabi"</code>应该要放到<code>DLLVM_ENABLE_RUNTIMES</code>编译选项里，而不是<code>DLLVM_ENABLE_PROJECTS</code>里面。
-<img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-16-29-07.png" alt="2021-12-11-16-29-07"> 于是，重新进行cmake配置和编译，命令如下：
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang&quot; -DLLVM_ENABLE_RUNTIMES=&quot;libcxx;libcxxabi&quot;</span><br><span class="line">cd build</span><br><span class="line">ninja -j8</span><br></pre></td></tr></table></figure>
-此时，发现能够继续往下编译了，但是每编译十几个cpp文件后就会出现以下错误“fatal
-error: ld terminated with signal 9 [Killed]”，然后就停止了。 <img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-16-32-11.png" alt="2021-12-11-16-32-11"> 查了一下，<a href="https://stackoverflow.com/questions/65633304/not-able-to-build-llvm-from-its-source-code">这里</a>提到有可能是因为内存不足所致的，于是重新配置并编译，命令如下：
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS=&quot;clang&quot; -DLLVM_ENABLE_RUNTIMES=&quot;libcxx;libcxxabi&quot; -DLLVM_PARALLEL_LINK_JOBS=1</span><br><span class="line">cmake --build build</span><br></pre></td></tr></table></figure> <img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-18-38-00.png" alt="2021-12-11-18-38-00"> <img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-18-38-29.png" alt="2021-12-11-18-38-29">
-上述命令中，<code>-DCMAKE_BUILD_TYPE=Release</code>表示编译的版本是release版本，release版本要小很多，如果不指明的话编译的就是debug版本。<code>-DLLVM_PARALLEL_LINK_JOBS=1</code>表示不开parallel
-build。等待一段时间后，可以看到这一次可以完全编译所有的文件了。 <img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-18-42-53.png" alt="2021-12-11-18-42-53">
-编译完成后，需要切换到root用户进行安装，命令如下： <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd build #cd进入llvm-project/build文件夹</span><br><span class="line">sudo su root #切换到root用户权限</span><br><span class="line">ninja install #安装llvm</span><br></pre></td></tr></table></figure>
-安装完成后，可以看到clang已被安装到<code>/usr/local/bin</code>路径下，说明安装已经成功。
-<img src="/2021/12/04/ubuntu-install-llvm/2021-12-13-22-17-01.png" alt="2021-12-13-22-17-01"> # 参考文献 1. <a href="https://blog.csdn.net/zerolord/article/details/116891720">Ubuntu20.04安装llvm</a>
-2. <a href="https://mirrors.tuna.tsinghua.edu.cn/help/llvm-project.git/">LLVM
-Git 源码仓库镜像使用帮助</a> 3. <a href="https://zhuanlan.zhihu.com/p/102028114">LLVM概述——介绍与安装</a>
-4. <a href="https://apt.llvm.org/">LLVM Debian/Ubuntu nightly
-packages</a> 5. <a href="https://zhuanlan.zhihu.com/p/321882707">Ninja安装和基本使用</a> 6.
-<a href="https://blog.csdn.net/lj402159806/article/details/76408597">ubuntu安装CMake的几种方式</a>
-7. <a href="https://llvm.org/docs/GettingStarted.html">Getting Started
-with the LLVM System</a> 8. <a href="https://github.com/llvm/llvm-project">Getting Started with the
-LLVM System(github)</a> 9. <a href="https://getting-started-with-llvm-core-libraries-zh-cn.readthedocs.io/zh_CN/latest/ch01.html">第1章
-编译和安装LLVM</a></p>
-]]></content>
-      <categories>
-        <category>编译器</category>
-      </categories>
-      <tags>
-        <tag>开发环境</tag>
-        <tag>工具链</tag>
       </tags>
   </entry>
   <entry>
@@ -864,69 +789,172 @@ block)，要理解比特币网络，首先必须要正确理解这些概念。</
       </tags>
   </entry>
   <entry>
-    <title>比特币多重签名</title>
-    <url>/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="概述">概述</h1>
-<p>在“<a href="https://blog.csdn.net/zengaliang/article/details/125133213?spm=1001.2014.3001.5501">浅析比特币脚本</a>”一文中，曾经提到过比特币脚本的一个应用是多重签名(Multi-Signature)。顾名思义，多重签名(以下简称多签)是指一笔交易需要多个私钥签名才能被执行。</p>
-<p>在大多数情况下，交易都是一对一进行的，买家向卖家给出的地址(即卖家的公钥哈希)支付比特币，卖家要使用该比特币的时候提供自己的数字签名并验证自己的数字签名有效即可。但也会有这样一类场景：一个钱包被多个人共同持有。比如，某公司有5个合伙人，公司钱包相应就有5个私钥，每个合伙人持有其中1个私钥。为了防止其中某一个合伙人想中饱私囊或者肆意挥霍，必须有5个人中的3人同时签名才可以把钱包中的币取走，这类情况就需要使用“多重签名”。
+    <title>在ubuntu20.04安装LLVM</title>
+    <url>/2021/12/04/ubuntu-install-llvm/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="简介">简介</h1>
+<p>在ubuntu20.04上安装LLVM，主要有四种方法。 *
+方法一：运行官方的自动安装脚本进行安装 * 方法二：通过包管理器进行安装 *
+方法三：使用官方预编译二进制文件进行安装 * 方法四：从源码编译安装
 <span id="more"></span>
-在比特币中，多签的含义是：一个钱包如果有m个私钥，交易的时候，需要其中n(1≤n≤m)
-个私钥的签名，交易才能被执行。对应到现实里，可以想象为这样一个场景：m个人共同管理一笔资金(比特币)，他们各自持有一把私钥，要花费这笔资金需要取得其中至少n个人的同意(签名)
-才能进行。对应到这个场景的话，m就是5，n就是3。</p>
-<p>使用多签有这些优点： - 一个钱包可以由多人共同管理 -
-避免单点故障，防止某一个私钥被盗影响整个钱包 -
-多个私钥可以起备份作用，防止单一私钥在丢失的情况下导致大量属于该私钥持有者的资金损失</p>
-<p>多签主要有两种实现方式：</p>
+第一种方法最为简单，只需要一条命令，执行一下脚本，就不要进行任何操作了。第二种方法较第一种要麻烦一点点，但是也比较简单。第三种办法要麻烦点，但是会比较快，简单来说就是直接到网上下载预编译好的binary文件，将其下载到ubuntu20.04系统中，然后解压，再把解压后的所有文件全部拷贝到系统的/usr/local文件夹下，然后就可以使用了。第四种方法最为麻烦，而且很慢，简单来说就是从网上下载LLVM工程的源代码到ubuntu系统，然后在本机上编译，编译完成再安装。</p>
+<p>如果只是为了使用LLVM的工具链，个人建议采用方法一或者二和三(我安装的时候使用的是方法三)，简单快捷。如果为了体验一下在本地编译LLVM工程那种更原汁原味的感觉，可以采用方法四，但是这种方法比较麻烦，因为需要安装一些依赖工具，并且在本地编译LLVM耗时严重，整个过程将会相当漫长，所以如果时间预算不是很充足，又或者电脑配置不太好的情况下，我不建议采用方法四。当然，这里四种方法的过程我都会介绍。
+# 使用官方安装脚本安装
+首先介绍第一种方法，这种方法又有两个选择，第一个是可以选择安装最新版本的，另外一个就是安装某个特定版本。参考下图，来自<a href="https://apt.llvm.org/">官网</a>的介绍。 <img src="/2021/12/04/ubuntu-install-llvm/2021-12-08-23-55-45.png" alt="2021-12-08-23-55-45"> &gt;For convenience there is an automatic
+installation script available that installs LLVM for you. To install the
+latest stable version: bash -c "$(wget -O -
+https://apt.llvm.org/llvm.sh)" &gt; &gt;To install a specific version of
+LLVM: wget https://apt.llvm.org/llvm.sh chmod +x llvm.sh sudo ./llvm.sh
+<version number> ## 安装最新稳定版LLVM
+在ubuntu命令终端执行以下命令，将会运行官网上的llvm.sh这个shell脚本，自动给你安装最新的稳定版本的llvm了。
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">bash -c &quot;$(wget -O - https://apt.llvm.org/llvm.sh)&quot;</span><br></pre></td></tr></table></figure> ## 安装特定版LLVM
+假如我们想用老的版本的话，我们也可以指明某个特定的版本进行安装，在ubuntu命令终端执行以下命令：
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://apt.llvm.org/llvm.sh</span><br><span class="line">chmod +x llvm.sh</span><br><span class="line">sudo ./llvm.sh &lt;version number&gt;</span><br></pre></td></tr></table></figure> 其中，&lt;version
+number&gt;需要替换成你想安装的那个版本的版本号。例如，假如我们想安装13版本的LLVM时，执行以下命令：
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://apt.llvm.org/llvm.sh</span><br><span class="line">chmod +x llvm.sh</span><br><span class="line">sudo ./llvm.sh 13</span><br></pre></td></tr></table></figure> # 使用包管理器安装
+使用包管理器安装，我们需要先修改<code>/etc/apt/source.list</code>，参考以下<a href="https://apt.llvm.org/">官方内容</a>，我们需要先在<code>/etc/apt/source.list</code>加入以下内容，
+<img src="/2021/12/04/ubuntu-install-llvm/2021-12-09-00-15-09.png" alt="2021-12-09-00-15-09"> <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">deb http://apt.llvm.org/focal/ llvm-toolchain-focal main</span><br><span class="line">deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal main</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">12</span></span><br><span class="line">deb http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main</span><br><span class="line">deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">13</span></span><br><span class="line">deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main</span><br><span class="line">deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main</span><br></pre></td></tr></table></figure>
+加上以上内容后，我们有三种方法可以安装LLVM。 ## 方法一
+执行以下shell命令，执行后将会安装LLVM release 13。 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">apt update</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">LLVM</span></span><br><span class="line">apt install libllvm-13-ocaml-dev libllvm13 llvm-13 llvm-13-dev llvm-13-doc llvm-13-examples llvm-13-runtime</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Clang and co</span></span><br><span class="line">apt install clang-13 clang-tools-13 clang-13-doc libclang-common-13-dev libclang-13-dev libclang1-13 clang-format-13 python-clang-13 clangd-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libfuzzer</span></span><br><span class="line">apt install libfuzzer-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">lldb</span></span><br><span class="line">apt install lldb-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">lld (linker)</span></span><br><span class="line">apt install lld-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libc++</span></span><br><span class="line">apt install libc++-13-dev libc++abi-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">OpenMP</span></span><br><span class="line">apt install libomp-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libclc</span></span><br><span class="line">apt install libclc-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libunwind</span></span><br><span class="line">apt install libunwind-13-dev</span><br></pre></td></tr></table></figure> ##
+方法二
+参考官网，执行以下shell命令，执行后将会为我们安装最新版本的LLVM（当前版本为version
+14） <img src="/2021/12/04/ubuntu-install-llvm/2021-12-09-00-40-49.png" alt="2021-12-09-00-40-49"> <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">apt-get install clang-format clang-tidy clang-tools clang clangd libc++-dev libc++1 libc++abi-dev libc++abi1 libclang-dev libclang1 liblldb-dev libllvm-ocaml-dev libomp-dev libomp5 lld lldb llvm-dev llvm-runtime llvm python-clang</span><br></pre></td></tr></table></figure> ## 方法三
+这种方法是用来安装特定稳定版本的LLVM的，参考官网。 <img src="/2021/12/04/ubuntu-install-llvm/2021-12-09-00-42-26.png" alt="2021-12-09-00-42-26">
+以安装13版本为例，首先我们需要获取文档签名，执行以下shell命令，
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Fingerprint: 6084 F3CF 814B 57C1 CF12 EFD5 15CF 4D18 AF4F 7421</span></span><br></pre></td></tr></table></figure>
+获取签名后，我们就可以安装LLVM了。假如我们只想安装其中的clang，lld和lldb库(13
+release)，我们可以执行以下shell命令， <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">apt-get install clang-13 lldb-13 lld-13</span><br></pre></td></tr></table></figure>
+假如我们想安装所有的关键的库，那就不要执行上述命令，而是执行以下shell命令，
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">LLVM</span></span><br><span class="line">apt-get install libllvm-13-ocaml-dev libllvm13 llvm-13 llvm-13-dev llvm-13-doc llvm-13-examples llvm-13-runtime</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Clang and co</span></span><br><span class="line">apt-get install clang-13 clang-tools-13 clang-13-doc libclang-common-13-dev libclang-13-dev libclang1-13 clang-format-13 python-clang-13 clangd-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libfuzzer</span></span><br><span class="line">apt-get install libfuzzer-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">lldb</span></span><br><span class="line">apt-get install lldb-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">lld (linker)</span></span><br><span class="line">apt-get install lld-13</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libc++</span></span><br><span class="line">apt-get install libc++-13-dev libc++abi-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">OpenMP</span></span><br><span class="line">apt-get install libomp-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libclc</span></span><br><span class="line">apt-get install libclc-13-dev</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">libunwind</span></span><br><span class="line">apt-get install libunwind-13-dev</span><br></pre></td></tr></table></figure> # 使用预编译二进制文件安装 ## 下载文件
+接下来介绍方法三，使用预编译二进制文件安装。顾名思义，预编译二进制文件就是说别人已经帮你编译好LLVM工程，生成了二进制文件，你所需的只是将其下载下来，然后放到合适的位置，就可以使用了。从哪里下载LLVM预编译二进制文件呢？这里我提供两个可选的地址。一个是<a href="https://github.com/llvm/llvm-project/releases/tag/llvmorg-13.0.0">官方Github仓库</a>，LLVM项目组已经将他们的工程放到了这个Github仓库里了，我们只要从里面下载<code>clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz</code>(假如你的操作系统是ubuntu20.04版本的话)或者<code>clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz</code>(假如你的操作系统是ubuntu16.04版本的话)，将其下载到ubuntu系统本地即可。由于国内访问Github网速较慢，而我们所下载的压缩文件大小为500MB左右，为了节省时间起见，我个人建议从另一个地址下载，那就是国内的<a href="https://mirrors.tuna.tsinghua.edu.cn/github-release/llvm/llvm-project/LatestRelease/">清华镜像源</a>。
+## 安装文件
+下载好二进制文件到ubuntu系统本地后，我们需要先将文件解压，然后再安装。先解压文件，解压的命令如下。
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">xz -d clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz #此处你下载的包是clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz，这里是第一步解压</span><br><span class="line">tar -xvf clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz #此处已经是上一步解压完了，文件夹里剩下的是.tar文件</span><br></pre></td></tr></table></figure>
+然后再将解压后文件夹下的5个文件夹（bin,include,share,lib,libexec）及里面的所有文件全部复制到/usr/local目录下即可，复制命令如下。
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/* /usr/local/ #此处的*代表这个目录下的五个文件都要被复制</span><br></pre></td></tr></table></figure>
+也可以一个一个文件夹地复制，命令如下。注意，如果/usr/local/没有对应的文件夹(e.g.
+libexec)时，需要先创建该文件夹，然后再复制解压到对应文件夹里面。
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/bin/* /usr/local/bin/ #此处的*代表这个目录下的五个文件都要被复制</span><br><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/include/* /usr/local/include/ #此处的*代表这个目录下的五个文件都要被复制</span><br><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/share/* /usr/local/share/ #此处的*代表这个目录下的五个文件都要被复制</span><br><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/lib/* /usr/local/lib/ #此处的*代表这个目录下的五个文件都要被复制</span><br><span class="line">sudo cp -r clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04/libexec/* /usr/local/libexec/ #此处的*代表这个目录下的五个文件都要被复制</span><br></pre></td></tr></table></figure> 完成以上步骤后，我们就可以使用clang了，先测试一下。
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">clang --version</span><br></pre></td></tr></table></figure> <img src="/2021/12/04/ubuntu-install-llvm/2021-12-04-17-16-26.png" alt="2021-12-04-17-16-26">
+可以看到，我们已经成功安装clang，版本为13.0.0，接下来就可以愉快地使用了。
+## 小结 总结来说，就是执行以下命令, <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mkdir -p /usr/local</span><br><span class="line">cd /usr/local</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">不从Github下载，而是从清华镜像源下载</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">sudo wget https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.0/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz</span></span><br><span class="line">sudo wget https://mirrors.tuna.tsinghua.edu.cn/github-release/llvm/llvm-project/LatestRelease/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz</span><br><span class="line">sudo tar xvf clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz</span><br><span class="line">sudo mv clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04 llvm</span><br><span class="line">export PATH=&quot;$PATH:/usr/local/llvm/bin&quot;</span><br></pre></td></tr></table></figure> # 本地编译安装LLVM ##
+前提条件
+下面介绍方法四，在安装前，需要先安装以下工具，这些工具会在编译LLVM工程过程中使用到，参考<a href="https://llvm.org/docs/GettingStarted.html">官网</a>说明： <img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-03-12.png" alt="2021-12-10-14-03-12"> * CMake &gt;= 3.13.4 * GCC &gt;= 5.1.0 *
+Python &gt;= 3.6 * zlib &gt;= 1.2.3.4 * GNU Make &gt;= 3.79 * Ninja
+&gt;= 1.10.0</version></p>
+<p>在ubuntu系统上<a href="https://zhuanlan.zhihu.com/p/321882707">安装Ninja</a>和<a href="https://blog.csdn.net/lj402159806/article/details/76408597">安装CMake</a>非常简单，执行以下命令即可，
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt install ninja-build</span><br><span class="line">sudo apt install cmake</span><br></pre></td></tr></table></figure> ## 下载LLVM源文件
+下载LLVM工程源文件到本地，然后在本地编译，再安装。首先我们需要下载LLVM工程源代码，这里我们可以选择从官方Github仓库下载或者是从清华镜像源下载，个人建议从清华镜像源下载，因为这样会快很多。
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/llvm/llvm-project.git #地址一，从官方Github仓库下载</span><br><span class="line">git clone https://mirrors.tuna.tsinghua.edu.cn/git/llvm-project.git #地址二，从清华镜像源下载</span><br></pre></td></tr></table></figure> 下载完成后可以看到llvm-project文件夹了。 <img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-11-04.png" alt="2021-12-10-14-11-04"> ## 配置LLVM
+下载完LLVM项目源文件后，下一步就是编译这些源文件了。这里推荐使用Ninja来编译，速度会快很多，当然也可以使用其他编译系统生成工具，比如Unix
+Makefiles等。在使用Ninja进行编译之前，我们还需要生成编译过程所需编译文件，这些文件会告诉Ninja如何对LLVM-project进行编译。
+<img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-17-16.png" alt="2021-12-10-14-17-16"> 运行以下shell命令： <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project #cd进入llvm-project文件夹</span><br><span class="line">mkdir build #在llvm-project文件夹创建build文件夹</span><br><span class="line">cd build #cd进入build文件夹</span><br><span class="line">cmake -G Ninja ../llvm #在当前目录(build)生成Ninja编译过程所需的文件，cmake的源文件目录为llvm-project下的llvm文件夹</span><br></pre></td></tr></table></figure>
+上面的第四条命令，格式为<code>cmake -G &lt;generator&gt; [options] ../llvm</code>,这里的generator我选择的是Ninja。options则表示可选的选项，常用的有<code>-DLLVM_ENABLE_PROJECTS</code>，表示除了LLVM，你还想编译哪些LLVM子项目。比如，如果除了LLVM外，你还想编译Clang，libcxx和libcxxabi，那么你可以使用编译选项<code>-DLLVM_ENABLE_PROJECTS="clang" -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi"</code>，上述的第四条命令就是：
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang&quot; -DLLVM_ENABLE_RUNTIMES=&quot;libcxx;libcxxabi&quot; ../llvm </span><br></pre></td></tr></table></figure>
+也可以不运行上面的shell命令，而是运行下面的shell命令（参考<a href="https://github.com/llvm/llvm-project">官网指导</a>）：
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project #cd进入llvm-project文件夹</span><br><span class="line">mkdir build #在llvm-project文件夹创建build文件夹</span><br><span class="line">cmake -S llvm -B build -G Ninja #对llvm文件夹下的源文件进行cmake，生成的文件放在build目录下，生成的文件将在Ninja编译过程使用</span><br></pre></td></tr></table></figure>
+上面的第三条命令，格式为<code>cmake -S llvm -B build -G &lt;generator&gt; [options]</code>,-S表示cmake的源文件所在文件夹，这里是llvm。-B表示cmake后生成的文件所在的文件夹，这里是build文件夹。-G表示将要使用这些生成的cmake文件来编译的工具，这里是Ninja。如果不清楚这些cmake短选项的含义的话，可以<code>cmake -help</code>查看一下帮助。后面的<code>[options]</code>则表示其它的cmake选项，常用的有<code>-DLLVM_ENABLE_PROJECTS='...'</code>，具体含义如前所述。假如我们除了llvm子项目以外，还想编译其它的子项目，比如Clang，libcxx，libcxxabi，那我们可以使用<code>-DLLVM_ENABLE_PROJECTS="clang;libcxx;libcxxabi"</code>选项，上面第三条shell命令就是:
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;libcxx;libcxxabi&quot;</span><br></pre></td></tr></table></figure> <img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-14-45-31.png" alt="2021-12-10-14-45-31">
+cmake完成后可以看到编译文件已被写到build文件夹下。 <img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-15-01-48.png" alt="2021-12-10-15-01-48"> ## 编译LLVM
+生成Ninja编译LLVM所需的文件后，下一步就是编译llvm了，参考<a href="https://github.com/llvm/llvm-project">官网</a>，输入以下命令：
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake --build build</span><br></pre></td></tr></table></figure>
+上述命令的格式为<code>cmake --build build [-- [options] &lt;target&gt;]</code>，--build指明编译后文件写入的文件夹，这里是build文件夹。--target选项指明所使用的编译工具，假如安装了Ninja的话，默认的target是Ninja。也可以输入以下命令，显式地调用Ninja:
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd build</span><br><span class="line">ninja -j 8</span><br></pre></td></tr></table></figure> <img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-12-39-32.png" alt="2021-12-11-12-39-32">
+在编译到第3257个文件的时候，可能会发生如下错误： <img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-19-07-48.png" alt="2021-12-10-19-07-48">
+原因是因为我的GCC版本太低了，还是9.3.0版本。根据<a href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，升级到11.2.0版（也是当前的最新版）就可以解决这个问题了，因此，需要<a href="https://yang-yuke.github.io/2021/12/10/install-latest-gcc/">升级GCC到最新版</a>。
+<img src="/2021/12/04/ubuntu-install-llvm/2021-12-10-19-05-59.png" alt="2021-12-10-19-05-59"> 在升级到最新版GCC后，再重复上面的编译命令：
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;libcxx;libcxxabi&quot;</span><br><span class="line">cd build</span><br><span class="line">ninja -j 8</span><br></pre></td></tr></table></figure> 依然出现了大量以下错误， <img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-16-24-36.png" alt="2021-12-11-16-24-36">
+这些错误是在编译libcxxabi库的cpp文件时出现的，说明有可能是我们在cmake配置编译的时候出了问题，回到<a href="https://llvm.org/docs/GettingStarted.html">LLVM官网Get
+started页面</a>，发现与<a href="https://github.com/llvm/llvm-project">LLVM Github Get
+started</a>上对<code>DLLVM_ENABLE_PROJECTS</code>编译选项的细节描述有点出入，<code>"libcxx;libcxxabi"</code>应该要放到<code>DLLVM_ENABLE_RUNTIMES</code>编译选项里，而不是<code>DLLVM_ENABLE_PROJECTS</code>里面。
+<img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-16-29-07.png" alt="2021-12-11-16-29-07"> 于是，重新进行cmake配置和编译，命令如下：
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang&quot; -DLLVM_ENABLE_RUNTIMES=&quot;libcxx;libcxxabi&quot;</span><br><span class="line">cd build</span><br><span class="line">ninja -j8</span><br></pre></td></tr></table></figure>
+此时，发现能够继续往下编译了，但是每编译十几个cpp文件后就会出现以下错误“fatal
+error: ld terminated with signal 9 [Killed]”，然后就停止了。 <img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-16-32-11.png" alt="2021-12-11-16-32-11"> 查了一下，<a href="https://stackoverflow.com/questions/65633304/not-able-to-build-llvm-from-its-source-code">这里</a>提到有可能是因为内存不足所致的，于是重新配置并编译，命令如下：
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS=&quot;clang&quot; -DLLVM_ENABLE_RUNTIMES=&quot;libcxx;libcxxabi&quot; -DLLVM_PARALLEL_LINK_JOBS=1</span><br><span class="line">cmake --build build</span><br></pre></td></tr></table></figure> <img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-18-38-00.png" alt="2021-12-11-18-38-00"> <img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-18-38-29.png" alt="2021-12-11-18-38-29">
+上述命令中，<code>-DCMAKE_BUILD_TYPE=Release</code>表示编译的版本是release版本，release版本要小很多，如果不指明的话编译的就是debug版本。<code>-DLLVM_PARALLEL_LINK_JOBS=1</code>表示不开parallel
+build。等待一段时间后，可以看到这一次可以完全编译所有的文件了。 <img src="/2021/12/04/ubuntu-install-llvm/2021-12-11-18-42-53.png" alt="2021-12-11-18-42-53">
+编译完成后，需要切换到root用户进行安装，命令如下： <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd build #cd进入llvm-project/build文件夹</span><br><span class="line">sudo su root #切换到root用户权限</span><br><span class="line">ninja install #安装llvm</span><br></pre></td></tr></table></figure>
+安装完成后，可以看到clang已被安装到<code>/usr/local/bin</code>路径下，说明安装已经成功。
+<img src="/2021/12/04/ubuntu-install-llvm/2021-12-13-22-17-01.png" alt="2021-12-13-22-17-01"> # 参考文献 1. <a href="https://blog.csdn.net/zerolord/article/details/116891720">Ubuntu20.04安装llvm</a>
+2. <a href="https://mirrors.tuna.tsinghua.edu.cn/help/llvm-project.git/">LLVM
+Git 源码仓库镜像使用帮助</a> 3. <a href="https://zhuanlan.zhihu.com/p/102028114">LLVM概述——介绍与安装</a>
+4. <a href="https://apt.llvm.org/">LLVM Debian/Ubuntu nightly
+packages</a> 5. <a href="https://zhuanlan.zhihu.com/p/321882707">Ninja安装和基本使用</a> 6.
+<a href="https://blog.csdn.net/lj402159806/article/details/76408597">ubuntu安装CMake的几种方式</a>
+7. <a href="https://llvm.org/docs/GettingStarted.html">Getting Started
+with the LLVM System</a> 8. <a href="https://github.com/llvm/llvm-project">Getting Started with the
+LLVM System(github)</a> 9. <a href="https://getting-started-with-llvm-core-libraries-zh-cn.readthedocs.io/zh_CN/latest/ch01.html">第1章
+编译和安装LLVM</a></p>
+]]></content>
+      <categories>
+        <category>编译器</category>
+      </categories>
+      <tags>
+        <tag>开发环境</tag>
+        <tag>工具链</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>浅析比特币脚本</title>
+    <url>/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言">前言</h1>
+<p>在比特币网络中，每个用户的身份是通过公钥来识别的，由此实现了一定程度的用户的匿名性。那么，直觉上，自然而然地我们会认为每一笔交易是通过公钥来指明支付的对象，毕竟现在公钥就等价于用户的身份证号码。然而实际上并非如此，每一笔交易的输出实际上只是指明了一个脚本(script)，通过脚本，间接地指明这笔交易会把多少比特币转给谁。那么为什么交易的输出不是直接用公钥来指明比特币的支付对象，而要通过脚本来指明呢？
+<span id="more"></span>
+实际上这是为了保证两点，其一，支付对象的匿名性；其二，所支付的比特币只能被支付对象所使用。举个例子，如下图所示，假如Alice在交易a的输出中，将十个比特币给了Bob，在交易b中，Bob又将这十个比特币转给了Carol，那么Alice在交易a中应该怎么做才能保证这十个比特币在后续的交易中只能被Bob使用，而不是被别人偷走？
+<img src="/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/2022-06-17-16-19-26.png#pic_center" alt="2022-06-17-16-19-26"></p>
+<p>Alice应该在交易输出中给出Bob的公钥哈希，并且要求，假如Bob要使用这个十个比特币，那就必须要提供Bob的公钥以及Bob的数字签名，只有当Bob给出的公钥的哈希与Alice给的相等，并且Bob的数字签名有效时，才能使用这十个比特币。为什么Alice不是在交易输出中直接指明Bob的公钥，而是指明Bob的公钥哈希？这是为了实现匿名性，具体原因可以参考这篇博客<a href="https://happypeter.github.io/binfo/address.html#:~:text=%E6%AF%94%E7%89%B9%E5%B8%81%E9%87%87%E7%94%A8%E7%9A%84%E6%98%AF,%E5%AE%9E%E9%99%85%E4%B8%AD%E4%B8%8D%E5%8F%AF%E8%83%BD%E5%AE%9E%E7%8E%B0%E3%80%82">为何使用地址而不是公钥？</a>。</p>
+<p>当Alice在交易输出中使用Bob的公钥哈希时，Alice可以证明这笔支付是给了Bob；而当Bob在后续的交易公开给出公钥和他的数字签名时，可以向大家证明他是Bob，从而解锁Alice所支付的比特币，注意，Bob需要在后续交易中公开公钥，而不是简单地给出他的公钥哈希，这样才能让别人在验证他的数字签名是有效的同时，也证明上一次Alice所支付的地址的确是Bob的公钥哈希。Alice支付的过程就是通过给出输出脚本来实现的，而Bob解锁Alice所支付给他的比特币的过程则是通过输入脚本来实现的。当Bob要解锁Alice支付的比特币时，Bob会给出输入脚本，这个输入脚本会和Alice给出的输出脚本拼接到一起，组成一个完整的脚本，然后执行脚本，如果结果是True，那么就解锁成功，Bob的这次交易就能被成功地添加到区块中，否则这次交易无效，不会被添加到区块中。
+# 比特币脚本语言结构
+从上面一节可以看出，Bob要完成一次交易，需要执行一个比特币脚本，该脚本由输入脚本(scriptSig)和输出脚本(scriptPubKey)两部分组成，输出脚本由Alice在之前的交易(交易a)的输出中给出，输入脚本则由Bob在本次交易(交易b)中给出。比特币脚本使用方法主要有以下几种。</p>
+<ol type="1">
+<li>P2PK (Pay to Public Key)</li>
+<li>P2PKH (Pay to Public Key Hash)</li>
+<li>P2SH (Pay to Script Hash)</li>
+<li>多重签名</li>
+<li>Proof of Burn</li>
+</ol>
+<p>在本文中介绍的例子将会使用第二种(P2PKH)，这种是最常用的方法，有关其它方法的细节，可以参考<a href="https://blog.csdn.net/ice_fire_x/article/details/104173840">比特币脚本原理和使用方法</a>一文，这里不再细述。一个P2PKH输出脚本(scriptPubKey)的例子如下所示，在上面交易例子中由Alice在交易a的输出中给出，输出脚本里包含了Bob的公钥哈希(69e02e18...)，以及一些操作，后面会提到这些操作。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">OP_DUP</span><br><span class="line">OP_HASH160</span><br><span class="line">69e02e18...</span><br><span class="line">OP_EQUALVERIFY</span><br><span class="line">OP_CHECKSIG</span><br></pre></td></tr></table></figure>
+<p>一个输入脚本(scriptSig)的例子如下所示，在上面的交易例子中由Bob在交易b的输入中给出。这里的输入由两部分组成，一是Bob用他自己的私钥对本次交易(即交易b)进行签名所得到的数字签名(sig,
+signature)，另一部分就是Bob的公钥(pubKey, public
+key)。给出公钥主要有两个目的，一个是证明Alice在交易a中支付的对象的确是Bob，前面提到，Alice在交易a中只是给出了一个公钥哈希，但是并没有明确指明Bob的公钥，那么别人怎么能知道Alice给的这个公钥哈希就是Bob的公钥哈希呢？因此，为了证明这点，Bob需要在交易b公开他的公钥，然后取哈希，一旦得到的哈希与Alice给的相等，那就证明了Alice给的公钥哈希的确是Bob的公钥哈希，换言之，Alice这十个比特币的确是支付给Bob的。另外一个目的就是为了进行数字验签，Bob需要给出公钥，别人才能用他的公钥和数字签名进行验签，才能确认他的数字签名有效，即他的确是Bob。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;sig&gt;</span><br><span class="line">&lt;pubKey&gt;</span><br></pre></td></tr></table></figure>
+<p>Bob在进行交易b时，需要证明他是Bob，以解锁交易a输出中给Bob的十个比特币，这个证明的过程是通过执行脚本来实现的。Bob会将Alice在交易a输出中给出的输出脚本拼接到他给的输入脚本后面，组成一个完整的脚本，然后执行该脚本，拼接后Bob所执行的完整的脚本如下所示。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;sig&gt;</span><br><span class="line">&lt;pubKey&gt;</span><br><span class="line">------------------------</span><br><span class="line">OP_DUP</span><br><span class="line">OP_HASH160</span><br><span class="line">69e02e18...</span><br><span class="line">OP_EQUALVERIFY</span><br><span class="line">OP_CHECKSIG</span><br></pre></td></tr></table></figure>
+<h1 id="脚本执行过程">脚本执行过程</h1>
+<p>比特币脚本所使用的语言是一门基于堆栈的语言，脚本的每一行要么是数据，要么是指令，执行过程从脚本的第一行开始，自上到下。如果是数据的话，就将其压入到堆栈中，如果是指令的话，就执行该指令。</p>
+<p>还是以上面的例子来进行说明，当Bob在交易b要解锁Alice在交易a支付给他的十个比特币时，Bob需要执行上面的这个完整的比特币脚本，执行过程如下。</p>
 <ul>
-<li>CHECKMULTISIG实现多签</li>
-<li>P2SH实现多签</li>
+<li>第一步，将Bob在交易b的输入脚本中给出的他对当前交易(即交易b)的数字签名&lt;sig&gt;压入堆栈。</li>
+<li>第二步，将Bob在交易b的输入脚本中给出的他自己的公钥&lt;pubKey&gt;压入堆栈。</li>
+<li>第三步，执行OP_DUP，该操作将会复制Bob的公钥并添加到栈顶。</li>
+<li>第四步，执行OP_HASH160，该操作将对当前栈顶的Bob的公钥拷贝进行哈希运算，得到Bob的公钥哈希&lt;pubKeyHash&gt;，并将其替换当前栈顶的Bob的公钥拷贝。</li>
+<li>第五步，将Alice在输出脚本中给出的Bob的公钥哈希&lt;pubKeyHash?&gt;(在上面的例子中是69e02e18...)弹入到堆栈中。</li>
+<li>第六步，执行OP_EQUALVERIFY，判断Alice给出的公钥哈希&lt;pubKeyHash?&gt;，和第四步对Bob的公钥进行哈希运算后得到的公钥哈希&lt;pubKeyHash&gt;进行对比，判断两者是否相等，相等则继续往下执行，否则认为本次交易失败。</li>
+<li>第七步，假如第六步的操作成功，那么将执行这一步。到这一步时，堆栈中只剩下Bob在交易b的输入脚本中给出的他的公钥(&lt;pubKey&gt;)，以及他用自己的私钥对交易b进行签名所得到的数字签名(&lt;sig&gt;)。执行OP_CHECKSIG，该操作将进行数字验签。验签过程大致如下，用Bob给出的公钥(&lt;pubKey&gt;)对他给出的他对交易b的数字签名进行解密，得到一个哈希值hash
+= decrypt(publicKey,
+signature)，然后再对交易b进行哈希运算，得到另一个哈希值hash'，假如hash和hash’相等，那么数字验签成功，即Bob证明了他是Bob，可以开始使用Alice在交易a中给他的十个比特币了，本次交易有效，将被加入到新创建的区块中；否则验签失败，本次交易被丢弃。关于数字验签，可以参考<a href="https://www.liaoxuefeng.com/wiki/1252599548343744/1304227943022626">签名算法</a>以及<a href="https://segmentfault.com/a/1190000024523772">一文彻底搞懂加密、数字签名和数字证书！</a>这两篇文章。</li>
 </ul>
-<p>下面将对这两种实现方式进行介绍。 # CHECKMULTISIG实现多签
-用CHECKMULTISIG实现多签，输出脚本(也叫锁定脚本)的形式如下：
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">n</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_1)</span></span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_2)</span></span><br><span class="line">...</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_m)</span></span><br><span class="line">m</span><br><span class="line">OP_CHECKMULTSIG</span><br></pre></td></tr></table></figure>
-如果输出脚本是这种形式的话，这笔交易就是一笔<strong>付款到多重签名</strong>(P2MS，Pay
-to Multi
-Signature)的交易，也常用multisig表示。其中m表示一共有m个人，每个人各自有一把公钥，共有m把公钥，这笔钱将会付给这m个人，由他们共同持有；n表示需要当这m个人想要使用这笔钱的时候，需要其中n个人的数字签名(即获得n个人的同意)才能使用这笔钱。</p>
-<p>解锁UTXO(可理解为输出脚本所支付的比特币的ID)时，需要提供输入脚本(也叫解锁脚本)，其形式如下：
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br></pre></td></tr></table></figure>
-可以理解为需要n个签名(即获得n个人的同意)才能使用这笔钱。在需要使用这笔钱的时候，n个人提供输入脚本，将输入脚本与输出脚本拼接到一起，得到完整的执行脚本，然后执行该脚本。拼接后的脚本形式如下：
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br><span class="line">n</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_1)</span></span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_2)</span></span><br><span class="line">...</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_m)</span></span><br><span class="line">m</span><br><span class="line">OP_CHECKMULTSIG</span><br></pre></td></tr></table></figure> 其执行过程如图： <img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-00-06.png#pic_center" alt="2022-06-17-18-00-06">
-可见，OP_CHECKMULTISIG一条语句就能完成整个多签的验证。</p>
-<p>但是这种验证方式也有不足，它需要付款人（输出脚本）提供所有收款人的公钥。换句话说，要给有5个合伙人的公司打款，需要付款人先去获得每个合伙人的公钥，这样很不方便。</p>
-<p>如果5个合伙人能提供单一的收款地址，不需要付款人把他们的公钥一一列出来，那样是最简便的，而这可以通过P2SH来实现。
-# P2SH实现单签 P2SH(Pay to Script Hash)是除P2K(Pay to public
-key)、P2KH(Pay to public key
-hash)之外的另一种付款方式。在P2SH的输入脚本中需要提供一个被称为RedeemScript的脚本，在P2SH的输出脚本则需要提供RedeemScript的哈希。在讨论P2SH实现多签之前，先讨论P2SH实现单签这种简单的情况。</p>
-<p>P2SH的输出脚本格式如下： <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure> 输入脚本格式如下：
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br></pre></td></tr></table></figure> 拼接后的脚本如下： <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
-使用P2SH方式付款时，收款人只需要向付款人提供一个地址，付款人往这个地址支付比特币即可，这个地址就是收款人的Redeem
-Script的哈希；当收款人要花这笔钱的时候，需要提供相应的Redeem
-Script，以及收款人的数字签名。如果Redeem
-Script执行后，栈顶等于TRUE，那么表示整个付款的验证通过。</p>
-<p>执行拼接后的脚本，执行过程如下图所示： <img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-01-00.png#pic_center" alt="2022-06-17-18-01-00">
-在上图中，如果<strong>OP_EQUALVERIFY</strong>执行结果为TRUE，那么接下来会执行redeemScript，而redeemScript是收款人自定义的，我们也可以通过它来实现多签。
-# P2SH实现多签 使用P2SH的支付方式，可以通过Redeem Script来实现多签。</p>
-<p>P2SH实现多签时的输出脚本格式如下： <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
-可以看到，P2SH的输出脚本格式在实现多签和单签时是一样的。</p>
-<p>输入脚本格式如下： <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br></pre></td></tr></table></figure>
-可以看到，在实现多签时，输入脚本与单签时的格式略微有所不同，此时需要提供的数字签名不再只有一个，而是多个。</p>
-<p>拼接后的脚本如下： <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
-执行拼接后的脚本，如果<strong>OP_EQUALVERIFY</strong>等于TRUE，将开始执行redeemScript，redeemScript的格式如下：
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">n</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_1)</span></span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_2)</span></span><br><span class="line">...</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_m)</span></span><br><span class="line">m</span><br><span class="line">OP_CHECKMULTISIG</span><br></pre></td></tr></table></figure>
-此时，执行redeemScript的过程将和前面"CHECKMULTISIG实现多签"一节的过程一样。</p>
-<p>以上就是通过redeemScript来实现多签的过程，整个过程如下图所示。 <img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-01-54.png#pic_center" alt="2022-06-17-18-01-54"> # 参考文献 [1] <a href="https://qianniu.fun/2022/%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC%E6%98%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E5%A4%9A%E7%AD%BE%E7%9A%84%EF%BC%9F/">比特币脚本是如何实现多签的？</a>
-[2] <a href="https://zhuanlan.zhihu.com/p/53652207">“付款到多重签名” 和
-“付款到脚本哈希”</a> [3] <a href="https://www.liaoxuefeng.com/wiki/1207298049439968/1207315329092960">多重签名</a>
-[4] <a href="https://bitcoinbook.cs.princeton.edu/">Bitcoin and
-Cryptocurrency Technologies</a> by Arvind Narayanan, Joseph Bonneau etl.
-Section 3.2</p>
+<p>上面的执行过程可以用下图表示，大家可以参考这张图，结合上面的描述来理解整个过程。
+<img src="/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/2022-06-17-16-21-56.png#pic_center" alt="2022-06-17-16-21-56"> # 参考文献</p>
+<ol type="1">
+<li><a href="https://happypeter.github.io/binfo/address.html#:~:text=%E6%AF%94%E7%89%B9%E5%B8%81%E9%87%87%E7%94%A8%E7%9A%84%E6%98%AF,%E5%AE%9E%E9%99%85%E4%B8%AD%E4%B8%8D%E5%8F%AF%E8%83%BD%E5%AE%9E%E7%8E%B0%E3%80%82">为何使用地址而不是公钥？</a></li>
+<li><a href="https://blog.csdn.net/ice_fire_x/article/details/104173840">比特币脚本原理和使用方法</a></li>
+<li><a href="https://www.liaoxuefeng.com/wiki/1252599548343744/1304227943022626">签名算法</a></li>
+<li><a href="https://segmentfault.com/a/1190000024523772">一文彻底搞懂加密、数字签名和数字证书！</a></li>
+<li><a href="https://www.liaoxuefeng.com/article/1124144362997184">深入理解比特币交易的脚本</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/25461051">理解比特币脚本</a></li>
+<li><a href="https://bitcoinbook.cs.princeton.edu/">Bitcoin and
+Cryptocurrency Technologies</a> by Arvind Narayanan, Joseph Bonneau
+etl.</li>
+</ol>
 ]]></content>
       <categories>
         <category>比特币</category>
       </categories>
       <tags>
         <tag>比特币</tag>
-        <tag>多重签名</tag>
+        <tag>脚本</tag>
       </tags>
   </entry>
   <entry>
@@ -1006,66 +1034,69 @@ Design Suite User Guide: Synthesis (UG901)</a> [8] <a href="http://blog.csdn.net
       </tags>
   </entry>
   <entry>
-    <title>浅析比特币脚本</title>
-    <url>/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言">前言</h1>
-<p>在比特币网络中，每个用户的身份是通过公钥来识别的，由此实现了一定程度的用户的匿名性。那么，直觉上，自然而然地我们会认为每一笔交易是通过公钥来指明支付的对象，毕竟现在公钥就等价于用户的身份证号码。然而实际上并非如此，每一笔交易的输出实际上只是指明了一个脚本(script)，通过脚本，间接地指明这笔交易会把多少比特币转给谁。那么为什么交易的输出不是直接用公钥来指明比特币的支付对象，而要通过脚本来指明呢？
+    <title>比特币多重签名</title>
+    <url>/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="概述">概述</h1>
+<p>在“<a href="https://blog.csdn.net/zengaliang/article/details/125133213?spm=1001.2014.3001.5501">浅析比特币脚本</a>”一文中，曾经提到过比特币脚本的一个应用是多重签名(Multi-Signature)。顾名思义，多重签名(以下简称多签)是指一笔交易需要多个私钥签名才能被执行。</p>
+<p>在大多数情况下，交易都是一对一进行的，买家向卖家给出的地址(即卖家的公钥哈希)支付比特币，卖家要使用该比特币的时候提供自己的数字签名并验证自己的数字签名有效即可。但也会有这样一类场景：一个钱包被多个人共同持有。比如，某公司有5个合伙人，公司钱包相应就有5个私钥，每个合伙人持有其中1个私钥。为了防止其中某一个合伙人想中饱私囊或者肆意挥霍，必须有5个人中的3人同时签名才可以把钱包中的币取走，这类情况就需要使用“多重签名”。
 <span id="more"></span>
-实际上这是为了保证两点，其一，支付对象的匿名性；其二，所支付的比特币只能被支付对象所使用。举个例子，如下图所示，假如Alice在交易a的输出中，将十个比特币给了Bob，在交易b中，Bob又将这十个比特币转给了Carol，那么Alice在交易a中应该怎么做才能保证这十个比特币在后续的交易中只能被Bob使用，而不是被别人偷走？
-<img src="/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/2022-06-17-16-19-26.png#pic_center" alt="2022-06-17-16-19-26"></p>
-<p>Alice应该在交易输出中给出Bob的公钥哈希，并且要求，假如Bob要使用这个十个比特币，那就必须要提供Bob的公钥以及Bob的数字签名，只有当Bob给出的公钥的哈希与Alice给的相等，并且Bob的数字签名有效时，才能使用这十个比特币。为什么Alice不是在交易输出中直接指明Bob的公钥，而是指明Bob的公钥哈希？这是为了实现匿名性，具体原因可以参考这篇博客<a href="https://happypeter.github.io/binfo/address.html#:~:text=%E6%AF%94%E7%89%B9%E5%B8%81%E9%87%87%E7%94%A8%E7%9A%84%E6%98%AF,%E5%AE%9E%E9%99%85%E4%B8%AD%E4%B8%8D%E5%8F%AF%E8%83%BD%E5%AE%9E%E7%8E%B0%E3%80%82">为何使用地址而不是公钥？</a>。</p>
-<p>当Alice在交易输出中使用Bob的公钥哈希时，Alice可以证明这笔支付是给了Bob；而当Bob在后续的交易公开给出公钥和他的数字签名时，可以向大家证明他是Bob，从而解锁Alice所支付的比特币，注意，Bob需要在后续交易中公开公钥，而不是简单地给出他的公钥哈希，这样才能让别人在验证他的数字签名是有效的同时，也证明上一次Alice所支付的地址的确是Bob的公钥哈希。Alice支付的过程就是通过给出输出脚本来实现的，而Bob解锁Alice所支付给他的比特币的过程则是通过输入脚本来实现的。当Bob要解锁Alice支付的比特币时，Bob会给出输入脚本，这个输入脚本会和Alice给出的输出脚本拼接到一起，组成一个完整的脚本，然后执行脚本，如果结果是True，那么就解锁成功，Bob的这次交易就能被成功地添加到区块中，否则这次交易无效，不会被添加到区块中。
-# 比特币脚本语言结构
-从上面一节可以看出，Bob要完成一次交易，需要执行一个比特币脚本，该脚本由输入脚本(scriptSig)和输出脚本(scriptPubKey)两部分组成，输出脚本由Alice在之前的交易(交易a)的输出中给出，输入脚本则由Bob在本次交易(交易b)中给出。比特币脚本使用方法主要有以下几种。</p>
-<ol type="1">
-<li>P2PK (Pay to Public Key)</li>
-<li>P2PKH (Pay to Public Key Hash)</li>
-<li>P2SH (Pay to Script Hash)</li>
-<li>多重签名</li>
-<li>Proof of Burn</li>
-</ol>
-<p>在本文中介绍的例子将会使用第二种(P2PKH)，这种是最常用的方法，有关其它方法的细节，可以参考<a href="https://blog.csdn.net/ice_fire_x/article/details/104173840">比特币脚本原理和使用方法</a>一文，这里不再细述。一个P2PKH输出脚本(scriptPubKey)的例子如下所示，在上面交易例子中由Alice在交易a的输出中给出，输出脚本里包含了Bob的公钥哈希(69e02e18...)，以及一些操作，后面会提到这些操作。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">OP_DUP</span><br><span class="line">OP_HASH160</span><br><span class="line">69e02e18...</span><br><span class="line">OP_EQUALVERIFY</span><br><span class="line">OP_CHECKSIG</span><br></pre></td></tr></table></figure>
-<p>一个输入脚本(scriptSig)的例子如下所示，在上面的交易例子中由Bob在交易b的输入中给出。这里的输入由两部分组成，一是Bob用他自己的私钥对本次交易(即交易b)进行签名所得到的数字签名(sig,
-signature)，另一部分就是Bob的公钥(pubKey, public
-key)。给出公钥主要有两个目的，一个是证明Alice在交易a中支付的对象的确是Bob，前面提到，Alice在交易a中只是给出了一个公钥哈希，但是并没有明确指明Bob的公钥，那么别人怎么能知道Alice给的这个公钥哈希就是Bob的公钥哈希呢？因此，为了证明这点，Bob需要在交易b公开他的公钥，然后取哈希，一旦得到的哈希与Alice给的相等，那就证明了Alice给的公钥哈希的确是Bob的公钥哈希，换言之，Alice这十个比特币的确是支付给Bob的。另外一个目的就是为了进行数字验签，Bob需要给出公钥，别人才能用他的公钥和数字签名进行验签，才能确认他的数字签名有效，即他的确是Bob。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;sig&gt;</span><br><span class="line">&lt;pubKey&gt;</span><br></pre></td></tr></table></figure>
-<p>Bob在进行交易b时，需要证明他是Bob，以解锁交易a输出中给Bob的十个比特币，这个证明的过程是通过执行脚本来实现的。Bob会将Alice在交易a输出中给出的输出脚本拼接到他给的输入脚本后面，组成一个完整的脚本，然后执行该脚本，拼接后Bob所执行的完整的脚本如下所示。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;sig&gt;</span><br><span class="line">&lt;pubKey&gt;</span><br><span class="line">------------------------</span><br><span class="line">OP_DUP</span><br><span class="line">OP_HASH160</span><br><span class="line">69e02e18...</span><br><span class="line">OP_EQUALVERIFY</span><br><span class="line">OP_CHECKSIG</span><br></pre></td></tr></table></figure>
-<h1 id="脚本执行过程">脚本执行过程</h1>
-<p>比特币脚本所使用的语言是一门基于堆栈的语言，脚本的每一行要么是数据，要么是指令，执行过程从脚本的第一行开始，自上到下。如果是数据的话，就将其压入到堆栈中，如果是指令的话，就执行该指令。</p>
-<p>还是以上面的例子来进行说明，当Bob在交易b要解锁Alice在交易a支付给他的十个比特币时，Bob需要执行上面的这个完整的比特币脚本，执行过程如下。</p>
+在比特币中，多签的含义是：一个钱包如果有m个私钥，交易的时候，需要其中n(1≤n≤m)
+个私钥的签名，交易才能被执行。对应到现实里，可以想象为这样一个场景：m个人共同管理一笔资金(比特币)，他们各自持有一把私钥，要花费这笔资金需要取得其中至少n个人的同意(签名)
+才能进行。对应到这个场景的话，m就是5，n就是3。</p>
+<p>使用多签有这些优点： - 一个钱包可以由多人共同管理 -
+避免单点故障，防止某一个私钥被盗影响整个钱包 -
+多个私钥可以起备份作用，防止单一私钥在丢失的情况下导致大量属于该私钥持有者的资金损失</p>
+<p>多签主要有两种实现方式：</p>
 <ul>
-<li>第一步，将Bob在交易b的输入脚本中给出的他对当前交易(即交易b)的数字签名&lt;sig&gt;压入堆栈。</li>
-<li>第二步，将Bob在交易b的输入脚本中给出的他自己的公钥&lt;pubKey&gt;压入堆栈。</li>
-<li>第三步，执行OP_DUP，该操作将会复制Bob的公钥并添加到栈顶。</li>
-<li>第四步，执行OP_HASH160，该操作将对当前栈顶的Bob的公钥拷贝进行哈希运算，得到Bob的公钥哈希&lt;pubKeyHash&gt;，并将其替换当前栈顶的Bob的公钥拷贝。</li>
-<li>第五步，将Alice在输出脚本中给出的Bob的公钥哈希&lt;pubKeyHash?&gt;(在上面的例子中是69e02e18...)弹入到堆栈中。</li>
-<li>第六步，执行OP_EQUALVERIFY，判断Alice给出的公钥哈希&lt;pubKeyHash?&gt;，和第四步对Bob的公钥进行哈希运算后得到的公钥哈希&lt;pubKeyHash&gt;进行对比，判断两者是否相等，相等则继续往下执行，否则认为本次交易失败。</li>
-<li>第七步，假如第六步的操作成功，那么将执行这一步。到这一步时，堆栈中只剩下Bob在交易b的输入脚本中给出的他的公钥(&lt;pubKey&gt;)，以及他用自己的私钥对交易b进行签名所得到的数字签名(&lt;sig&gt;)。执行OP_CHECKSIG，该操作将进行数字验签。验签过程大致如下，用Bob给出的公钥(&lt;pubKey&gt;)对他给出的他对交易b的数字签名进行解密，得到一个哈希值hash
-= decrypt(publicKey,
-signature)，然后再对交易b进行哈希运算，得到另一个哈希值hash'，假如hash和hash’相等，那么数字验签成功，即Bob证明了他是Bob，可以开始使用Alice在交易a中给他的十个比特币了，本次交易有效，将被加入到新创建的区块中；否则验签失败，本次交易被丢弃。关于数字验签，可以参考<a href="https://www.liaoxuefeng.com/wiki/1252599548343744/1304227943022626">签名算法</a>以及<a href="https://segmentfault.com/a/1190000024523772">一文彻底搞懂加密、数字签名和数字证书！</a>这两篇文章。</li>
+<li>CHECKMULTISIG实现多签</li>
+<li>P2SH实现多签</li>
 </ul>
-<p>上面的执行过程可以用下图表示，大家可以参考这张图，结合上面的描述来理解整个过程。
-<img src="/2022/06/17/%E6%B5%85%E6%9E%90%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC/2022-06-17-16-21-56.png#pic_center" alt="2022-06-17-16-21-56"> # 参考文献</p>
-<ol type="1">
-<li><a href="https://happypeter.github.io/binfo/address.html#:~:text=%E6%AF%94%E7%89%B9%E5%B8%81%E9%87%87%E7%94%A8%E7%9A%84%E6%98%AF,%E5%AE%9E%E9%99%85%E4%B8%AD%E4%B8%8D%E5%8F%AF%E8%83%BD%E5%AE%9E%E7%8E%B0%E3%80%82">为何使用地址而不是公钥？</a></li>
-<li><a href="https://blog.csdn.net/ice_fire_x/article/details/104173840">比特币脚本原理和使用方法</a></li>
-<li><a href="https://www.liaoxuefeng.com/wiki/1252599548343744/1304227943022626">签名算法</a></li>
-<li><a href="https://segmentfault.com/a/1190000024523772">一文彻底搞懂加密、数字签名和数字证书！</a></li>
-<li><a href="https://www.liaoxuefeng.com/article/1124144362997184">深入理解比特币交易的脚本</a></li>
-<li><a href="https://zhuanlan.zhihu.com/p/25461051">理解比特币脚本</a></li>
-<li><a href="https://bitcoinbook.cs.princeton.edu/">Bitcoin and
-Cryptocurrency Technologies</a> by Arvind Narayanan, Joseph Bonneau
-etl.</li>
-</ol>
+<p>下面将对这两种实现方式进行介绍。 # CHECKMULTISIG实现多签
+用CHECKMULTISIG实现多签，输出脚本(也叫锁定脚本)的形式如下：
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">n</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_1)</span></span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_2)</span></span><br><span class="line">...</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_m)</span></span><br><span class="line">m</span><br><span class="line">OP_CHECKMULTSIG</span><br></pre></td></tr></table></figure>
+如果输出脚本是这种形式的话，这笔交易就是一笔<strong>付款到多重签名</strong>(P2MS，Pay
+to Multi
+Signature)的交易，也常用multisig表示。其中m表示一共有m个人，每个人各自有一把公钥，共有m把公钥，这笔钱将会付给这m个人，由他们共同持有；n表示需要当这m个人想要使用这笔钱的时候，需要其中n个人的数字签名(即获得n个人的同意)才能使用这笔钱。</p>
+<p>解锁UTXO(可理解为输出脚本所支付的比特币的ID)时，需要提供输入脚本(也叫解锁脚本)，其形式如下：
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br></pre></td></tr></table></figure>
+可以理解为需要n个签名(即获得n个人的同意)才能使用这笔钱。在需要使用这笔钱的时候，n个人提供输入脚本，将输入脚本与输出脚本拼接到一起，得到完整的执行脚本，然后执行该脚本。拼接后的脚本形式如下：
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br><span class="line">n</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_1)</span></span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_2)</span></span><br><span class="line">...</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_m)</span></span><br><span class="line">m</span><br><span class="line">OP_CHECKMULTSIG</span><br></pre></td></tr></table></figure> 其执行过程如图： <img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-00-06.png#pic_center" alt="2022-06-17-18-00-06">
+可见，OP_CHECKMULTISIG一条语句就能完成整个多签的验证。</p>
+<p>但是这种验证方式也有不足，它需要付款人（输出脚本）提供所有收款人的公钥。换句话说，要给有5个合伙人的公司打款，需要付款人先去获得每个合伙人的公钥，这样很不方便。</p>
+<p>如果5个合伙人能提供单一的收款地址，不需要付款人把他们的公钥一一列出来，那样是最简便的，而这可以通过P2SH来实现。
+# P2SH实现单签 P2SH(Pay to Script Hash)是除P2K(Pay to public
+key)、P2KH(Pay to public key
+hash)之外的另一种付款方式。在P2SH的输入脚本中需要提供一个被称为RedeemScript的脚本，在P2SH的输出脚本则需要提供RedeemScript的哈希。在讨论P2SH实现多签之前，先讨论P2SH实现单签这种简单的情况。</p>
+<p>P2SH的输出脚本格式如下： <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure> 输入脚本格式如下：
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br></pre></td></tr></table></figure> 拼接后的脚本如下： <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
+使用P2SH方式付款时，收款人只需要向付款人提供一个地址，付款人往这个地址支付比特币即可，这个地址就是收款人的Redeem
+Script的哈希；当收款人要花这笔钱的时候，需要提供相应的Redeem
+Script，以及收款人的数字签名。如果Redeem
+Script执行后，栈顶等于TRUE，那么表示整个付款的验证通过。</p>
+<p>执行拼接后的脚本，执行过程如下图所示： <img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-01-00.png#pic_center" alt="2022-06-17-18-01-00">
+在上图中，如果<strong>OP_EQUALVERIFY</strong>执行结果为TRUE，那么接下来会执行redeemScript，而redeemScript是收款人自定义的，我们也可以通过它来实现多签。
+# P2SH实现多签 使用P2SH的支付方式，可以通过Redeem Script来实现多签。</p>
+<p>P2SH实现多签时的输出脚本格式如下： <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
+可以看到，P2SH的输出脚本格式在实现多签和单签时是一样的。</p>
+<p>输入脚本格式如下： <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br></pre></td></tr></table></figure>
+可以看到，在实现多签时，输入脚本与单签时的格式略微有所不同，此时需要提供的数字签名不再只有一个，而是多个。</p>
+<p>拼接后的脚本如下： <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
+执行拼接后的脚本，如果<strong>OP_EQUALVERIFY</strong>等于TRUE，将开始执行redeemScript，redeemScript的格式如下：
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">n</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_1)</span></span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_2)</span></span><br><span class="line">...</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_m)</span></span><br><span class="line">m</span><br><span class="line">OP_CHECKMULTISIG</span><br></pre></td></tr></table></figure>
+此时，执行redeemScript的过程将和前面"CHECKMULTISIG实现多签"一节的过程一样。</p>
+<p>以上就是通过redeemScript来实现多签的过程，整个过程如下图所示。 <img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-01-54.png#pic_center" alt="2022-06-17-18-01-54"> # 参考文献 [1] <a href="https://qianniu.fun/2022/%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC%E6%98%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E5%A4%9A%E7%AD%BE%E7%9A%84%EF%BC%9F/">比特币脚本是如何实现多签的？</a>
+[2] <a href="https://zhuanlan.zhihu.com/p/53652207">“付款到多重签名” 和
+“付款到脚本哈希”</a> [3] <a href="https://www.liaoxuefeng.com/wiki/1207298049439968/1207315329092960">多重签名</a>
+[4] <a href="https://bitcoinbook.cs.princeton.edu/">Bitcoin and
+Cryptocurrency Technologies</a> by Arvind Narayanan, Joseph Bonneau etl.
+Section 3.2</p>
 ]]></content>
       <categories>
         <category>比特币</category>
       </categories>
       <tags>
         <tag>比特币</tag>
-        <tag>脚本</tag>
+        <tag>多重签名</tag>
       </tags>
   </entry>
 </search>
