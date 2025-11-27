@@ -358,7 +358,7 @@ mjx-container[display="true"] + br {
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
+          <h1 id="前言">前言</h1>
 <p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>已经介绍了如何在本地编译及安装llvm，但是当时只是编译和安装了<code>llvm;clang;libcxx;libcxxabi</code>这四个库，本文将介绍如何编译及安装lldb。</p>
           <!--noindex-->
             <div class="post-button">
@@ -440,8 +440,8 @@ mjx-container[display="true"] + br {
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
-<p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#more">编译LLVM</a>过程中，出现了很多头文件无法解析的错误，根据<a target="_blank" rel="noopener" href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，原因是因为GCC版本过低，将GCC升级至最新版11.2.0就可以解决这个问题了。本文将介绍如何升级GCC到最新版(当前为11.2.0)。<br>
+          <h1 id="前言">前言</h1>
+<p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#more">编译LLVM</a>过程中，出现了很多头文件无法解析的错误，根据<a target="_blank" rel="noopener" href="https://reviews.llvm.org/rGac7031b2b2fa">网上的说法</a>，原因是因为GCC版本过低，将GCC升级至最新版11.2.0就可以解决这个问题了。本文将介绍如何升级GCC到最新版(当前为11.2.0)。
 <img src="/2021/12/10/install-latest-gcc/2021-12-10-23-33-08.png" alt="2021-12-10-23-33-08"></p>
           <!--noindex-->
             <div class="post-button">
@@ -523,14 +523,10 @@ mjx-container[display="true"] + br {
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="简介"><a class="markdownIt-Anchor" href="#简介"></a> 简介</h1>
-<p>在ubuntu20.04上安装LLVM，主要有四种方法。</p>
-<ul>
-<li>方法一：运行官方的自动安装脚本进行安装</li>
-<li>方法二：通过包管理器进行安装</li>
-<li>方法三：使用官方预编译二进制文件进行安装</li>
-<li>方法四：从源码编译安装</li>
-</ul>
+          <h1 id="简介">简介</h1>
+<p>在ubuntu20.04上安装LLVM，主要有四种方法。 *
+方法一：运行官方的自动安装脚本进行安装 * 方法二：通过包管理器进行安装 *
+方法三：使用官方预编译二进制文件进行安装 * 方法四：从源码编译安装</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/12/04/ubuntu-install-llvm/#more" rel="contents">
@@ -611,13 +607,18 @@ mjx-container[display="true"] + br {
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="abbreviation"><a class="markdownIt-Anchor" href="#abbreviation"></a> Abbreviation</h1>
-<p>Below are the abbreviation of some jargons that will be used in the essay.</p>
-<p>NW: network<br>
-UL: uplink<br>
-WFQ: weighted fair queueing</p>
-<h1 id="preface"><a class="markdownIt-Anchor" href="#preface"></a> Preface</h1>
-<p>In LTE protocol stack, MAC lies in the so-called layer2. One of its main functionalities is managing the UL grant we receive from layer1. In other words, it allocates the UL grant to different logic channels. In this essay, I will briefly talk about how MAC layer allocates the UL grant to different logic channel. It does so by implementing the toket bucket algorithm, which is the official MAC UL sheduling algorithm used by LTE MAC layer, specified in 3GPP specification 36.321.</p>
+          <h1 id="abbreviation">Abbreviation</h1>
+<p>Below are the abbreviation of some jargons that will be used in the
+essay.</p>
+<p>NW: network UL: uplink WFQ: weighted fair queueing</p>
+<h1 id="preface">Preface</h1>
+<p>In LTE protocol stack, MAC lies in the so-called layer2. One of its
+main functionalities is managing the UL grant we receive from layer1. In
+other words, it allocates the UL grant to different logic channels. In
+this essay, I will briefly talk about how MAC layer allocates the UL
+grant to different logic channel. It does so by implementing the toket
+bucket algorithm, which is the official MAC UL sheduling algorithm used
+by LTE MAC layer, specified in 3GPP specification 36.321.</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/11/27/LTE-MAC-token-bucket-algorithm/#more" rel="contents">
@@ -689,7 +690,11 @@ WFQ: weighted fair queueing</p>
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+          <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very
+first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for
+more info. If you get any problems when using Hexo, you can find the
+answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or
+you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/11/27/hello-world/#more" rel="contents">

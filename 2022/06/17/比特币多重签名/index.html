@@ -20,12 +20,12 @@
     var CONFIG = {"hostname":"yang-yuke.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="概述 在“浅析比特币脚本”一文中，曾经提到过比特币脚本的一个应用是多重签名(Multi-Signature)。顾名思义，多重签名(以下简称多签)是指一笔交易需要多个私钥签名才能被执行。 在大多数情况下，交易都是一对一进行的，买家向卖家给出的地址(即卖家的公钥哈希)支付比特币，卖家要使用该比特币的时候提供自己的数字签名并验证自己的数字签名有效即可。但也会有这样一类场景：一个钱包被多个人共同持有。比">
+  <meta name="description" content="概述 在“浅析比特币脚本”一文中，曾经提到过比特币脚本的一个应用是多重签名(Multi-Signature)。顾名思义，多重签名(以下简称多签)是指一笔交易需要多个私钥签名才能被执行。 在大多数情况下，交易都是一对一进行的，买家向卖家给出的地址(即卖家的公钥哈希)支付比特币，卖家要使用该比特币的时候提供自己的数字签名并验证自己的数字签名有效即可。但也会有这样一类场景：一个钱包被多个人共同持有。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="比特币多重签名">
 <meta property="og:url" content="https://yang-yuke.github.io/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/index.html">
 <meta property="og:site_name" content="Yuke&#39;s blog">
-<meta property="og:description" content="概述 在“浅析比特币脚本”一文中，曾经提到过比特币脚本的一个应用是多重签名(Multi-Signature)。顾名思义，多重签名(以下简称多签)是指一笔交易需要多个私钥签名才能被执行。 在大多数情况下，交易都是一对一进行的，买家向卖家给出的地址(即卖家的公钥哈希)支付比特币，卖家要使用该比特币的时候提供自己的数字签名并验证自己的数字签名有效即可。但也会有这样一类场景：一个钱包被多个人共同持有。比">
+<meta property="og:description" content="概述 在“浅析比特币脚本”一文中，曾经提到过比特币脚本的一个应用是多重签名(Multi-Signature)。顾名思义，多重签名(以下简称多签)是指一笔交易需要多个私钥签名才能被执行。 在大多数情况下，交易都是一对一进行的，买家向卖家给出的地址(即卖家的公钥哈希)支付比特币，卖家要使用该比特币的时候提供自己的数字签名并验证自己的数字签名有效即可。但也会有这样一类场景：一个钱包被多个人共同持有。">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-00-06.png#pic_center">
 <meta property="og:image" content="https://yang-yuke.github.io/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-01-00.png#pic_center">
@@ -257,68 +257,60 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="概述"><a class="markdownIt-Anchor" href="#概述"></a> 概述</h1>
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="概述">概述</h1>
 <p>在“<a target="_blank" rel="noopener" href="https://blog.csdn.net/zengaliang/article/details/125133213?spm=1001.2014.3001.5501">浅析比特币脚本</a>”一文中，曾经提到过比特币脚本的一个应用是多重签名(Multi-Signature)。顾名思义，多重签名(以下简称多签)是指一笔交易需要多个私钥签名才能被执行。</p>
-<p>在大多数情况下，交易都是一对一进行的，买家向卖家给出的地址(即卖家的公钥哈希)支付比特币，卖家要使用该比特币的时候提供自己的数字签名并验证自己的数字签名有效即可。但也会有这样一类场景：一个钱包被多个人共同持有。比如，某公司有5个合伙人，公司钱包相应就有5个私钥，每个合伙人持有其中1个私钥。为了防止其中某一个合伙人想中饱私囊或者肆意挥霍，必须有5个人中的3人同时签名才可以把钱包中的币取走，这类情况就需要使用“多重签名”。</p>
+<p>在大多数情况下，交易都是一对一进行的，买家向卖家给出的地址(即卖家的公钥哈希)支付比特币，卖家要使用该比特币的时候提供自己的数字签名并验证自己的数字签名有效即可。但也会有这样一类场景：一个钱包被多个人共同持有。比如，某公司有5个合伙人，公司钱包相应就有5个私钥，每个合伙人持有其中1个私钥。为了防止其中某一个合伙人想中饱私囊或者肆意挥霍，必须有5个人中的3人同时签名才可以把钱包中的币取走，这类情况就需要使用“多重签名”。
 <span id="more"></span>
-<p>在比特币中，多签的含义是：一个钱包如果有m个私钥，交易的时候，需要其中n(1≤n≤m) 个私钥的签名，交易才能被执行。对应到现实里，可以想象为这样一个场景：m个人共同管理一笔资金(比特币)，他们各自持有一把私钥，要花费这笔资金需要取得其中至少n个人的同意(签名) 才能进行。对应到这个场景的话，m就是5，n就是3。</p>
-<p>使用多签有这些优点：</p>
-<ul>
-<li>一个钱包可以由多人共同管理</li>
-<li>避免单点故障，防止某一个私钥被盗影响整个钱包</li>
-<li>多个私钥可以起备份作用，防止单一私钥在丢失的情况下导致大量属于该私钥持有者的资金损失</li>
-</ul>
+在比特币中，多签的含义是：一个钱包如果有m个私钥，交易的时候，需要其中n(1≤n≤m)
+个私钥的签名，交易才能被执行。对应到现实里，可以想象为这样一个场景：m个人共同管理一笔资金(比特币)，他们各自持有一把私钥，要花费这笔资金需要取得其中至少n个人的同意(签名)
+才能进行。对应到这个场景的话，m就是5，n就是3。</p>
+<p>使用多签有这些优点： - 一个钱包可以由多人共同管理 -
+避免单点故障，防止某一个私钥被盗影响整个钱包 -
+多个私钥可以起备份作用，防止单一私钥在丢失的情况下导致大量属于该私钥持有者的资金损失</p>
 <p>多签主要有两种实现方式：</p>
 <ul>
 <li>CHECKMULTISIG实现多签</li>
 <li>P2SH实现多签</li>
 </ul>
-<p>下面将对这两种实现方式进行介绍。</p>
-<h1 id="checkmultisig实现多签"><a class="markdownIt-Anchor" href="#checkmultisig实现多签"></a> CHECKMULTISIG实现多签</h1>
-<p>用CHECKMULTISIG实现多签，输出脚本(也叫锁定脚本)的形式如下：</p>
+<p>下面将对这两种实现方式进行介绍。 # CHECKMULTISIG实现多签
+用CHECKMULTISIG实现多签，输出脚本(也叫锁定脚本)的形式如下：
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">n</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_1)</span></span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_2)</span></span><br><span class="line">...</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_m)</span></span><br><span class="line">m</span><br><span class="line">OP_CHECKMULTSIG</span><br></pre></td></tr></table></figure>
-<p>如果输出脚本是这种形式的话，这笔交易就是一笔<strong>付款到多重签名</strong>(P2MS，Pay to Multi Signature)的交易，也常用multisig表示。其中m表示一共有m个人，每个人各自有一把公钥，共有m把公钥，这笔钱将会付给这m个人，由他们共同持有；n表示需要当这m个人想要使用这笔钱的时候，需要其中n个人的数字签名(即获得n个人的同意)才能使用这笔钱。</p>
-<p>解锁UTXO(可理解为输出脚本所支付的比特币的ID)时，需要提供输入脚本(也叫解锁脚本)，其形式如下：</p>
+如果输出脚本是这种形式的话，这笔交易就是一笔<strong>付款到多重签名</strong>(P2MS，Pay
+to Multi
+Signature)的交易，也常用multisig表示。其中m表示一共有m个人，每个人各自有一把公钥，共有m把公钥，这笔钱将会付给这m个人，由他们共同持有；n表示需要当这m个人想要使用这笔钱的时候，需要其中n个人的数字签名(即获得n个人的同意)才能使用这笔钱。</p>
+<p>解锁UTXO(可理解为输出脚本所支付的比特币的ID)时，需要提供输入脚本(也叫解锁脚本)，其形式如下：
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br></pre></td></tr></table></figure>
-<p>可以理解为需要n个签名(即获得n个人的同意)才能使用这笔钱。在需要使用这笔钱的时候，n个人提供输入脚本，将输入脚本与输出脚本拼接到一起，得到完整的执行脚本，然后执行该脚本。拼接后的脚本形式如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br><span class="line">n</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_1)</span></span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_2)</span></span><br><span class="line">...</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_m)</span></span><br><span class="line">m</span><br><span class="line">OP_CHECKMULTSIG</span><br></pre></td></tr></table></figure>
-<p>其执行过程如图：<br>
-<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-00-06.png#pic_center" alt="2022-06-17-18-00-06"><br>
+可以理解为需要n个签名(即获得n个人的同意)才能使用这笔钱。在需要使用这笔钱的时候，n个人提供输入脚本，将输入脚本与输出脚本拼接到一起，得到完整的执行脚本，然后执行该脚本。拼接后的脚本形式如下：
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br><span class="line">n</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_1)</span></span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_2)</span></span><br><span class="line">...</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_m)</span></span><br><span class="line">m</span><br><span class="line">OP_CHECKMULTSIG</span><br></pre></td></tr></table></figure> 其执行过程如图： <img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-00-06.png#pic_center" alt="2022-06-17-18-00-06">
 可见，OP_CHECKMULTISIG一条语句就能完成整个多签的验证。</p>
 <p>但是这种验证方式也有不足，它需要付款人（输出脚本）提供所有收款人的公钥。换句话说，要给有5个合伙人的公司打款，需要付款人先去获得每个合伙人的公钥，这样很不方便。</p>
-<p>如果5个合伙人能提供单一的收款地址，不需要付款人把他们的公钥一一列出来，那样是最简便的，而这可以通过P2SH来实现。</p>
-<h1 id="p2sh实现单签"><a class="markdownIt-Anchor" href="#p2sh实现单签"></a> P2SH实现单签</h1>
-<p>P2SH(Pay to Script Hash)是除P2K(Pay to public key)、P2KH(Pay to public key hash)之外的另一种付款方式。在P2SH的输入脚本中需要提供一个被称为RedeemScript的脚本，在P2SH的输出脚本则需要提供RedeemScript的哈希。在讨论P2SH实现多签之前，先讨论P2SH实现单签这种简单的情况。</p>
-<p>P2SH的输出脚本格式如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
-<p>输入脚本格式如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">OP_PUSHDATA(sig)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br></pre></td></tr></table></figure>
-<p>拼接后的脚本如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">OP_PUSHDATA(sig)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
-<p>使用P2SH方式付款时，收款人只需要向付款人提供一个地址，付款人往这个地址支付比特币即可，这个地址就是收款人的Redeem Script的哈希；当收款人要花这笔钱的时候，需要提供相应的Redeem Script，以及收款人的数字签名。如果Redeem Script执行后，栈顶等于TRUE，那么表示整个付款的验证通过。</p>
-<p>执行拼接后的脚本，执行过程如下图所示：<br>
-<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-01-00.png#pic_center" alt="2022-06-17-18-01-00"><br>
-在上图中，如果<strong>OP_EQUALVERIFY</strong>执行结果为TRUE，那么接下来会执行redeemScript，而redeemScript是收款人自定义的，我们也可以通过它来实现多签。</p>
-<h1 id="p2sh实现多签"><a class="markdownIt-Anchor" href="#p2sh实现多签"></a> P2SH实现多签</h1>
-<p>使用P2SH的支付方式，可以通过Redeem Script来实现多签。</p>
-<p>P2SH实现多签时的输出脚本格式如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
-<p>可以看到，P2SH的输出脚本格式在实现多签和单签时是一样的。</p>
-<p>输入脚本格式如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br></pre></td></tr></table></figure>
-<p>可以看到，在实现多签时，输入脚本与单签时的格式略微有所不同，此时需要提供的数字签名不再只有一个，而是多个。</p>
-<p>拼接后的脚本如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
-<p>执行拼接后的脚本，如果<strong>OP_EQUALVERIFY</strong>等于TRUE，将开始执行redeemScript，redeemScript的格式如下：</p>
+<p>如果5个合伙人能提供单一的收款地址，不需要付款人把他们的公钥一一列出来，那样是最简便的，而这可以通过P2SH来实现。
+# P2SH实现单签 P2SH(Pay to Script Hash)是除P2K(Pay to public
+key)、P2KH(Pay to public key
+hash)之外的另一种付款方式。在P2SH的输入脚本中需要提供一个被称为RedeemScript的脚本，在P2SH的输出脚本则需要提供RedeemScript的哈希。在讨论P2SH实现多签之前，先讨论P2SH实现单签这种简单的情况。</p>
+<p>P2SH的输出脚本格式如下： <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure> 输入脚本格式如下：
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">OP_PUSHDATA(sig)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br></pre></td></tr></table></figure> 拼接后的脚本如下： <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">OP_PUSHDATA(sig)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
+使用P2SH方式付款时，收款人只需要向付款人提供一个地址，付款人往这个地址支付比特币即可，这个地址就是收款人的Redeem
+Script的哈希；当收款人要花这笔钱的时候，需要提供相应的Redeem
+Script，以及收款人的数字签名。如果Redeem
+Script执行后，栈顶等于TRUE，那么表示整个付款的验证通过。</p>
+<p>执行拼接后的脚本，执行过程如下图所示： <img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-01-00.png#pic_center" alt="2022-06-17-18-01-00">
+在上图中，如果<strong>OP_EQUALVERIFY</strong>执行结果为TRUE，那么接下来会执行redeemScript，而redeemScript是收款人自定义的，我们也可以通过它来实现多签。
+# P2SH实现多签 使用P2SH的支付方式，可以通过Redeem Script来实现多签。</p>
+<p>P2SH实现多签时的输出脚本格式如下： <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
+可以看到，P2SH的输出脚本格式在实现多签和单签时是一样的。</p>
+<p>输入脚本格式如下： <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br></pre></td></tr></table></figure>
+可以看到，在实现多签时，输入脚本与单签时的格式略微有所不同，此时需要提供的数字签名不再只有一个，而是多个。</p>
+<p>拼接后的脚本如下： <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">OP_PUSHDATA(sig_1)</span><br><span class="line">OP_PUSHDATA(sig_2)</span><br><span class="line">...</span><br><span class="line">OP_PUSHDATA(sig_n)</span><br><span class="line">OP_PUSHDATA(redeemScript)</span><br><span class="line">OP_HASH160</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(redeemScriptHash)</span></span><br><span class="line">OP_EQUALVERIFY</span><br></pre></td></tr></table></figure>
+执行拼接后的脚本，如果<strong>OP_EQUALVERIFY</strong>等于TRUE，将开始执行redeemScript，redeemScript的格式如下：
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">n</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_1)</span></span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_2)</span></span><br><span class="line">...</span><br><span class="line"><span class="title function_">OP_PUSHDATA</span><span class="params">(publicKey_m)</span></span><br><span class="line">m</span><br><span class="line">OP_CHECKMULTISIG</span><br></pre></td></tr></table></figure>
-<p>此时，执行redeemScript的过程将和前面&quot;CHECKMULTISIG实现多签&quot;一节的过程一样。</p>
-<p>以上就是通过redeemScript来实现多签的过程，整个过程如下图所示。<br>
-<img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-01-54.png#pic_center" alt="2022-06-17-18-01-54"></p>
-<h1 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h1>
-<p>[1] <a target="_blank" rel="noopener" href="https://qianniu.fun/2022/%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC%E6%98%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E5%A4%9A%E7%AD%BE%E7%9A%84%EF%BC%9F/">比特币脚本是如何实现多签的？</a><br>
-[2] <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/53652207">“付款到多重签名” 和 “付款到脚本哈希”</a><br>
-[3] <a target="_blank" rel="noopener" href="https://www.liaoxuefeng.com/wiki/1207298049439968/1207315329092960">多重签名</a><br>
-[4] <a target="_blank" rel="noopener" href="https://bitcoinbook.cs.princeton.edu/">Bitcoin and Cryptocurrency Technologies</a> by Arvind Narayanan, Joseph Bonneau etl. Section 3.2</p>
+此时，执行redeemScript的过程将和前面"CHECKMULTISIG实现多签"一节的过程一样。</p>
+<p>以上就是通过redeemScript来实现多签的过程，整个过程如下图所示。 <img src="/2022/06/17/%E6%AF%94%E7%89%B9%E5%B8%81%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/2022-06-17-18-01-54.png#pic_center" alt="2022-06-17-18-01-54"> # 参考文献 [1] <a target="_blank" rel="noopener" href="https://qianniu.fun/2022/%E6%AF%94%E7%89%B9%E5%B8%81%E8%84%9A%E6%9C%AC%E6%98%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E5%A4%9A%E7%AD%BE%E7%9A%84%EF%BC%9F/">比特币脚本是如何实现多签的？</a>
+[2] <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/53652207">“付款到多重签名” 和
+“付款到脚本哈希”</a> [3] <a target="_blank" rel="noopener" href="https://www.liaoxuefeng.com/wiki/1207298049439968/1207315329092960">多重签名</a>
+[4] <a target="_blank" rel="noopener" href="https://bitcoinbook.cs.princeton.edu/">Bitcoin and
+Cryptocurrency Technologies</a> by Arvind Narayanan, Joseph Bonneau etl.
+Section 3.2</p>
 
     </div>
 
@@ -420,7 +412,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text"> 概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#checkmultisig%E5%AE%9E%E7%8E%B0%E5%A4%9A%E7%AD%BE"><span class="nav-number">2.</span> <span class="nav-text"> CHECKMULTISIG实现多签</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#p2sh%E5%AE%9E%E7%8E%B0%E5%8D%95%E7%AD%BE"><span class="nav-number">3.</span> <span class="nav-text"> P2SH实现单签</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#p2sh%E5%AE%9E%E7%8E%B0%E5%A4%9A%E7%AD%BE"><span class="nav-number">4.</span> <span class="nav-text"> P2SH实现多签</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">5.</span> <span class="nav-text"> 参考文献</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

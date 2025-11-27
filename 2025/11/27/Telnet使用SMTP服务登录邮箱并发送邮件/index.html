@@ -20,12 +20,12 @@
     var CONFIG = {"hostname":"yang-yuke.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="本文介绍SMTP协议的一个简单的网络实验。   SMTP协议简介 SMTP（定义于RFC 5321）是互联网电子邮件的核心。SMTP将邮件从发件人的邮件服务器传输到收件人的邮件服务器。SMTP的出现比HTTP早得多。（最初的SMTP RFC文档可以追溯到1982年，而SMTP协议的出现时间还要早得多。）">
+  <meta name="description" content="本文介绍SMTP协议的一个简单的网络实验。 # SMTP协议简介 SMTP（定义于RFC 5321）是互联网电子邮件的核心。SMTP将邮件从发件人的邮件服务器传输到收件人的邮件服务器。SMTP的出现比HTTP早得多。（最初的SMTP RFC文档可以追溯到1982年，而SMTP协议的出现时间还要早得多。）">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Telnet使用SMTP服务登录邮箱并发送邮件">
 <meta property="og:url" content="https://yang-yuke.github.io/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/index.html">
 <meta property="og:site_name" content="Yuke&#39;s blog">
-<meta property="og:description" content="本文介绍SMTP协议的一个简单的网络实验。   SMTP协议简介 SMTP（定义于RFC 5321）是互联网电子邮件的核心。SMTP将邮件从发件人的邮件服务器传输到收件人的邮件服务器。SMTP的出现比HTTP早得多。（最初的SMTP RFC文档可以追溯到1982年，而SMTP协议的出现时间还要早得多。）">
+<meta property="og:description" content="本文介绍SMTP协议的一个简单的网络实验。 # SMTP协议简介 SMTP（定义于RFC 5321）是互联网电子邮件的核心。SMTP将邮件从发件人的邮件服务器传输到收件人的邮件服务器。SMTP的出现比HTTP早得多。（最初的SMTP RFC文档可以追溯到1982年，而SMTP协议的出现时间还要早得多。）">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://yang-yuke.github.io/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-44-24.png">
 <meta property="og:image" content="https://yang-yuke.github.io/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-44-54.png">
@@ -262,51 +262,60 @@
 
       
         <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><blockquote>
-<p>本文介绍SMTP协议的一个简单的网络实验。</p>
+<p>本文介绍SMTP协议的一个简单的网络实验。 # SMTP协议简介 SMTP（定义于RFC
+5321）是互联网电子邮件的核心。SMTP将邮件从发件人的邮件服务器传输到收件人的邮件服务器。SMTP的出现比HTTP早得多。（最初的SMTP
+RFC文档可以追溯到1982年，而SMTP协议的出现时间还要早得多。）
+<span id="more"></span></p>
 </blockquote>
-<h1 id="smtp协议简介"><a class="markdownIt-Anchor" href="#smtp协议简介"></a> SMTP协议简介</h1>
-<p>SMTP（定义于RFC 5321）是互联网电子邮件的核心。SMTP将邮件从发件人的邮件服务器传输到收件人的邮件服务器。SMTP的出现比HTTP早得多。（最初的SMTP RFC文档可以追溯到1982年，而SMTP协议的出现时间还要早得多。）</p>
-<span id="more"></span>
 <p>尽管SMTP拥有许多优秀的特性，其在互联网上的普及程度也证明了这一点，但它毕竟是一项具有某些过时特征的遗留技术。例如，它限制所有邮件的正文（而不仅仅是邮件头）只能使用简单的7比特ASCII编码。这种限制在20世纪80年代初期是合理的，当时传输容量有限，而且没有人会通过电子邮件发送大型附件或大型图像、音频或视频文件。但如今，在多媒体时代，7比特ASCII的限制就显得有些不便了——它要求二进制多媒体数据在通过SMTP发送之前必须编码为ASCII编码；它要求在SMTP传输后将相应的ASCII消息解码回二进制。而HTTP协议并不要求多媒体数据在传输前进行ASCII编码。</p>
 <p>这里介绍一下SMTP的一个简单的实验过程，有关STMP协议的更多介绍可以参考文献[1]<sup id="fnref:1"><a href="#fn:1" rel="footnote"><span class="hint--top hint--error hint--medium hint--rounded hint--bounce" aria-label="Computer Networking_ A Top-Down Approach-Pearson (2021) 第2.3.1节 SMTP. By James W. Kurose, Keith W. Ross
 ">[1]</span></a></sup>。本实验过程参考了文献[2]<sup id="fnref:2"><a href="#fn:2" rel="footnote"><span class="hint--top hint--error hint--medium hint--rounded hint--bounce" aria-label="[Telnet 使用 SMTP 服务登录邮箱并发送邮件](https://cloud.tencent.com/developer/article/1927198)">[2]</span></a></sup>。</p>
 <hr>
-<h1 id="实验准备"><a class="markdownIt-Anchor" href="#实验准备"></a> 实验准备</h1>
-<p>准备两个163邮箱，并开启SMTP服务。如下图所示。<br>
-<img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-44-24.png" alt="2025-11-27-20-44-24"></p>
-<p>开启IMAP/SMTP服务以及POP3/SMTP服务。<br>
-<img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-44-54.png" alt="2025-11-27-20-44-54"></p>
+<h1 id="实验准备">实验准备</h1>
+<p>准备两个163邮箱，并开启SMTP服务。如下图所示。 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-44-24.png" alt="2025-11-27-20-44-24"></p>
+<p>开启IMAP/SMTP服务以及POP3/SMTP服务。 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-44-54.png" alt="2025-11-27-20-44-54"></p>
 <hr>
-<h1 id="实验步骤"><a class="markdownIt-Anchor" href="#实验步骤"></a> 实验步骤</h1>
-<ol>
-<li>使用telnet连接smtp服务器</li>
+<h1 id="实验步骤">实验步骤</h1>
+<ol type="1">
+<li><p>使用telnet连接smtp服务器 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">telnet smtp.163.com  25   //直接进入回显模式</span><br></pre></td></tr></table></figure></p></li>
+<li><p>查看连接是否建立 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">helo localhost</span><br></pre></td></tr></table></figure></p></li>
+<li><p>登录 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">auth login</span><br></pre></td></tr></table></figure>
+输入账号和授权密码，账号和授权密码要以base64编码的形式输入，授权密码不是邮箱密码，要在163邮箱主页开启邮箱的SMTP服务后再获取。</p></li>
 </ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">telnet smtp.163.com  25   //直接进入回显模式</span><br></pre></td></tr></table></figure>
-<ol start="2">
-<li>查看连接是否建立</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">helo localhost</span><br></pre></td></tr></table></figure>
-<ol start="3">
-<li>登录</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">auth login</span><br></pre></td></tr></table></figure>
-<p>输入账号和授权密码，账号和授权密码要以base64编码的形式输入，授权密码不是邮箱密码，要在163邮箱主页开启邮箱的SMTP服务后再获取。</p>
-<p><img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-45-48.png" alt="2025-11-27-20-45-48"></p>
-<p>邮箱：<br>
-18*******32@163.com</p>
-<p>授权密码(在打开IMAP/SMTP服务时会弹出，记下此授权密码，在登录时需要用到该密码)：<br>
+<figure>
+<img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-45-48.png" alt="2025-11-27-20-45-48">
+<figcaption aria-hidden="true">2025-11-27-20-45-48</figcaption>
+</figure>
+<p>邮箱： 18*******32@163.com</p>
+<p>授权密码(在打开IMAP/SMTP服务时会弹出，记下此授权密码，在登录时需要用到该密码)：
 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-30.png" alt="2025-11-27-20-46-30"></p>
-<p>若已有授权密码，也可以新增授权密码。<br>
-<img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-38.png" alt="2025-11-27-20-46-38"></p>
-<p>接下来输入邮件信息，其中mail from必须是发送邮箱的账号，rcpt to必须是接收邮箱的账号，否则会被认为是无效邮件而无法发送。</p>
+<p>若已有授权密码，也可以新增授权密码。 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-38.png" alt="2025-11-27-20-46-38"></p>
+<p>接下来输入邮件信息，其中mail from必须是发送邮箱的账号，rcpt
+to必须是接收邮箱的账号，否则会被认为是无效邮件而无法发送。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#邮件头，必须是正确的</span></span><br><span class="line">mail from: &lt;aa27975599672021@163.com&gt;</span><br><span class="line">rcpt to:  &lt;aa27975599672022@163.com&gt;</span><br><span class="line"><span class="comment">#开始输入邮件正文</span></span><br><span class="line">data</span><br><span class="line">from: &lt;aa27975599672021@163.com&gt;</span><br><span class="line">to:  &lt;aa27975599672022@163.com&gt;</span><br><span class="line">subject:hello,aa27975599672022@163.com</span><br><span class="line"><span class="comment">#空一行</span></span><br><span class="line">hello</span><br><span class="line"><span class="comment">#空一行，后面输入一个点后回车表示结束</span></span><br><span class="line">.</span><br></pre></td></tr></table></figure>
-<p>发送过程<br>
-<img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-49.png" alt="2025-11-27-20-46-49"></p>
-<p>在接收邮箱中查看，可以看到接收到了所发送的邮件<br>
-<img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-58.png" alt="2025-11-27-20-46-58"></p>
+<p>发送过程 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-49.png" alt="2025-11-27-20-46-49"></p>
+<p>在接收邮箱中查看，可以看到接收到了所发送的邮件 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-58.png" alt="2025-11-27-20-46-58"></p>
 <hr>
-<h1 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h1>
- <div id="footnotes"><hr><div id="footnotelist"><ol style="list-style: none; padding-left: 0; margin-left: 40px"><li id="fn:1"><span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">1.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;">Computer Networking_ A Top-Down Approach-Pearson (2021) 第2.3.1节 SMTP. By James W. Kurose, Keith W. Ross<a href="#fnref:1" rev="footnote"> ↩</a></span></li><li id="fn:2"><span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">2.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;"><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1927198">Telnet 使用 SMTP 服务登录邮箱并发送邮件</a><a href="#fnref:2" rev="footnote"> ↩</a></span></li></ol></div></div>
+<h1 id="参考">参考</h1>
+<div id="footnotes">
+<hr>
+<div id="footnotelist">
+<ol style="list-style: none; padding-left: 0; margin-left: 40px">
+<li id="fn:1">
+<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">1.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;">Computer
+Networking_ A Top-Down Approach-Pearson (2021) 第2.3.1节 SMTP. By James
+W. Kurose, Keith W. Ross<a href="#fnref:1" rev="footnote"> ↩︎</a></span>
+</li>
+<li id="fn:2">
+<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">2.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;"><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1927198">Telnet
+使用 SMTP 服务登录邮箱并发送邮件</a><a href="#fnref:2" rev="footnote">
+↩︎</a></span>
+</li>
+</ol>
+</div>
+</div>
+
+
     </div>
 
     
@@ -404,7 +413,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#smtp%E5%8D%8F%E8%AE%AE%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text"> SMTP协议简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E5%87%86%E5%A4%87"><span class="nav-number">2.</span> <span class="nav-text"> 实验准备</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E6%AD%A5%E9%AA%A4"><span class="nav-number">3.</span> <span class="nav-text"> 实验步骤</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text"> 参考</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E5%87%86%E5%A4%87"><span class="nav-number">1.</span> <span class="nav-text">实验准备</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E6%AD%A5%E9%AA%A4"><span class="nav-number">2.</span> <span class="nav-text">实验步骤</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
