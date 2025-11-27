@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://yang-yuke.github.io/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/</loc>
+    
+    <lastmod>2025-11-27</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://yang-yuke.github.io/2024/01/08/shell-if-statement/</loc>
     
     <lastmod>2024-01-07</lastmod>
@@ -157,7 +166,7 @@
 
   <url>
     <loc>https://yang-yuke.github.io/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -165,98 +174,112 @@
   
   <url>
     <loc>https://yang-yuke.github.io/tags/LTE/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/tags/MAC/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/tags/%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/tags/%E5%B7%A5%E5%85%B7%E9%93%BE/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/tags/lldb-mi/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/tags/%E8%B0%83%E8%AF%95%E5%99%A8/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/tags/RLC/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/tags/FPAG/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/tags/%E6%AF%94%E7%89%B9%E5%B8%81/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/tags/%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/tags/%E8%84%9A%E6%9C%AC/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/tags/shell/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/tags/bash/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/tags/variables/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://yang-yuke.github.io/tags/computer-networking/</loc>
+    <lastmod>2025-11-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://yang-yuke.github.io/tags/SMTP/</loc>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
@@ -265,35 +288,42 @@
   
   <url>
     <loc>https://yang-yuke.github.io/categories/LTE/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/categories/%E7%BC%96%E8%AF%91%E5%99%A8/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/categories/FPGA/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/categories/%E6%AF%94%E7%89%B9%E5%B8%81/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yang-yuke.github.io/categories/shell/</loc>
-    <lastmod>2024-01-07</lastmod>
+    <lastmod>2025-11-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://yang-yuke.github.io/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/</loc>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
