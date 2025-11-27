@@ -1,117 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>LTE网络MAC层令牌桶算法</title>
-    <url>/2022/06/17/LTE%E7%BD%91%E7%BB%9CMAC%E5%B1%82%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%AE%97%E6%B3%95/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="引言">引言</h1>
-<p>LTE MAC层的一个重要的功能是从各个逻辑信道读取数据(MAC
-SDU)，然后将它们封装成一个数据块(MAC transport
-block)，再交给物理层从空口发生出去，这个过程叫packet build。每一次packet
-build能发送的数据块的大小由网络决定，网络会通过PDCCH指示UE在哪个子帧上可以发送多少字节的数据，可以发送的字节数就是最终能发送的数据块的大小，也叫UL
-grant(Uplink grant)。 <span id="more"></span> 那么UE的MAC层在接收到UL
-grant后，应该如何将这些UL grant分配到不同的逻辑信道上呢？是要将这些UL
-grant平均分配给当前所有的逻辑信道，每个逻辑信道都能发送同样的数据量吗？这个方法虽然很公平，但是却并不高效，主要有两个原因，其一，不同逻辑信道之间要发送的数据量可能差异非常大，这就导致了对有的逻辑信道来说所分得的UL
-grant不足以发送buffer里所有的数据，而对另一些逻辑信道来说所分得的UL
-grant可能又太多了，超出了buffer里的数据量，从而造成了浪费。那么按照先来后到的原则行不行，先发送最早激活的逻辑信道的数据，假如在清空该逻辑信道的buffer后，如果还有剩余的UL
-grant，再发送次早激活的逻辑信道的数据，依次类推。按照这种方法，能够保证所有的UL
-grant都被用来发送有效数据，不会造成资源浪费，但是这时又出现了另外一个问题，假如先激活的逻辑信道数据量一直很大，而后激活的逻辑信道数据量虽然没那么大，但是却很重要，这就会导致所有的UL
-grant都被用来发送先激活的逻辑信道数据了，而后激活的逻辑信道却始终得不到服务，重要的数据发不出去，这样会导致某些上层应用完全停滞，严重影响用户体验。那么按照逻辑信道优先级来服务呢？先发送优先级最高的逻辑信道的数据，再依次发送低优先级逻辑信道的数据，这样就能保证重要的数据先发送出去。但是这样也会有类似的问题，假如高优先级逻辑信道的数据量一直很大，就会导致低优先级逻辑信道一直得不到服务，通俗来说就是一直处于饥饿状态。</p>
-<p>为了能既保证一定程度的公平(即所有的逻辑信道都能得到不同程度的服务)又兼顾效率(即UL
-grant不会被浪费)，LTE的MAC层的packet build过程采用了令牌桶算法(token
-bucket algorithm)。 # 令牌桶算法概述
-令牌桶算法被广泛用于有线网络和无线网络的数据调度中。令牌桶算法工作过程大致如下图(a)和<span class="math inline">\((c)\)</span>所示。主机维护了一个令牌桶，以速率R往令牌桶中注入令牌。主机往网络发送数据的时候，会先判断令牌桶里面是否还有令牌，如果有，才能发送数据，并且发送多少数据就从令牌桶中取出多少令牌。如果令牌桶为空，那么主机就不能向网络发送数据了，所有的packet只能缓存在主机的队列里。</p>
-<figure>
-<img src="/2022/06/17/LTE%E7%BD%91%E7%BB%9CMAC%E5%B1%82%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%AE%97%E6%B3%95/2022-06-17-00-38-27.png#pic_center" alt="2022-06-17-00-38-27">
-<figcaption aria-hidden="true">2022-06-17-00-38-27</figcaption>
-</figure>
-<p>在传统的有线网络中，令牌桶算法可被应用于路由器(网络层, network
-layer)，用于对网络流量进行平滑整形，以减少网络拥塞。令牌桶限制了数据流的长期速率，但是却允许短期的数据洪流(burst)。主机在短时间内可以以极高的速率发送数据，而不必缓存任何的数据，因此在这段时间内数据不会有任何的时延。从长期来看，数据速率会被限定为令牌增加的速率R，一旦令牌桶被清空，后续的数据发送速率就只能受限于令牌注入的速度了。</p>
-<p>在无线通信网络中，令牌桶算法可以用于保证不同的上层业务的服务质量(QoS,
-quality of service)。在LTE网络里，MAC层就采用了令牌桶算法。 #
-MAC令牌桶算法实现
-MAC实体在每一次要进行HARQ新传的时候，都会按照令牌桶(token
-bucket)算法对UL grant进行分配，这个过程叫<strong>Logical Channel
-Prioritization</strong>过程。</p>
-<p>对每个逻辑信道，RRC都为其分配一个逻辑信道优先级(<strong>priority</strong>)，以此控制上行数据的调度。优先级的数字越小，其优先级越高。比如，SRB1(逻辑信道ID为1)的优先级通常为1，表示其优先级最高。除了逻辑信道优先级，RRC还会分配<strong>prioritisedBitRate</strong>，<strong>bucketSizeDuration</strong>
-这两个参数。<strong>prioritisedBitRate</strong>(PBR, Prioritized Bit
-Rate)表示对每个逻辑信道的缓存数据需要以多大的速率进行优先处理，保证了各个逻辑信道的最低服务质量。<strong>bucketSizeDuration</strong>
-(BSD, Bucket Size
-Duration)表示令牌桶的深度，通过限制令牌桶的深度对突发数据流(data
-burst)进行一定程度的流控，从而保证数据的平滑传输。</p>
-<p>对每个逻辑信道(用变量<span class="math inline">\(j\)</span>表示)，MAC实体都为其维护一个变量<span class="math inline">\(B_{j}\)</span>，<span class="math inline">\(B_{j}\)</span>表示令牌桶当前令牌数目
-。在该逻辑信道新添加时，需要将<span class="math inline">\(B_{j}\)</span>初始化为0，其后每个TTI(对LTE来说是1ms)，<span class="math inline">\(B_{j}\)</span> 都应增加PBR ×
-TTI(即PRB)，表示往令牌桶中新增加令牌数为PBR，其中PBR就是该逻辑信道需要优先处理的数据比特率(Prioritized
-Bit Rate of logical channel <span class="math inline">\(j\)</span>)。<span class="math inline">\(B_{j}\)</span>不会无限增大，当令牌桶的令牌溢出时，<span class="math inline">\(B_{j}\)</span>的值就会被限定为令牌桶的大小，其大小为<span class="math inline">\(B_{j}=\)</span> PBR ×
-BSD。PBR和BSD都是由RRC层配置，RRC层在配置MAC实体时会设置这两个参数。</p>
-<p>当MAC实体收到UL grant，需要进行新传时，UL
-grant的分配过程如下图所示，这个过程叫Logical Channel Prioritization
-procedure。 <img src="/2022/06/17/LTE%E7%BD%91%E7%BB%9CMAC%E5%B1%82%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%AE%97%E6%B3%95/2022-06-17-00-44-53.png#pic_center" alt="2022-06-17-00-44-53"></p>
-<p>根据上图，MAC实体按以下过程对UL grant进行分配。</p>
-<ol type="1">
-<li>按逻辑信道优先级从高到低的顺序对UL
-grant进行分配，对每个逻辑信道进行组包(MAC UL transport
-block)。注意，这里是按逻辑信道优先级排序。因为数字越小表示优先级越高，所以会从priority数字最小的逻辑信道开始进行组包。在分配UL
-grant给逻辑信道<span class="math inline">\(j\)</span>的时候，会先看看令牌桶还有多少令牌(即<span class="math inline">\(B_{j}\)</span>有多大)，如果令牌数大于等于buffer的数据量(即<span class="math inline">\(B_{j}\geqslant\)</span>
-buffer的数据量)，那么给逻辑信道<span class="math inline">\(j\)</span>的buffer有多少数据，就给它分配多少UL
-grant，当然如果UL grant不足以发送逻辑信道<span class="math inline">\(j\)</span>的buffer里所有的数据，那么有多少UL
-grant就给它分配多少UL grant。如果令牌数小于buffer的数据量(即<span class="math inline">\(B_{j}&lt;\)</span>
-buffer的数据量)，那么有多少令牌就分配多少UL grant，当然如果UL
-grant比令牌数还小，那就把所有的UL grant都分配给逻辑信道<span class="math inline">\(j\)</span>。当逻辑信道<span class="math inline">\(j\)</span>的PBR设为"infinity"时，则在为其分配UL
-grant时不会考虑其<span class="math inline">\(B_{j}\)</span>的大小，所有的UL
-grant都会先分配给该逻辑信道，假如在发送完其buffer的数据后，还有剩余的UL
-grant，这时才会再将剩余的UL grant分配给其它的逻辑信道。</li>
-<li>从逻辑信道<span class="math inline">\(j\)</span>的<span class="math inline">\(B_{j}\)</span>中减去步骤1所build的所有MAC
-SDUs的大小之和。(参考实现：对于逻辑信道<span class="math inline">\(j\)</span>，每传输一个RLC SDU，先比较<span class="math inline">\(B_{j}\)</span>是否大于0。如果<span class="math inline">\(B_{j}&gt;0\)</span>，则往MAC
-PDU中添加该SDU，然后<span class="math inline">\(B_{j}-=\)</span>sizeof(RLC
-SDU)，并判断是否满足<span class="math inline">\(B_{j}\leqslant
-0\)</span>，如此反复，直到满足<span class="math inline">\(B_{j}\leqslant
-0\)</span>，再处理下一逻辑信道)。</li>
-<li>如果前两步执行完还剩有UL grant的话，则不管<span class="math inline">\(B_{j}\)</span>的大小，把剩余的UL
-grant按照逻辑信道优先级从高到低分配给各个逻辑信道。只有当高优先级的逻辑信道服务完(即所有的数据都发送完毕)，且还有剩余的UL
-grant可用于服务剩余的逻辑信道时，才会继续服务优先级较低的逻辑信道。对剩余的逻辑信道也是执行同样的逻辑。在这一步，因为所有的逻辑信道都已经得到了最低保障，因此不会再考虑公平的原则。MAC实体会尽全力服务高优先级的逻辑信道，尽可能地把高优先级的逻辑信道的数据尽快发送出去。</li>
-</ol>
-<p>在上述UL grant分配过程中，MAC层遵循以下原则：</p>
-<ul>
-<li>如果剩余的UL grant足够发送整个RLC SDU，则不应对该SDU分段。</li>
-<li>如果受限于剩余UL grant的大小，不得不对RLC SDU分段，则应根据剩余UL
-grant的大小，尽可能地填入最大的分段。即尽可能地有效利用剩余的UL
-grant。</li>
-<li>应最大化数据的传输。</li>
-<li>如果某个无线承载(RB, radio
-bearer)被挂起(suspend)，那么不应该build该RB所对应逻辑信道的数据。</li>
-<li>如果UL grant<span class="math inline">\(\geqslant\)</span>
-4bytes，而buffer里还有数据要发送时，则MAC实体不应该把这些UL
-grant都用来发送padding
-BSR或者padding，换言之MAC实体应该尽可能发送有效数据，除非UL grant <span class="math inline">\(&lt;\)</span> 7bytes且要发送的数据是RLC PDU
-segment，此时因为UL grant不足以发送任何的RLC PDU
-payload，因此只能发送padding BSR或者padding。</li>
-</ul>
-<p>如果所有的逻辑信道的PBR都设为0
-kBps，就不再保证各个逻辑信道的服务质量都能得到最低保障，此时就会退化为只考虑优先级的调度算法，等价于上面的算法只剩下第三步。在这种情况下，MAC实体会尽力服务优先级更高的逻辑信道，然后依次往下服务低优先级的逻辑信道。当然，对每个逻辑信道的服务都是建立在UL
-grant还有剩余的前提下，如果UL
-grant已经用完，那么剩余的逻辑信道在本次packet
-build就不能得到服务了。</p>
-<p>在上述算法的第二步可以看到，<span class="math inline">\(B_{j}\)</span>的值可能为负，这是因为，在算法的第一步，会遵循尽量不对RLC
-SDU分段的原则。在UL grant足够的情况下，宁可让<span class="math inline">\(B_{j}\)</span>的使用超出预算，也要争取把RLC
-SDU给完整地build完。因此，当<span class="math inline">\(B_{j}&gt;0\)</span>，但<span class="math inline">\(B_{j}-\)</span>sizeof(RLC SDU)<span class="math inline">\(&lt;0\)</span>时，假如剩余的UL
-grant足够的话，MAC实体依然会在本次build完这个RLC
-SDU，而不是对其分段。在build完这个RLC SDU后，<span class="math inline">\(B_{j}\)</span>将为负数，令牌桶的令牌已经用完，逻辑信道<span class="math inline">\(j\)</span>就不能再build任何RLC SDU了。其后，<span class="math inline">\(B_{j}\)</span>将逐渐恢复，在每个子帧，<span class="math inline">\(B_{j}\)</span>都会增加PBR，只有当<span class="math inline">\(B_{j}&gt;0\)</span>，即令牌桶又有令牌了，才能继续对逻辑信道<span class="math inline">\(j\)</span>进行packet build。</p>
-<p>以上的算法可以用以下的伪代码表示(仅供参考，真正的实现有所出入)：
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">sort the logic channel by priority</span><br><span class="line"></span><br><span class="line">iterate each active logic channel from highest priority to lowest</span><br><span class="line">  <span class="keyword">if</span> Bj &gt;= available data in the current logic channel<span class="number">&#x27;</span>s buffer</span><br><span class="line">    <span class="keyword">if</span> UL grant is sufficient to send all the available data in the current logic channel<span class="number">&#x27;</span>s buffer</span><br><span class="line">      UL grant -= available data in the current logic channel<span class="number">&#x27;</span>s buffer</span><br><span class="line">      build all the packet in the current logic channel<span class="number">&#x27;</span>s buffer</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      allocate all the UL grant to the current logic channel</span><br><span class="line">      build all UL grant bytes <span class="keyword">for</span> the current logic channel<span class="number">&#x27;</span>s buffer</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    <span class="keyword">if</span> UL grant is sufficient to use up all the Bj</span><br><span class="line">      UL grant -= Bj</span><br><span class="line">      build Bj bytes RLC PDUs</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      allocate all the UL grant to the current logic channel</span><br><span class="line">      build all UL grant bytes <span class="keyword">for</span> the current logic channel<span class="number">&#x27;</span>s buffer</span><br><span class="line">      </span><br><span class="line"><span class="keyword">if</span> there is still any UL grant left</span><br><span class="line">  iterate each active logic channel from highest priority to lowest</span><br><span class="line">    leftover UL grant is used to serve the leftover data in the buffer</span><br><span class="line">    <span class="keyword">if</span> there is no leftover UL grant</span><br><span class="line">      <span class="keyword">break</span>;        </span><br></pre></td></tr></table></figure></p>
-<h1 id="参考文献">参考文献</h1>
-<p>[1] 深入理解LTE-A. 温金辉著. 第17章17.1节 [2] 3GPP协议36.321.
-第5.4.3.1节 [3] Computer networks(fifth edition). By Andrew S. Tanenbaum
-etl. Section 5.4.2</p>
-]]></content>
-      <categories>
-        <category>LTE</category>
-      </categories>
-      <tags>
-        <tag>LTE</tag>
-        <tag>MAC</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LTE MAC token bucket algorithm</title>
     <url>/2021/11/27/LTE-MAC-token-bucket-algorithm/</url>
     <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="abbreviation">Abbreviation</h1>
@@ -241,6 +130,75 @@ WETHERALL [3] 36.321. By 3GPP specialist panel.</p>
       </tags>
   </entry>
   <entry>
+    <title>LTE网络RLC层的polling机制</title>
+    <url>/2022/06/16/LTE%E7%BD%91%E7%BB%9CRLC%E5%B1%82%E7%9A%84polling%E6%9C%BA%E5%88%B6/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><blockquote>
+<p>本文将从UE角度对LTE网络RLC层的polling机制进行详细阐述。 # 前言
+在LTE网络中，RLC层提供了两种服务模式，一种是保证数据无损传输(lossless)的<code>AM模式</code>(acknowledged
+mode)，另一种是不保证数据可靠传输的<code>UM模式</code>(unacknowledged
+mode)。在<code>AM模式</code>下，RLC层要保证数据可靠传输，因此，此时的RLC协议是一种<code>可靠性数据传输协议</code>(reliable
+data transmission protocol, RDP)。</p>
+</blockquote>
+<p>RDP是网络协议中常用的一种协议，TCP协议就是其中之一。与TCP协议相比，RLC位于无线通信协议栈的更底层，对时延的要求更高。因此，为了更快地实现数据的无损传输，RLC层引入了<code>polling</code>(问询)机制。
+<span id="more"></span> --- # Polling的目的
+UE<sup id="fnref:1"><a href="#fn:1" rel="footnote"><span class="hint--top hint--error hint--medium hint--rounded hint--bounce" aria-label="User equipment，在蜂窝网络中指终端设备，大部分场景下是手机，也可能是智能手表，智能仪表等其它无线终端设备。
+">[1]</span></a></sup>
+在向网络发送数据的过程中，由于物理层存在一定的误码率(BLER)，有一些包(packet,
+即RLC
+PDU)有时候可能会在传输过程中发送失败或者丢失。但是，哪一些包发送失败了，从UE侧是无法知道的。因此，为了实现数据的可靠传输，UE需要网络侧的反馈，告诉UE在网络侧哪一些包已经收到，哪一些还没有收到，从而让UE能够重传那些网络还没收到的包，这个反馈就是<code>状态报告</code>(status
+report)。</p>
+<p>但是网络侧怎么能够知道什么时候给UE发送<code>状态报告</code>呢？如果网络侧频繁不停地给UE发送<code>状态报告</code>，那么虽然UE能够很及时地知道网络侧接收情况，但是这样就浪费了很多下行资源；而如果网络侧周期性地给UE发送<code>状态报告</code>，那么UE侧又无法及时得知网络侧的接收情况。引入<code>Polling</code>就是为了这个目的。UE需要向网络询问，哪一些包收到了，哪一些还没收到，这样网络就会回复<code>状态报告</code>，UE就能及时地重传那些没被网络收到(acknowledged)的包。</p>
+<table style="width:6%;">
+<colgroup>
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr>
+<th># Polling的触发条件 在每个RLC data
+PDU的header部分，有一个P位的标志位，这个标志位就代表<code>polling</code>。当P位为1时，表示UE向网络侧发送<code>polling</code>，期望对方回复<code>状态报告</code>，反之亦然。在以下任一条件满足的情况下，UE都会触发<code>polling</code>：</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td># 总结
+本文从UE侧角度介绍了LTE网络RLC层的一个基本功能——<code>polling</code>机制。<code>polling</code>机制只在<code>AM模式</code>下才会生效，其目的是为了能及时得知网络侧的接收情况，从而及时地向网络重传丢失的数据包，保证数据的低时延可靠传输。最后介绍了<code>polling</code>的触发条件。</td>
+</tr>
+</tbody>
+</table>
+<h1 id="参考文献">参考文献</h1>
+<p>[1] 3GPP协议 36322 section 5.2.2 [2] <font color="DodgerBlue">Radio
+Protocols for LTE and LTE-Advanced (2012)</font> by SeungJune Yi,
+SungDuck Chun, etl. section 5.4.4 [3] 深入理解LTE-A. 温金辉著. section
+36.3.3.2</p>
+<div id="footnotes">
+<hr>
+<div id="footnotelist">
+<ol style="list-style: none; padding-left: 0; margin-left: 40px">
+<li id="fn:1">
+<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">1.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;">User
+equipment，在蜂窝网络中指终端设备，大部分场景下是手机，也可能是智能手表，智能仪表等其它无线终端设备。<a href="#fnref:1" rev="footnote">
+↩︎</a></span>
+</li>
+<li id="fn:2">
+<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">2.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;">Sequence
+number，每一包RLC data PDU都有一个sequence
+number，在一段时间内可以唯一标识这包RLC data
+PDU。<a href="#fnref:2" rev="footnote"> ↩︎</a></span>
+</li>
+</ol>
+</div>
+</div>
+
+]]></content>
+      <categories>
+        <category>LTE</category>
+      </categories>
+      <tags>
+        <tag>LTE</tag>
+        <tag>RLC</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Telnet使用SMTP服务登录邮箱并发送邮件</title>
     <url>/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/</url>
     <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><blockquote>
@@ -343,72 +301,114 @@ fatal error: ld terminated with signal 9</a></li>
       </tags>
   </entry>
   <entry>
-    <title>LTE网络RLC层的polling机制</title>
-    <url>/2022/06/16/LTE%E7%BD%91%E7%BB%9CRLC%E5%B1%82%E7%9A%84polling%E6%9C%BA%E5%88%B6/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><blockquote>
-<p>本文将从UE角度对LTE网络RLC层的polling机制进行详细阐述。 # 前言
-在LTE网络中，RLC层提供了两种服务模式，一种是保证数据无损传输(lossless)的<code>AM模式</code>(acknowledged
-mode)，另一种是不保证数据可靠传输的<code>UM模式</code>(unacknowledged
-mode)。在<code>AM模式</code>下，RLC层要保证数据可靠传输，因此，此时的RLC协议是一种<code>可靠性数据传输协议</code>(reliable
-data transmission protocol, RDP)。</p>
-</blockquote>
-<p>RDP是网络协议中常用的一种协议，TCP协议就是其中之一。与TCP协议相比，RLC位于无线通信协议栈的更底层，对时延的要求更高。因此，为了更快地实现数据的无损传输，RLC层引入了<code>polling</code>(问询)机制。
-<span id="more"></span> --- # Polling的目的
-UE<sup id="fnref:1"><a href="#fn:1" rel="footnote"><span class="hint--top hint--error hint--medium hint--rounded hint--bounce" aria-label="User equipment，在蜂窝网络中指终端设备，大部分场景下是手机，也可能是智能手表，智能仪表等其它无线终端设备。
-">[1]</span></a></sup>
-在向网络发送数据的过程中，由于物理层存在一定的误码率(BLER)，有一些包(packet,
-即RLC
-PDU)有时候可能会在传输过程中发送失败或者丢失。但是，哪一些包发送失败了，从UE侧是无法知道的。因此，为了实现数据的可靠传输，UE需要网络侧的反馈，告诉UE在网络侧哪一些包已经收到，哪一些还没有收到，从而让UE能够重传那些网络还没收到的包，这个反馈就是<code>状态报告</code>(status
-report)。</p>
-<p>但是网络侧怎么能够知道什么时候给UE发送<code>状态报告</code>呢？如果网络侧频繁不停地给UE发送<code>状态报告</code>，那么虽然UE能够很及时地知道网络侧接收情况，但是这样就浪费了很多下行资源；而如果网络侧周期性地给UE发送<code>状态报告</code>，那么UE侧又无法及时得知网络侧的接收情况。引入<code>Polling</code>就是为了这个目的。UE需要向网络询问，哪一些包收到了，哪一些还没收到，这样网络就会回复<code>状态报告</code>，UE就能及时地重传那些没被网络收到(acknowledged)的包。</p>
-<table style="width:6%;">
-<colgroup>
-<col style="width: 5%">
-</colgroup>
-<thead>
-<tr>
-<th># Polling的触发条件 在每个RLC data
-PDU的header部分，有一个P位的标志位，这个标志位就代表<code>polling</code>。当P位为1时，表示UE向网络侧发送<code>polling</code>，期望对方回复<code>状态报告</code>，反之亦然。在以下任一条件满足的情况下，UE都会触发<code>polling</code>：</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td># 总结
-本文从UE侧角度介绍了LTE网络RLC层的一个基本功能——<code>polling</code>机制。<code>polling</code>机制只在<code>AM模式</code>下才会生效，其目的是为了能及时得知网络侧的接收情况，从而及时地向网络重传丢失的数据包，保证数据的低时延可靠传输。最后介绍了<code>polling</code>的触发条件。</td>
-</tr>
-</tbody>
-</table>
-<h1 id="参考文献">参考文献</h1>
-<p>[1] 3GPP协议 36322 section 5.2.2 [2] <font color="DodgerBlue">Radio
-Protocols for LTE and LTE-Advanced (2012)</font> by SeungJune Yi,
-SungDuck Chun, etl. section 5.4.4 [3] 深入理解LTE-A. 温金辉著. section
-36.3.3.2</p>
-<div id="footnotes">
-<hr>
-<div id="footnotelist">
-<ol style="list-style: none; padding-left: 0; margin-left: 40px">
-<li id="fn:1">
-<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">1.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;">User
-equipment，在蜂窝网络中指终端设备，大部分场景下是手机，也可能是智能手表，智能仪表等其它无线终端设备。<a href="#fnref:1" rev="footnote">
-↩︎</a></span>
-</li>
-<li id="fn:2">
-<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">2.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;">Sequence
-number，每一包RLC data PDU都有一个sequence
-number，在一段时间内可以唯一标识这包RLC data
-PDU。<a href="#fnref:2" rev="footnote"> ↩︎</a></span>
-</li>
+    <title>LTE网络MAC层令牌桶算法</title>
+    <url>/2022/06/17/LTE%E7%BD%91%E7%BB%9CMAC%E5%B1%82%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%AE%97%E6%B3%95/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="引言">引言</h1>
+<p>LTE MAC层的一个重要的功能是从各个逻辑信道读取数据(MAC
+SDU)，然后将它们封装成一个数据块(MAC transport
+block)，再交给物理层从空口发生出去，这个过程叫packet build。每一次packet
+build能发送的数据块的大小由网络决定，网络会通过PDCCH指示UE在哪个子帧上可以发送多少字节的数据，可以发送的字节数就是最终能发送的数据块的大小，也叫UL
+grant(Uplink grant)。 <span id="more"></span> 那么UE的MAC层在接收到UL
+grant后，应该如何将这些UL grant分配到不同的逻辑信道上呢？是要将这些UL
+grant平均分配给当前所有的逻辑信道，每个逻辑信道都能发送同样的数据量吗？这个方法虽然很公平，但是却并不高效，主要有两个原因，其一，不同逻辑信道之间要发送的数据量可能差异非常大，这就导致了对有的逻辑信道来说所分得的UL
+grant不足以发送buffer里所有的数据，而对另一些逻辑信道来说所分得的UL
+grant可能又太多了，超出了buffer里的数据量，从而造成了浪费。那么按照先来后到的原则行不行，先发送最早激活的逻辑信道的数据，假如在清空该逻辑信道的buffer后，如果还有剩余的UL
+grant，再发送次早激活的逻辑信道的数据，依次类推。按照这种方法，能够保证所有的UL
+grant都被用来发送有效数据，不会造成资源浪费，但是这时又出现了另外一个问题，假如先激活的逻辑信道数据量一直很大，而后激活的逻辑信道数据量虽然没那么大，但是却很重要，这就会导致所有的UL
+grant都被用来发送先激活的逻辑信道数据了，而后激活的逻辑信道却始终得不到服务，重要的数据发不出去，这样会导致某些上层应用完全停滞，严重影响用户体验。那么按照逻辑信道优先级来服务呢？先发送优先级最高的逻辑信道的数据，再依次发送低优先级逻辑信道的数据，这样就能保证重要的数据先发送出去。但是这样也会有类似的问题，假如高优先级逻辑信道的数据量一直很大，就会导致低优先级逻辑信道一直得不到服务，通俗来说就是一直处于饥饿状态。</p>
+<p>为了能既保证一定程度的公平(即所有的逻辑信道都能得到不同程度的服务)又兼顾效率(即UL
+grant不会被浪费)，LTE的MAC层的packet build过程采用了令牌桶算法(token
+bucket algorithm)。 # 令牌桶算法概述
+令牌桶算法被广泛用于有线网络和无线网络的数据调度中。令牌桶算法工作过程大致如下图(a)和<span class="math inline">\((c)\)</span>所示。主机维护了一个令牌桶，以速率R往令牌桶中注入令牌。主机往网络发送数据的时候，会先判断令牌桶里面是否还有令牌，如果有，才能发送数据，并且发送多少数据就从令牌桶中取出多少令牌。如果令牌桶为空，那么主机就不能向网络发送数据了，所有的packet只能缓存在主机的队列里。</p>
+<figure>
+<img src="/2022/06/17/LTE%E7%BD%91%E7%BB%9CMAC%E5%B1%82%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%AE%97%E6%B3%95/2022-06-17-00-38-27.png#pic_center" alt="2022-06-17-00-38-27">
+<figcaption aria-hidden="true">2022-06-17-00-38-27</figcaption>
+</figure>
+<p>在传统的有线网络中，令牌桶算法可被应用于路由器(网络层, network
+layer)，用于对网络流量进行平滑整形，以减少网络拥塞。令牌桶限制了数据流的长期速率，但是却允许短期的数据洪流(burst)。主机在短时间内可以以极高的速率发送数据，而不必缓存任何的数据，因此在这段时间内数据不会有任何的时延。从长期来看，数据速率会被限定为令牌增加的速率R，一旦令牌桶被清空，后续的数据发送速率就只能受限于令牌注入的速度了。</p>
+<p>在无线通信网络中，令牌桶算法可以用于保证不同的上层业务的服务质量(QoS,
+quality of service)。在LTE网络里，MAC层就采用了令牌桶算法。 #
+MAC令牌桶算法实现
+MAC实体在每一次要进行HARQ新传的时候，都会按照令牌桶(token
+bucket)算法对UL grant进行分配，这个过程叫<strong>Logical Channel
+Prioritization</strong>过程。</p>
+<p>对每个逻辑信道，RRC都为其分配一个逻辑信道优先级(<strong>priority</strong>)，以此控制上行数据的调度。优先级的数字越小，其优先级越高。比如，SRB1(逻辑信道ID为1)的优先级通常为1，表示其优先级最高。除了逻辑信道优先级，RRC还会分配<strong>prioritisedBitRate</strong>，<strong>bucketSizeDuration</strong>
+这两个参数。<strong>prioritisedBitRate</strong>(PBR, Prioritized Bit
+Rate)表示对每个逻辑信道的缓存数据需要以多大的速率进行优先处理，保证了各个逻辑信道的最低服务质量。<strong>bucketSizeDuration</strong>
+(BSD, Bucket Size
+Duration)表示令牌桶的深度，通过限制令牌桶的深度对突发数据流(data
+burst)进行一定程度的流控，从而保证数据的平滑传输。</p>
+<p>对每个逻辑信道(用变量<span class="math inline">\(j\)</span>表示)，MAC实体都为其维护一个变量<span class="math inline">\(B_{j}\)</span>，<span class="math inline">\(B_{j}\)</span>表示令牌桶当前令牌数目
+。在该逻辑信道新添加时，需要将<span class="math inline">\(B_{j}\)</span>初始化为0，其后每个TTI(对LTE来说是1ms)，<span class="math inline">\(B_{j}\)</span> 都应增加PBR ×
+TTI(即PRB)，表示往令牌桶中新增加令牌数为PBR，其中PBR就是该逻辑信道需要优先处理的数据比特率(Prioritized
+Bit Rate of logical channel <span class="math inline">\(j\)</span>)。<span class="math inline">\(B_{j}\)</span>不会无限增大，当令牌桶的令牌溢出时，<span class="math inline">\(B_{j}\)</span>的值就会被限定为令牌桶的大小，其大小为<span class="math inline">\(B_{j}=\)</span> PBR ×
+BSD。PBR和BSD都是由RRC层配置，RRC层在配置MAC实体时会设置这两个参数。</p>
+<p>当MAC实体收到UL grant，需要进行新传时，UL
+grant的分配过程如下图所示，这个过程叫Logical Channel Prioritization
+procedure。 <img src="/2022/06/17/LTE%E7%BD%91%E7%BB%9CMAC%E5%B1%82%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%AE%97%E6%B3%95/2022-06-17-00-44-53.png#pic_center" alt="2022-06-17-00-44-53"></p>
+<p>根据上图，MAC实体按以下过程对UL grant进行分配。</p>
+<ol type="1">
+<li>按逻辑信道优先级从高到低的顺序对UL
+grant进行分配，对每个逻辑信道进行组包(MAC UL transport
+block)。注意，这里是按逻辑信道优先级排序。因为数字越小表示优先级越高，所以会从priority数字最小的逻辑信道开始进行组包。在分配UL
+grant给逻辑信道<span class="math inline">\(j\)</span>的时候，会先看看令牌桶还有多少令牌(即<span class="math inline">\(B_{j}\)</span>有多大)，如果令牌数大于等于buffer的数据量(即<span class="math inline">\(B_{j}\geqslant\)</span>
+buffer的数据量)，那么给逻辑信道<span class="math inline">\(j\)</span>的buffer有多少数据，就给它分配多少UL
+grant，当然如果UL grant不足以发送逻辑信道<span class="math inline">\(j\)</span>的buffer里所有的数据，那么有多少UL
+grant就给它分配多少UL grant。如果令牌数小于buffer的数据量(即<span class="math inline">\(B_{j}&lt;\)</span>
+buffer的数据量)，那么有多少令牌就分配多少UL grant，当然如果UL
+grant比令牌数还小，那就把所有的UL grant都分配给逻辑信道<span class="math inline">\(j\)</span>。当逻辑信道<span class="math inline">\(j\)</span>的PBR设为"infinity"时，则在为其分配UL
+grant时不会考虑其<span class="math inline">\(B_{j}\)</span>的大小，所有的UL
+grant都会先分配给该逻辑信道，假如在发送完其buffer的数据后，还有剩余的UL
+grant，这时才会再将剩余的UL grant分配给其它的逻辑信道。</li>
+<li>从逻辑信道<span class="math inline">\(j\)</span>的<span class="math inline">\(B_{j}\)</span>中减去步骤1所build的所有MAC
+SDUs的大小之和。(参考实现：对于逻辑信道<span class="math inline">\(j\)</span>，每传输一个RLC SDU，先比较<span class="math inline">\(B_{j}\)</span>是否大于0。如果<span class="math inline">\(B_{j}&gt;0\)</span>，则往MAC
+PDU中添加该SDU，然后<span class="math inline">\(B_{j}-=\)</span>sizeof(RLC
+SDU)，并判断是否满足<span class="math inline">\(B_{j}\leqslant
+0\)</span>，如此反复，直到满足<span class="math inline">\(B_{j}\leqslant
+0\)</span>，再处理下一逻辑信道)。</li>
+<li>如果前两步执行完还剩有UL grant的话，则不管<span class="math inline">\(B_{j}\)</span>的大小，把剩余的UL
+grant按照逻辑信道优先级从高到低分配给各个逻辑信道。只有当高优先级的逻辑信道服务完(即所有的数据都发送完毕)，且还有剩余的UL
+grant可用于服务剩余的逻辑信道时，才会继续服务优先级较低的逻辑信道。对剩余的逻辑信道也是执行同样的逻辑。在这一步，因为所有的逻辑信道都已经得到了最低保障，因此不会再考虑公平的原则。MAC实体会尽全力服务高优先级的逻辑信道，尽可能地把高优先级的逻辑信道的数据尽快发送出去。</li>
 </ol>
-</div>
-</div>
-
+<p>在上述UL grant分配过程中，MAC层遵循以下原则：</p>
+<ul>
+<li>如果剩余的UL grant足够发送整个RLC SDU，则不应对该SDU分段。</li>
+<li>如果受限于剩余UL grant的大小，不得不对RLC SDU分段，则应根据剩余UL
+grant的大小，尽可能地填入最大的分段。即尽可能地有效利用剩余的UL
+grant。</li>
+<li>应最大化数据的传输。</li>
+<li>如果某个无线承载(RB, radio
+bearer)被挂起(suspend)，那么不应该build该RB所对应逻辑信道的数据。</li>
+<li>如果UL grant<span class="math inline">\(\geqslant\)</span>
+4bytes，而buffer里还有数据要发送时，则MAC实体不应该把这些UL
+grant都用来发送padding
+BSR或者padding，换言之MAC实体应该尽可能发送有效数据，除非UL grant <span class="math inline">\(&lt;\)</span> 7bytes且要发送的数据是RLC PDU
+segment，此时因为UL grant不足以发送任何的RLC PDU
+payload，因此只能发送padding BSR或者padding。</li>
+</ul>
+<p>如果所有的逻辑信道的PBR都设为0
+kBps，就不再保证各个逻辑信道的服务质量都能得到最低保障，此时就会退化为只考虑优先级的调度算法，等价于上面的算法只剩下第三步。在这种情况下，MAC实体会尽力服务优先级更高的逻辑信道，然后依次往下服务低优先级的逻辑信道。当然，对每个逻辑信道的服务都是建立在UL
+grant还有剩余的前提下，如果UL
+grant已经用完，那么剩余的逻辑信道在本次packet
+build就不能得到服务了。</p>
+<p>在上述算法的第二步可以看到，<span class="math inline">\(B_{j}\)</span>的值可能为负，这是因为，在算法的第一步，会遵循尽量不对RLC
+SDU分段的原则。在UL grant足够的情况下，宁可让<span class="math inline">\(B_{j}\)</span>的使用超出预算，也要争取把RLC
+SDU给完整地build完。因此，当<span class="math inline">\(B_{j}&gt;0\)</span>，但<span class="math inline">\(B_{j}-\)</span>sizeof(RLC SDU)<span class="math inline">\(&lt;0\)</span>时，假如剩余的UL
+grant足够的话，MAC实体依然会在本次build完这个RLC
+SDU，而不是对其分段。在build完这个RLC SDU后，<span class="math inline">\(B_{j}\)</span>将为负数，令牌桶的令牌已经用完，逻辑信道<span class="math inline">\(j\)</span>就不能再build任何RLC SDU了。其后，<span class="math inline">\(B_{j}\)</span>将逐渐恢复，在每个子帧，<span class="math inline">\(B_{j}\)</span>都会增加PBR，只有当<span class="math inline">\(B_{j}&gt;0\)</span>，即令牌桶又有令牌了，才能继续对逻辑信道<span class="math inline">\(j\)</span>进行packet build。</p>
+<p>以上的算法可以用以下的伪代码表示(仅供参考，真正的实现有所出入)：
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">sort the logic channel by priority</span><br><span class="line"></span><br><span class="line">iterate each active logic channel from highest priority to lowest</span><br><span class="line">  <span class="keyword">if</span> Bj &gt;= available data in the current logic channel<span class="number">&#x27;</span>s buffer</span><br><span class="line">    <span class="keyword">if</span> UL grant is sufficient to send all the available data in the current logic channel<span class="number">&#x27;</span>s buffer</span><br><span class="line">      UL grant -= available data in the current logic channel<span class="number">&#x27;</span>s buffer</span><br><span class="line">      build all the packet in the current logic channel<span class="number">&#x27;</span>s buffer</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      allocate all the UL grant to the current logic channel</span><br><span class="line">      build all UL grant bytes <span class="keyword">for</span> the current logic channel<span class="number">&#x27;</span>s buffer</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    <span class="keyword">if</span> UL grant is sufficient to use up all the Bj</span><br><span class="line">      UL grant -= Bj</span><br><span class="line">      build Bj bytes RLC PDUs</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      allocate all the UL grant to the current logic channel</span><br><span class="line">      build all UL grant bytes <span class="keyword">for</span> the current logic channel<span class="number">&#x27;</span>s buffer</span><br><span class="line">      </span><br><span class="line"><span class="keyword">if</span> there is still any UL grant left</span><br><span class="line">  iterate each active logic channel from highest priority to lowest</span><br><span class="line">    leftover UL grant is used to serve the leftover data in the buffer</span><br><span class="line">    <span class="keyword">if</span> there is no leftover UL grant</span><br><span class="line">      <span class="keyword">break</span>;        </span><br></pre></td></tr></table></figure></p>
+<h1 id="参考文献">参考文献</h1>
+<p>[1] 深入理解LTE-A. 温金辉著. 第17章17.1节 [2] 3GPP协议36.321.
+第5.4.3.1节 [3] Computer networks(fifth edition). By Andrew S. Tanenbaum
+etl. Section 5.4.2</p>
 ]]></content>
       <categories>
         <category>LTE</category>
       </categories>
       <tags>
         <tag>LTE</tag>
-        <tag>RLC</tag>
+        <tag>MAC</tag>
       </tags>
   </entry>
   <entry>
@@ -634,82 +634,6 @@ LLVM System(github)</a> 9. <a href="https://getting-started-with-llvm-core-libra
       <tags>
         <tag>开发环境</tag>
         <tag>工具链</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>双口RAM及其VIVADO的IP核的使用</title>
-    <url>/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="双口ram概述">双口RAM概述</h1>
-<p>双口RAM（dual port
-RAM）在异构系统中应用广泛，通过双口RAM，不同硬件架构的芯片可以实现数据的交互，从而实现通信。例如，一般情况下，ARM与DSP之间的通信，可以利用双口RAM实现，ARM通过EBI总线连接到双口RAM的A口，DSP通过EMIF总线（也可以是uPP总线，取决于速度需求）连接到双口RAM的B口，两者对同一块存储区域进行操作，即可实现两者的数据交互。
-<span id="more"></span>
-但是，因为双口RAM的A口和B口都可以对相同的内存地址进行操作，这就引出了一个问题——假如通信双方在两个端口对同一地址同时读写，就会引发冲突。要解决这个问题，办法有二。一是通信双方在时序上保证不会同时读写同一地址，将ARM和DSP可写地址范围进行分区，无论任何一方写完数据后都通过IO发送中断通知对方，对方进行数据读取（乒乓RAM操作），这样是比较可靠的；另外一个办法就是在fpga里设置写busy信号，实现两端写同步<a href="http://blog.csdn.net/DanielLee_ustb/article/details/46446359">1</a>。在FPGA中，构建双口RAM可以通过两种方法，一种是利用distributed
-RAM构建，另一种是利用Block
-RAM构建，关于两者的具体区别，可以参考这两篇文章<a href="http://blog.csdn.net/yzy19900402/article/details/45025901">2</a><a href="http://blog.csdn.net/jbb0523/article/details/6533760">3</a>。简而言之，Block
-RAM是是使用FPGA中的整块双口RAM资源，而distributed
-RAM则是用FPGA中的逻辑资源拼凑形成的。一般的原则是，较大的存储应用，建议用bram；零星的小ram，一般就用dram。</p>
-<p>在Vivado中，RAM IP核在Memories &amp; Strorage Elements&amp; ROMs和RAM
-&amp; ROMs &amp; BRAM文件夹下，如图所示，下面简要介绍一下Vivado的双口RAM
-IP核。 <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-23-22.png#pic_center" title="图1.1" alt="图1.1"> # Vivado 双口RAM IP核 ## Block Memory
-Generator概述     点击图1.1的Block Memory
-Generator项，利用BRAM来构建双口RAM。Block Memory
-Generator窗口如图2.1所示。图中，第1部分，在IP
-symbol选项卡，点击"+"号可以展开端口具体信号，如图2.2所示。第2部分，Component
-Name可以设置IP核的名字。第3部分，Basic选项卡，在Memory
-Type下拉列表中，可以设置内存的类型，如图2.3所示。Block Memory
-Gnerator一共可以产生5种不同类型的内存空间，其中block
-RAM有三种：单口RAM、简化双口RAM和真双口RAM<a href="https://www.xilinx.com/support/documentation/ip_documentation/blk_mem_gen/v8_2/pg058-blk-mem-gen.pdf">4</a>。单口RAM只有一个端口（A端口），可以对A端口进行读写。简化双口RAM有两个端口（A和B端口），但是A端口只能进行写入操作，不能进行读出操作，而B端口则只能进行读出操作，不能进行写入操作。真双口RAM有两个端口（A和B端口），A和B端口都能进行读写操作<a href="http://blog.csdn.net/c602273091/article/details/39694145">5</a>。
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-16.png#pic_center" title="图2.1" alt="图2.1"> <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-48.png#pic_center" title="图2.2" alt="图2.2"> <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-15.png#pic_center" title="图2.3" alt="图2.3"> ## 真双口RAM的设置 ### Basic设置 <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-36.png#pic_center" title="图2.4" alt="图2.4"> ### Port设置 点击Port A
-Options选项卡，对A端口进行设置， 设置Write
-Width为16（即RAM单元为16位），Write
-Width为1024（即内存深度为1024，该端口可读写的RAM单元有1024个），Operating
-Mode（操作模式）一共有三种：Write First，Read First，No Change。在Write
-First模式中，在一个时钟周期里，写入内存单元的数据被同步输出到输出数据总线上；在Read
-First模式中，在一个时钟周期里，写入到内存单元的数据是当前输入数据总线上的数据，而输出到输出数据总线上的数据则是上一个时钟周期存储在内存单元中的数据。细节可参考PG058的49到50页4。Enable
-Port Type设置为Always
-Enabled，一直使能端口A。其它设置使用默认设置。如图2.5所示。 <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-04.png#pic_center" title="图2.5" alt="图2.5"> 端口B设置为与A一致。在Other
-Options选项卡中，保留默认设置。Load Init
-File设置是否用Coe文件对内存区域初始化，这个在初始化ROM的时候会用到，这里不勾选，保持默认。最后，在Summary选项卡会显示消耗的资源。</p>
-<h1 id="双口ram例程">双口RAM例程</h1>
-<p>​例程1，该例程是Altera官方例程<a href="https://www.altera.com.cn/support/support-resources/design-examples/design-software/verilog/ver-true-dual-port-ram-sclk.html">6</a>，采用寄存器构建双口RAM，代码如下：
-<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> true_dpram_sclk</span><br><span class="line">(</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">7</span>:<span class="number">0</span>] data_a, data_b,</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">5</span>:<span class="number">0</span>] addr_a, addr_b,</span><br><span class="line">    <span class="keyword">input</span> we_a, we_b, clk,</span><br><span class="line">    <span class="keyword">output</span> <span class="keyword">reg</span> [<span class="number">7</span>:<span class="number">0</span>] q_a, q_b</span><br><span class="line">);</span><br><span class="line">    <span class="comment">// Declare the RAM variable</span></span><br><span class="line">    <span class="keyword">reg</span> [<span class="number">7</span>:<span class="number">0</span>] ram[<span class="number">63</span>:<span class="number">0</span>];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Port A</span></span><br><span class="line">    <span class="keyword">always</span> @ (<span class="keyword">posedge</span> clk)</span><br><span class="line">    <span class="keyword">begin</span></span><br><span class="line">        <span class="keyword">if</span> (we_a) </span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">            ram[addr_a] &lt;= data_a;</span><br><span class="line">            q_a &lt;= data_a;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">else</span> </span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">            q_a &lt;= ram[addr_a];</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Port B</span></span><br><span class="line">    <span class="keyword">always</span> @ (<span class="keyword">posedge</span> clk)</span><br><span class="line">    <span class="keyword">begin</span></span><br><span class="line">        <span class="keyword">if</span> (we_b)</span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">            ram[addr_b] &lt;= data_b;</span><br><span class="line">            q_b &lt;= data_b;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">            q_b &lt;= ram[addr_b];</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    </span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure> 例程2，该例程是Xilinx官方例程<a href="https://www.xilinx.com/support/documentation/sw_manuals/xilinx2014_4/ug901-vivado-synthesis.pdf">7</a>，采用寄存器构建真双口RAM，代码如下：
-<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Dual-Port Block RAM with Two Write Ports</span></span><br><span class="line"><span class="comment">// File: rams_16.v</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">module</span> v_rams_16 (clka,clkb,ena,enb,wea,web,addra,addrb,dia,dib,doa,dob);</span><br><span class="line"></span><br><span class="line"><span class="keyword">input</span> clka,clkb,ena,enb,wea,web;</span><br><span class="line"><span class="keyword">input</span> [<span class="number">9</span>:<span class="number">0</span>] addra,addrb;</span><br><span class="line"><span class="keyword">input</span> [<span class="number">15</span>:<span class="number">0</span>] dia,dib;</span><br><span class="line"><span class="keyword">output</span> [<span class="number">15</span>:<span class="number">0</span>] doa,dob;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">15</span>:<span class="number">0</span>] ram [<span class="number">1023</span>:<span class="number">0</span>];</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">15</span>:<span class="number">0</span>] doa,dob;</span><br><span class="line"></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clka) <span class="keyword">begin</span> <span class="keyword">if</span> (ena)</span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line"> <span class="keyword">if</span> (wea)</span><br><span class="line"> ram[addra] &lt;= dia;</span><br><span class="line"> doa &lt;= ram[addra];</span><br><span class="line"> <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clkb) <span class="keyword">begin</span> <span class="keyword">if</span> (enb)</span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line"> <span class="keyword">if</span> (web)</span><br><span class="line"> ram[addrb] &lt;= dib;</span><br><span class="line"> dob &lt;= ram[addrb];</span><br><span class="line"> <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure> ​例程3，该例程是网友博客中的例程<a href="http://blog.csdn.net/yanglong890124/article/details/32742297">8</a>，代码如下：
-<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> TOP(  </span><br><span class="line"><span class="keyword">input</span> USER_CLK  </span><br><span class="line">    );  </span><br><span class="line">  </span><br><span class="line"><span class="meta">`<span class="keyword">define</span> DLY #1  </span></span><br><span class="line"><span class="keyword">reg</span> FPGA_Enable=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">3</span>:<span class="number">0</span>] FPGA_Write_Enable=<span class="number">4&#x27;h0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Address=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Write_Data=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data_reg=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">wire</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data;  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">10</span>:<span class="number">0</span>] count=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">always</span> @ (<span class="keyword">posedge</span> USER_CLK)  </span><br><span class="line"><span class="keyword">begin</span>  </span><br><span class="line">    count &lt;= count + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">if</span>(count&lt;=<span class="number">100</span>)  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;h0</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">105</span>)&amp;&amp;(count &gt;<span class="number">100</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;hf</span>;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= FPGA_Write_Data + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">110</span>)&amp;&amp;(count &gt;<span class="number">105</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;h0</span>;  </span><br><span class="line">        FPGA_Address &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= <span class="number">0</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">117</span>)&amp;&amp;(count &gt;<span class="number">110</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;h0</span>;  </span><br><span class="line">        FPGA_Read_Data_reg &lt;= FPGA_Read_Data;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(count == <span class="number">118</span>)  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        count &lt;= count;  </span><br><span class="line">          </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line"><span class="keyword">end</span>  </span><br><span class="line">  </span><br><span class="line">BBBB your_instance_name (  </span><br><span class="line">  <span class="variable">.clka</span>(USER_CLK), <span class="comment">// input clka  </span></span><br><span class="line">  <span class="variable">.ena</span>(FPGA_Enable), <span class="comment">// input ena  </span></span><br><span class="line">  <span class="variable">.wea</span>(FPGA_Write_Enable), <span class="comment">// input [3 : 0] wea  </span></span><br><span class="line">  <span class="variable">.addra</span>(FPGA_Address), <span class="comment">// input [31 : 0] addra  </span></span><br><span class="line">  <span class="variable">.dina</span>(FPGA_Write_Data), <span class="comment">// input [31 : 0] dina  </span></span><br><span class="line">  <span class="variable">.douta</span>(FPGA_Read_Data), <span class="comment">// output [31 : 0] douta  </span></span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">  <span class="variable">.clkb</span>(clkb), <span class="comment">// input clkb  </span></span><br><span class="line">  <span class="variable">.enb</span>(enb), <span class="comment">// input enb  </span></span><br><span class="line">  <span class="variable">.web</span>(web), <span class="comment">// input [3 : 0] web  </span></span><br><span class="line">  <span class="variable">.addrb</span>(addrb), <span class="comment">// input [31 : 0] addrb  </span></span><br><span class="line">  <span class="variable">.dinb</span>(dinb), <span class="comment">// input [31 : 0] dinb  </span></span><br><span class="line">  <span class="variable">.doutb</span>(doutb) <span class="comment">// output [31 : 0] doutb  </span></span><br><span class="line">);  </span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-​该例程中，在count为101（&gt;100）后开始往地址4到20写入1-5，然后在count为111（&gt;110）的时候读出写入的数据。
-# 仿真
-下面利用Modelsim和Vivado进行联合仿真，关于vivado如何与modelsim进行联合仿真可以参考这篇文章：</p>
-<p><a href="http://blog.chinaaet.com/crazybird/p/5100000539">vivado与modelsim的关联以及器件库编译</a></p>
-<p>有一点要注意的是，我用的是Vivado2017.1版本，这个版本只支持Modelsim10.5及以上的版本，如果是低版本的Modelsim，在用Vivado2017.1编译Modelsim的仿真库时，会出错。Modelsim10.5版本可以在这里下载：</p>
-<p><a href="http://bbs.eetop.cn/viewthread.php?tid=629292&amp;extra=&amp;page=1">modelsim
-10.5 适用vivado 2017.1</a></p>
-<p>用Modelsim仿真时，会在sim_1/behav文件夹下产生3个.do文件，分别是xx_compile.do，xx_simulate.do，xx
-_wave.do文件。在设计的verilog文件修改之后，如果在Modelsim中直接restart，仿真的其实还是没有修改前的文件，要使修改的.v文件在Modelsim中生效，可以在Modelsim的命令窗口输入do
-xx_compile.do文件，对仿真的库文件以及设计文件（.v文件）重新编译，然后在输入do
-xx_simulate.do文件，才能仿真修改后的文件。输入do
-xx_compile.do命令对设计文件重新编译的时候，Modelsim会强制退出，这时由最后一句force
-quit命令引起的，只要把它删掉就行了。如果要保存波形文件，可以save
-format，另存为xx_wave.do文件。</p>
-<p>参考上面双口RAM的例程3进行功能仿真，RAM IP使用Write
-First模式，设计文件代码如下： <figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="meta">`<span class="keyword">timescale</span> 1ns / 1ps</span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Company: </span></span><br><span class="line"><span class="comment">// Engineer: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Create Date: 2017/12/09 22:36:48</span></span><br><span class="line"><span class="comment">// Design Name: </span></span><br><span class="line"><span class="comment">// Module Name: dual_port_ram_demo</span></span><br><span class="line"><span class="comment">// Project Name: </span></span><br><span class="line"><span class="comment">// Target Devices: </span></span><br><span class="line"><span class="comment">// Tool Versions: </span></span><br><span class="line"><span class="comment">// Description: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Dependencies: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Revision:</span></span><br><span class="line"><span class="comment">// Revision 0.01 - File Created</span></span><br><span class="line"><span class="comment">// Additional Comments:</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">module</span> dual_port_ram_demo(</span><br><span class="line"><span class="keyword">input</span> USER_CLK</span><br><span class="line">    );</span><br><span class="line">  </span><br><span class="line"><span class="meta">`<span class="keyword">define</span> DLY #1  </span></span><br><span class="line"></span><br><span class="line"><span class="comment">//Port A declaration</span></span><br><span class="line"><span class="keyword">reg</span> FPGA_Enable=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span> FPGA_Write_Enable=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Address=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Write_Data=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data_reg=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">wire</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data;  </span><br><span class="line"></span><br><span class="line"><span class="comment">//Port B declaration</span></span><br><span class="line"><span class="keyword">reg</span> enb=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">3</span>:<span class="number">0</span>] web=<span class="number">4&#x27;h0</span>;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] addrb=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] dinb=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] doutb_reg=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">wire</span>[<span class="number">31</span>:<span class="number">0</span>] doutb=<span class="number">0</span>;</span><br><span class="line">  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">10</span>:<span class="number">0</span>] count=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">always</span> @ (<span class="keyword">posedge</span> USER_CLK)  </span><br><span class="line"><span class="keyword">begin</span>  </span><br><span class="line">    count &lt;= count + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">if</span>(count&lt;=<span class="number">100</span>)  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">105</span>)&amp;&amp;(count &gt;<span class="number">100</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= FPGA_Write_Data + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">110</span>)&amp;&amp;(count &gt;<span class="number">105</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Address &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= <span class="number">0</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">117</span>)&amp;&amp;(count &gt;<span class="number">110</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Read_Data_reg &lt;= FPGA_Read_Data;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(count == <span class="number">118</span>)  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        count &lt;= count;  </span><br><span class="line">          </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line"><span class="keyword">end</span>  </span><br><span class="line">  </span><br><span class="line">dpRAM u1 (  </span><br><span class="line">  <span class="variable">.clka</span>(USER_CLK), <span class="comment">// input clka  </span></span><br><span class="line">  <span class="variable">.ena</span>(FPGA_Enable), <span class="comment">// input ena  </span></span><br><span class="line">  <span class="variable">.wea</span>(FPGA_Write_Enable), <span class="comment">// input [3 : 0] wea  </span></span><br><span class="line">  <span class="variable">.addra</span>(FPGA_Address), <span class="comment">// input [31 : 0] addra  </span></span><br><span class="line">  <span class="variable">.dina</span>(FPGA_Write_Data), <span class="comment">// input [31 : 0] dina  </span></span><br><span class="line">  <span class="variable">.douta</span>(FPGA_Read_Data), <span class="comment">// output [31 : 0] douta  </span></span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">  <span class="variable">.clkb</span>(USER_CLK), <span class="comment">// input clkb  </span></span><br><span class="line">  <span class="variable">.enb</span>(enb), <span class="comment">// input enb  </span></span><br><span class="line">  <span class="variable">.web</span>(web), <span class="comment">// input [3 : 0] web  </span></span><br><span class="line">  <span class="variable">.addrb</span>(addrb), <span class="comment">// input [31 : 0] addrb  </span></span><br><span class="line">  <span class="variable">.dinb</span>(dinb), <span class="comment">// input [31 : 0] dinb  </span></span><br><span class="line">  <span class="variable">.doutb</span>(doutb) <span class="comment">// output [31 : 0] doutb  </span></span><br><span class="line">);  </span><br><span class="line"><span class="keyword">endmodule</span>  </span><br></pre></td></tr></table></figure> ​testbench文件如下：
-<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="meta">`<span class="keyword">timescale</span> 1ns / 1ps</span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Company: </span></span><br><span class="line"><span class="comment">// Engineer: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Create Date: 2017/12/09 22:47:26</span></span><br><span class="line"><span class="comment">// Design Name: </span></span><br><span class="line"><span class="comment">// Module Name: simu</span></span><br><span class="line"><span class="comment">// Project Name: </span></span><br><span class="line"><span class="comment">// Target Devices: </span></span><br><span class="line"><span class="comment">// Tool Versions: </span></span><br><span class="line"><span class="comment">// Description: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Dependencies: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Revision:</span></span><br><span class="line"><span class="comment">// Revision 0.01 - File Created</span></span><br><span class="line"><span class="comment">// Additional Comments:</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">module</span> simu(</span><br><span class="line"></span><br><span class="line">    );</span><br><span class="line"><span class="comment">//testbench 时钟信号</span></span><br><span class="line"><span class="keyword">reg</span> clk = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">always</span> # <span class="number">10</span> clk &lt;= ~clk;</span><br><span class="line"><span class="comment">//调用dual_port_ram_demo模块</span></span><br><span class="line">dual_port_ram_demo demo1(clk);</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure> 仿真结果如下： <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-41.png#pic_center" title="图4.1" alt="图4.1">
-程序在1时刻准备好地址和要写入RAM的数据，在2时刻写入RAM中，在3时刻端口才会输出2时刻写入RAM的数据，注意与PG058的图稍有不同。
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-27-26.png#pic_center" title="图4.2" alt="图4.2"> # 后记
-关于BRAM，推荐一个youtube视频，里面讲的非常清晰易懂。 <a href="https://www.youtube.com/watch?v=fqUuvwl4QJA">What is a Block RAM
-in an FPGA?</a> # 参考文献 [1] <a href="http://blog.csdn.net/DanielLee_ustb/article/details/46446359">基于FPGA的双口RAM设计方法</a>
-[2] <a href="http://blog.csdn.net/yzy19900402/article/details/45025901">关于Xilinx芯片中Block
-RAM和Distributed RAM 的区别</a> [3] <a href="http://blog.csdn.net/jbb0523/article/details/6533760">Block RAM
-和Distributed RAM</a> [4] <a href="https://www.xilinx.com/support/documentation/ip_documentation/blk_mem_gen/v8_2/pg058-blk-mem-gen.pdf">Block
-Memory Generator v8.2 LogiCORE IP Product Guide (PG058)</a> [5] <a href="http://blog.csdn.net/c602273091/article/details/39694145">FPGA开发之RAM
-IP的使用</a> [6] <a href="https://www.altera.com.cn/support/support-resources/design-examples/design-software/verilog/ver-true-dual-port-ram-sclk.html">Verilog
-HDL：具有单时钟的真双端口RAM</a> [7] <a href="https://www.xilinx.com/support/documentation/sw_manuals/xilinx2014_4/ug901-vivado-synthesis.pdf">Vivado
-Design Suite User Guide: Synthesis (UG901)</a> [8] <a href="http://blog.csdn.net/yanglong890124/article/details/32742297">FPGA
-内部双口块RAM 读写实现</a></p>
-]]></content>
-      <categories>
-        <category>FPGA</category>
-      </categories>
-      <tags>
-        <tag>FPAG</tag>
       </tags>
   </entry>
   <entry>
@@ -1003,6 +927,82 @@ Section 3.2</p>
       <tags>
         <tag>比特币</tag>
         <tag>多重签名</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>双口RAM及其VIVADO的IP核的使用</title>
+    <url>/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="双口ram概述">双口RAM概述</h1>
+<p>双口RAM（dual port
+RAM）在异构系统中应用广泛，通过双口RAM，不同硬件架构的芯片可以实现数据的交互，从而实现通信。例如，一般情况下，ARM与DSP之间的通信，可以利用双口RAM实现，ARM通过EBI总线连接到双口RAM的A口，DSP通过EMIF总线（也可以是uPP总线，取决于速度需求）连接到双口RAM的B口，两者对同一块存储区域进行操作，即可实现两者的数据交互。
+<span id="more"></span>
+但是，因为双口RAM的A口和B口都可以对相同的内存地址进行操作，这就引出了一个问题——假如通信双方在两个端口对同一地址同时读写，就会引发冲突。要解决这个问题，办法有二。一是通信双方在时序上保证不会同时读写同一地址，将ARM和DSP可写地址范围进行分区，无论任何一方写完数据后都通过IO发送中断通知对方，对方进行数据读取（乒乓RAM操作），这样是比较可靠的；另外一个办法就是在fpga里设置写busy信号，实现两端写同步<a href="http://blog.csdn.net/DanielLee_ustb/article/details/46446359">1</a>。在FPGA中，构建双口RAM可以通过两种方法，一种是利用distributed
+RAM构建，另一种是利用Block
+RAM构建，关于两者的具体区别，可以参考这两篇文章<a href="http://blog.csdn.net/yzy19900402/article/details/45025901">2</a><a href="http://blog.csdn.net/jbb0523/article/details/6533760">3</a>。简而言之，Block
+RAM是是使用FPGA中的整块双口RAM资源，而distributed
+RAM则是用FPGA中的逻辑资源拼凑形成的。一般的原则是，较大的存储应用，建议用bram；零星的小ram，一般就用dram。</p>
+<p>在Vivado中，RAM IP核在Memories &amp; Strorage Elements&amp; ROMs和RAM
+&amp; ROMs &amp; BRAM文件夹下，如图所示，下面简要介绍一下Vivado的双口RAM
+IP核。 <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-23-22.png#pic_center" title="图1.1" alt="图1.1"> # Vivado 双口RAM IP核 ## Block Memory
+Generator概述     点击图1.1的Block Memory
+Generator项，利用BRAM来构建双口RAM。Block Memory
+Generator窗口如图2.1所示。图中，第1部分，在IP
+symbol选项卡，点击"+"号可以展开端口具体信号，如图2.2所示。第2部分，Component
+Name可以设置IP核的名字。第3部分，Basic选项卡，在Memory
+Type下拉列表中，可以设置内存的类型，如图2.3所示。Block Memory
+Gnerator一共可以产生5种不同类型的内存空间，其中block
+RAM有三种：单口RAM、简化双口RAM和真双口RAM<a href="https://www.xilinx.com/support/documentation/ip_documentation/blk_mem_gen/v8_2/pg058-blk-mem-gen.pdf">4</a>。单口RAM只有一个端口（A端口），可以对A端口进行读写。简化双口RAM有两个端口（A和B端口），但是A端口只能进行写入操作，不能进行读出操作，而B端口则只能进行读出操作，不能进行写入操作。真双口RAM有两个端口（A和B端口），A和B端口都能进行读写操作<a href="http://blog.csdn.net/c602273091/article/details/39694145">5</a>。
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-16.png#pic_center" title="图2.1" alt="图2.1"> <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-48.png#pic_center" title="图2.2" alt="图2.2"> <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-15.png#pic_center" title="图2.3" alt="图2.3"> ## 真双口RAM的设置 ### Basic设置 <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-36.png#pic_center" title="图2.4" alt="图2.4"> ### Port设置 点击Port A
+Options选项卡，对A端口进行设置， 设置Write
+Width为16（即RAM单元为16位），Write
+Width为1024（即内存深度为1024，该端口可读写的RAM单元有1024个），Operating
+Mode（操作模式）一共有三种：Write First，Read First，No Change。在Write
+First模式中，在一个时钟周期里，写入内存单元的数据被同步输出到输出数据总线上；在Read
+First模式中，在一个时钟周期里，写入到内存单元的数据是当前输入数据总线上的数据，而输出到输出数据总线上的数据则是上一个时钟周期存储在内存单元中的数据。细节可参考PG058的49到50页4。Enable
+Port Type设置为Always
+Enabled，一直使能端口A。其它设置使用默认设置。如图2.5所示。 <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-04.png#pic_center" title="图2.5" alt="图2.5"> 端口B设置为与A一致。在Other
+Options选项卡中，保留默认设置。Load Init
+File设置是否用Coe文件对内存区域初始化，这个在初始化ROM的时候会用到，这里不勾选，保持默认。最后，在Summary选项卡会显示消耗的资源。</p>
+<h1 id="双口ram例程">双口RAM例程</h1>
+<p>​例程1，该例程是Altera官方例程<a href="https://www.altera.com.cn/support/support-resources/design-examples/design-software/verilog/ver-true-dual-port-ram-sclk.html">6</a>，采用寄存器构建双口RAM，代码如下：
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> true_dpram_sclk</span><br><span class="line">(</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">7</span>:<span class="number">0</span>] data_a, data_b,</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">5</span>:<span class="number">0</span>] addr_a, addr_b,</span><br><span class="line">    <span class="keyword">input</span> we_a, we_b, clk,</span><br><span class="line">    <span class="keyword">output</span> <span class="keyword">reg</span> [<span class="number">7</span>:<span class="number">0</span>] q_a, q_b</span><br><span class="line">);</span><br><span class="line">    <span class="comment">// Declare the RAM variable</span></span><br><span class="line">    <span class="keyword">reg</span> [<span class="number">7</span>:<span class="number">0</span>] ram[<span class="number">63</span>:<span class="number">0</span>];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Port A</span></span><br><span class="line">    <span class="keyword">always</span> @ (<span class="keyword">posedge</span> clk)</span><br><span class="line">    <span class="keyword">begin</span></span><br><span class="line">        <span class="keyword">if</span> (we_a) </span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">            ram[addr_a] &lt;= data_a;</span><br><span class="line">            q_a &lt;= data_a;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">else</span> </span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">            q_a &lt;= ram[addr_a];</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Port B</span></span><br><span class="line">    <span class="keyword">always</span> @ (<span class="keyword">posedge</span> clk)</span><br><span class="line">    <span class="keyword">begin</span></span><br><span class="line">        <span class="keyword">if</span> (we_b)</span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">            ram[addr_b] &lt;= data_b;</span><br><span class="line">            q_b &lt;= data_b;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">            q_b &lt;= ram[addr_b];</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    </span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure> 例程2，该例程是Xilinx官方例程<a href="https://www.xilinx.com/support/documentation/sw_manuals/xilinx2014_4/ug901-vivado-synthesis.pdf">7</a>，采用寄存器构建真双口RAM，代码如下：
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Dual-Port Block RAM with Two Write Ports</span></span><br><span class="line"><span class="comment">// File: rams_16.v</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">module</span> v_rams_16 (clka,clkb,ena,enb,wea,web,addra,addrb,dia,dib,doa,dob);</span><br><span class="line"></span><br><span class="line"><span class="keyword">input</span> clka,clkb,ena,enb,wea,web;</span><br><span class="line"><span class="keyword">input</span> [<span class="number">9</span>:<span class="number">0</span>] addra,addrb;</span><br><span class="line"><span class="keyword">input</span> [<span class="number">15</span>:<span class="number">0</span>] dia,dib;</span><br><span class="line"><span class="keyword">output</span> [<span class="number">15</span>:<span class="number">0</span>] doa,dob;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">15</span>:<span class="number">0</span>] ram [<span class="number">1023</span>:<span class="number">0</span>];</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">15</span>:<span class="number">0</span>] doa,dob;</span><br><span class="line"></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clka) <span class="keyword">begin</span> <span class="keyword">if</span> (ena)</span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line"> <span class="keyword">if</span> (wea)</span><br><span class="line"> ram[addra] &lt;= dia;</span><br><span class="line"> doa &lt;= ram[addra];</span><br><span class="line"> <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clkb) <span class="keyword">begin</span> <span class="keyword">if</span> (enb)</span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line"> <span class="keyword">if</span> (web)</span><br><span class="line"> ram[addrb] &lt;= dib;</span><br><span class="line"> dob &lt;= ram[addrb];</span><br><span class="line"> <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure> ​例程3，该例程是网友博客中的例程<a href="http://blog.csdn.net/yanglong890124/article/details/32742297">8</a>，代码如下：
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> TOP(  </span><br><span class="line"><span class="keyword">input</span> USER_CLK  </span><br><span class="line">    );  </span><br><span class="line">  </span><br><span class="line"><span class="meta">`<span class="keyword">define</span> DLY #1  </span></span><br><span class="line"><span class="keyword">reg</span> FPGA_Enable=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">3</span>:<span class="number">0</span>] FPGA_Write_Enable=<span class="number">4&#x27;h0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Address=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Write_Data=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data_reg=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">wire</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data;  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">10</span>:<span class="number">0</span>] count=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">always</span> @ (<span class="keyword">posedge</span> USER_CLK)  </span><br><span class="line"><span class="keyword">begin</span>  </span><br><span class="line">    count &lt;= count + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">if</span>(count&lt;=<span class="number">100</span>)  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;h0</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">105</span>)&amp;&amp;(count &gt;<span class="number">100</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;hf</span>;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= FPGA_Write_Data + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">110</span>)&amp;&amp;(count &gt;<span class="number">105</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;h0</span>;  </span><br><span class="line">        FPGA_Address &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= <span class="number">0</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">117</span>)&amp;&amp;(count &gt;<span class="number">110</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;h0</span>;  </span><br><span class="line">        FPGA_Read_Data_reg &lt;= FPGA_Read_Data;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(count == <span class="number">118</span>)  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        count &lt;= count;  </span><br><span class="line">          </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line"><span class="keyword">end</span>  </span><br><span class="line">  </span><br><span class="line">BBBB your_instance_name (  </span><br><span class="line">  <span class="variable">.clka</span>(USER_CLK), <span class="comment">// input clka  </span></span><br><span class="line">  <span class="variable">.ena</span>(FPGA_Enable), <span class="comment">// input ena  </span></span><br><span class="line">  <span class="variable">.wea</span>(FPGA_Write_Enable), <span class="comment">// input [3 : 0] wea  </span></span><br><span class="line">  <span class="variable">.addra</span>(FPGA_Address), <span class="comment">// input [31 : 0] addra  </span></span><br><span class="line">  <span class="variable">.dina</span>(FPGA_Write_Data), <span class="comment">// input [31 : 0] dina  </span></span><br><span class="line">  <span class="variable">.douta</span>(FPGA_Read_Data), <span class="comment">// output [31 : 0] douta  </span></span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">  <span class="variable">.clkb</span>(clkb), <span class="comment">// input clkb  </span></span><br><span class="line">  <span class="variable">.enb</span>(enb), <span class="comment">// input enb  </span></span><br><span class="line">  <span class="variable">.web</span>(web), <span class="comment">// input [3 : 0] web  </span></span><br><span class="line">  <span class="variable">.addrb</span>(addrb), <span class="comment">// input [31 : 0] addrb  </span></span><br><span class="line">  <span class="variable">.dinb</span>(dinb), <span class="comment">// input [31 : 0] dinb  </span></span><br><span class="line">  <span class="variable">.doutb</span>(doutb) <span class="comment">// output [31 : 0] doutb  </span></span><br><span class="line">);  </span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+​该例程中，在count为101（&gt;100）后开始往地址4到20写入1-5，然后在count为111（&gt;110）的时候读出写入的数据。
+# 仿真
+下面利用Modelsim和Vivado进行联合仿真，关于vivado如何与modelsim进行联合仿真可以参考这篇文章：</p>
+<p><a href="http://blog.chinaaet.com/crazybird/p/5100000539">vivado与modelsim的关联以及器件库编译</a></p>
+<p>有一点要注意的是，我用的是Vivado2017.1版本，这个版本只支持Modelsim10.5及以上的版本，如果是低版本的Modelsim，在用Vivado2017.1编译Modelsim的仿真库时，会出错。Modelsim10.5版本可以在这里下载：</p>
+<p><a href="http://bbs.eetop.cn/viewthread.php?tid=629292&amp;extra=&amp;page=1">modelsim
+10.5 适用vivado 2017.1</a></p>
+<p>用Modelsim仿真时，会在sim_1/behav文件夹下产生3个.do文件，分别是xx_compile.do，xx_simulate.do，xx
+_wave.do文件。在设计的verilog文件修改之后，如果在Modelsim中直接restart，仿真的其实还是没有修改前的文件，要使修改的.v文件在Modelsim中生效，可以在Modelsim的命令窗口输入do
+xx_compile.do文件，对仿真的库文件以及设计文件（.v文件）重新编译，然后在输入do
+xx_simulate.do文件，才能仿真修改后的文件。输入do
+xx_compile.do命令对设计文件重新编译的时候，Modelsim会强制退出，这时由最后一句force
+quit命令引起的，只要把它删掉就行了。如果要保存波形文件，可以save
+format，另存为xx_wave.do文件。</p>
+<p>参考上面双口RAM的例程3进行功能仿真，RAM IP使用Write
+First模式，设计文件代码如下： <figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="meta">`<span class="keyword">timescale</span> 1ns / 1ps</span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Company: </span></span><br><span class="line"><span class="comment">// Engineer: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Create Date: 2017/12/09 22:36:48</span></span><br><span class="line"><span class="comment">// Design Name: </span></span><br><span class="line"><span class="comment">// Module Name: dual_port_ram_demo</span></span><br><span class="line"><span class="comment">// Project Name: </span></span><br><span class="line"><span class="comment">// Target Devices: </span></span><br><span class="line"><span class="comment">// Tool Versions: </span></span><br><span class="line"><span class="comment">// Description: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Dependencies: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Revision:</span></span><br><span class="line"><span class="comment">// Revision 0.01 - File Created</span></span><br><span class="line"><span class="comment">// Additional Comments:</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">module</span> dual_port_ram_demo(</span><br><span class="line"><span class="keyword">input</span> USER_CLK</span><br><span class="line">    );</span><br><span class="line">  </span><br><span class="line"><span class="meta">`<span class="keyword">define</span> DLY #1  </span></span><br><span class="line"></span><br><span class="line"><span class="comment">//Port A declaration</span></span><br><span class="line"><span class="keyword">reg</span> FPGA_Enable=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span> FPGA_Write_Enable=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Address=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Write_Data=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data_reg=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">wire</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data;  </span><br><span class="line"></span><br><span class="line"><span class="comment">//Port B declaration</span></span><br><span class="line"><span class="keyword">reg</span> enb=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">3</span>:<span class="number">0</span>] web=<span class="number">4&#x27;h0</span>;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] addrb=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] dinb=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] doutb_reg=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">wire</span>[<span class="number">31</span>:<span class="number">0</span>] doutb=<span class="number">0</span>;</span><br><span class="line">  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">10</span>:<span class="number">0</span>] count=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">always</span> @ (<span class="keyword">posedge</span> USER_CLK)  </span><br><span class="line"><span class="keyword">begin</span>  </span><br><span class="line">    count &lt;= count + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">if</span>(count&lt;=<span class="number">100</span>)  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">105</span>)&amp;&amp;(count &gt;<span class="number">100</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= FPGA_Write_Data + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">110</span>)&amp;&amp;(count &gt;<span class="number">105</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Address &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= <span class="number">0</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">117</span>)&amp;&amp;(count &gt;<span class="number">110</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Read_Data_reg &lt;= FPGA_Read_Data;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(count == <span class="number">118</span>)  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        count &lt;= count;  </span><br><span class="line">          </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line"><span class="keyword">end</span>  </span><br><span class="line">  </span><br><span class="line">dpRAM u1 (  </span><br><span class="line">  <span class="variable">.clka</span>(USER_CLK), <span class="comment">// input clka  </span></span><br><span class="line">  <span class="variable">.ena</span>(FPGA_Enable), <span class="comment">// input ena  </span></span><br><span class="line">  <span class="variable">.wea</span>(FPGA_Write_Enable), <span class="comment">// input [3 : 0] wea  </span></span><br><span class="line">  <span class="variable">.addra</span>(FPGA_Address), <span class="comment">// input [31 : 0] addra  </span></span><br><span class="line">  <span class="variable">.dina</span>(FPGA_Write_Data), <span class="comment">// input [31 : 0] dina  </span></span><br><span class="line">  <span class="variable">.douta</span>(FPGA_Read_Data), <span class="comment">// output [31 : 0] douta  </span></span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">  <span class="variable">.clkb</span>(USER_CLK), <span class="comment">// input clkb  </span></span><br><span class="line">  <span class="variable">.enb</span>(enb), <span class="comment">// input enb  </span></span><br><span class="line">  <span class="variable">.web</span>(web), <span class="comment">// input [3 : 0] web  </span></span><br><span class="line">  <span class="variable">.addrb</span>(addrb), <span class="comment">// input [31 : 0] addrb  </span></span><br><span class="line">  <span class="variable">.dinb</span>(dinb), <span class="comment">// input [31 : 0] dinb  </span></span><br><span class="line">  <span class="variable">.doutb</span>(doutb) <span class="comment">// output [31 : 0] doutb  </span></span><br><span class="line">);  </span><br><span class="line"><span class="keyword">endmodule</span>  </span><br></pre></td></tr></table></figure> ​testbench文件如下：
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="meta">`<span class="keyword">timescale</span> 1ns / 1ps</span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Company: </span></span><br><span class="line"><span class="comment">// Engineer: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Create Date: 2017/12/09 22:47:26</span></span><br><span class="line"><span class="comment">// Design Name: </span></span><br><span class="line"><span class="comment">// Module Name: simu</span></span><br><span class="line"><span class="comment">// Project Name: </span></span><br><span class="line"><span class="comment">// Target Devices: </span></span><br><span class="line"><span class="comment">// Tool Versions: </span></span><br><span class="line"><span class="comment">// Description: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Dependencies: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Revision:</span></span><br><span class="line"><span class="comment">// Revision 0.01 - File Created</span></span><br><span class="line"><span class="comment">// Additional Comments:</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">module</span> simu(</span><br><span class="line"></span><br><span class="line">    );</span><br><span class="line"><span class="comment">//testbench 时钟信号</span></span><br><span class="line"><span class="keyword">reg</span> clk = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">always</span> # <span class="number">10</span> clk &lt;= ~clk;</span><br><span class="line"><span class="comment">//调用dual_port_ram_demo模块</span></span><br><span class="line">dual_port_ram_demo demo1(clk);</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure> 仿真结果如下： <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-41.png#pic_center" title="图4.1" alt="图4.1">
+程序在1时刻准备好地址和要写入RAM的数据，在2时刻写入RAM中，在3时刻端口才会输出2时刻写入RAM的数据，注意与PG058的图稍有不同。
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-27-26.png#pic_center" title="图4.2" alt="图4.2"> # 后记
+关于BRAM，推荐一个youtube视频，里面讲的非常清晰易懂。 <a href="https://www.youtube.com/watch?v=fqUuvwl4QJA">What is a Block RAM
+in an FPGA?</a> # 参考文献 [1] <a href="http://blog.csdn.net/DanielLee_ustb/article/details/46446359">基于FPGA的双口RAM设计方法</a>
+[2] <a href="http://blog.csdn.net/yzy19900402/article/details/45025901">关于Xilinx芯片中Block
+RAM和Distributed RAM 的区别</a> [3] <a href="http://blog.csdn.net/jbb0523/article/details/6533760">Block RAM
+和Distributed RAM</a> [4] <a href="https://www.xilinx.com/support/documentation/ip_documentation/blk_mem_gen/v8_2/pg058-blk-mem-gen.pdf">Block
+Memory Generator v8.2 LogiCORE IP Product Guide (PG058)</a> [5] <a href="http://blog.csdn.net/c602273091/article/details/39694145">FPGA开发之RAM
+IP的使用</a> [6] <a href="https://www.altera.com.cn/support/support-resources/design-examples/design-software/verilog/ver-true-dual-port-ram-sclk.html">Verilog
+HDL：具有单时钟的真双端口RAM</a> [7] <a href="https://www.xilinx.com/support/documentation/sw_manuals/xilinx2014_4/ug901-vivado-synthesis.pdf">Vivado
+Design Suite User Guide: Synthesis (UG901)</a> [8] <a href="http://blog.csdn.net/yanglong890124/article/details/32742297">FPGA
+内部双口块RAM 读写实现</a></p>
+]]></content>
+      <categories>
+        <category>FPGA</category>
+      </categories>
+      <tags>
+        <tag>FPAG</tag>
       </tags>
   </entry>
   <entry>

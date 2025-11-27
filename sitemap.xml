@@ -187,6 +187,13 @@
   </url>
   
   <url>
+    <loc>https://yang-yuke.github.io/tags/RLC/</loc>
+    <lastmod>2025-11-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://yang-yuke.github.io/tags/computer-networking/</loc>
     <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
@@ -215,13 +222,6 @@
   </url>
   
   <url>
-    <loc>https://yang-yuke.github.io/tags/RLC/</loc>
-    <lastmod>2025-11-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://yang-yuke.github.io/tags/lldb-mi/</loc>
     <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
@@ -237,13 +237,6 @@
   
   <url>
     <loc>https://yang-yuke.github.io/tags/shell/</loc>
-    <lastmod>2025-11-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://yang-yuke.github.io/tags/FPAG/</loc>
     <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -272,6 +265,13 @@
   
   <url>
     <loc>https://yang-yuke.github.io/tags/%E5%A4%9A%E9%87%8D%E7%AD%BE%E5%90%8D/</loc>
+    <lastmod>2025-11-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://yang-yuke.github.io/tags/FPAG/</loc>
     <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -315,14 +315,14 @@
   </url>
   
   <url>
-    <loc>https://yang-yuke.github.io/categories/FPGA/</loc>
+    <loc>https://yang-yuke.github.io/categories/%E6%AF%94%E7%89%B9%E5%B8%81/</loc>
     <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://yang-yuke.github.io/categories/%E6%AF%94%E7%89%B9%E5%B8%81/</loc>
+    <loc>https://yang-yuke.github.io/categories/FPGA/</loc>
     <lastmod>2025-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
