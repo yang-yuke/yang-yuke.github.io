@@ -112,42 +112,6 @@ etl. Section 5.4.2</p>
       </tags>
   </entry>
   <entry>
-    <title>在ubuntu20.04编译及安装LLDB</title>
-    <url>/2021/12/16/compile-and-install-lldb/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言">前言</h1>
-<p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>已经介绍了如何在本地编译及安装llvm，但是当时只是编译和安装了<code>llvm;clang;libcxx;libcxxabi</code>这四个库，本文将介绍如何编译及安装lldb。
-<span id="more"></span> # 配置及安装LLDB
-在进行下面的步骤时，假设你已经下载了llvm整个工程，并且安装了所需的依赖工具。如果你还没进行这些操作，可以参考<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>一文的<code>本地编译安装LLVM</code>一节的<code>前提条件</code>和<code>下载LLVM源文件</code>这两部分内容，先完成这两步。</p>
-<p>完成上述步骤后，输入以下命令。首先cd进入llvm-project工程，然后生成cmake文件。<code>-S llvm</code>表示源文件所在文件夹为当前路径下的llvm文件夹；<code>-B build</code>表示生成的cmake文件将放到当前路径下的build文件夹；<code>-G Ninja</code>表示生成的cmake文件将给Ninja在编译时使用。
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure> 在编译到第[4169/4171]个文件时，会出现以下错误。 <img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-22-28.png" alt="2021-12-18-17-22-28"> 参考<a href="https://blog.csdn.net/Vin_tt/article/details/110421022">这篇文章</a>解决这个问题，输入以下命令:
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project/build</span><br><span class="line">sudo mkdir swapfile</span><br><span class="line">cd /swapfile</span><br><span class="line">sudo dd if=/dev/zero of=swap bs=1024 count=20000000</span><br><span class="line">sudo mkswap -f swap</span><br><span class="line">sudo swapon swap</span><br></pre></td></tr></table></figure> <img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-56-57.png" alt="2021-12-18-17-56-57">
-可以看到，剩下的三个文件都被成功地编译了。编译出来生成的应用程序位于llvm-project/build/bin路径下，将其拷贝到/usr/local/bin/文件夹下即可。
-<img src="/2021/12/16/compile-and-install-lldb/2021-12-18-18-17-50.png" alt="2021-12-18-18-17-50"> # 后记
-这部分讲的是后续的失败经历，以及没有解决的问题。</p>
-<p>上述编译命令在编译lldb过程中会有debug信息，其体积会很大，而且编译出来的文件在llvm-project/build文件夹下面，还需要<code>ninja install</code>命令将其安装至默认路径下，但是由于体积过大，在安装时容易出问题。最好是编译release版本，并且在生成cmake文件的时候指明安装路径，命令如下：
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;clang;lldb&quot;</span> <span class="comment">#1,这条命令与下面这条命令2选1</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;clang;lldb&quot;</span> ./llvm <span class="comment">#2,这条命令与上面的命令2选1</span></span></span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_BUILD_TYPE=&quot;Release&quot; -DLLDB_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=&quot;/usr/local/llvm&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_BUILD_TYPE=&quot;Release&quot; -DLLDB_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=&quot;/usr/local/llvm&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure>
-编译完成后，生成的文件位于llvm-project/build文件夹内，我们要把它们安装到/usr/local/路径下，因此，需要输入以下命令
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ninja install</span><br></pre></td></tr></table></figure>
-然后就会开始将lldb安装到/usr/local/路径下,在安装到第[203/1128]个文件时，出现了<code>fatal error: ld terminated with signal 9 [Killed]</code>错误，参照上面的方法，在build文件夹创建swapfile尝试解决。
-<img src="/2021/12/16/compile-and-install-lldb/2021-12-21-23-18-01.png" alt="2021-12-21-23-18-01">
-在安装剩下的文件时，安装到[375/927]个文件时仍然出现了以上错误。 <img src="/2021/12/16/compile-and-install-lldb/2021-12-22-08-27-51.png" alt="2021-12-22-08-27-51"> 再次尝试用上述方法安装剩下的文件。 <img src="/2021/12/16/compile-and-install-lldb/2021-12-22-08-39-08.png" alt="2021-12-22-08-39-08"> 依旧出现以上问题，最终只得作罢。 <img src="/2021/12/16/compile-and-install-lldb/2021-12-22-09-05-29.png" alt="2021-12-22-09-05-29"></p>
-<h1 id="参考文献">参考文献</h1>
-<ol type="1">
-<li><a href="https://lldb.llvm.org/resources/build.html#building-lldb-with-cmake">Building
-LLDB with CMake</a></li>
-<li><a href="https://blog.csdn.net/Vin_tt/article/details/110421022">LLVM编译collect2:
-fatal error: ld terminated with signal 9</a></li>
-</ol>
-]]></content>
-      <categories>
-        <category>编译器</category>
-      </categories>
-      <tags>
-        <tag>开发环境</tag>
-        <tag>工具链</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>LTE MAC token bucket algorithm</title>
     <url>/2021/11/27/LTE-MAC-token-bucket-algorithm/</url>
     <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="abbreviation">Abbreviation</h1>
@@ -277,6 +241,108 @@ WETHERALL [3] 36.321. By 3GPP specialist panel.</p>
       </tags>
   </entry>
   <entry>
+    <title>Telnet使用SMTP服务登录邮箱并发送邮件</title>
+    <url>/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><blockquote>
+<p>本文介绍SMTP协议的一个简单的网络实验。 # SMTP协议简介 SMTP（定义于RFC
+5321）是互联网电子邮件的核心。SMTP将邮件从发件人的邮件服务器传输到收件人的邮件服务器。SMTP的出现比HTTP早得多。（最初的SMTP
+RFC文档可以追溯到1982年，而SMTP协议的出现时间还要早得多。）
+<span id="more"></span></p>
+</blockquote>
+<p>尽管SMTP拥有许多优秀的特性，其在互联网上的普及程度也证明了这一点，但它毕竟是一项具有某些过时特征的遗留技术。例如，它限制所有邮件的正文（而不仅仅是邮件头）只能使用简单的7比特ASCII编码。这种限制在20世纪80年代初期是合理的，当时传输容量有限，而且没有人会通过电子邮件发送大型附件或大型图像、音频或视频文件。但如今，在多媒体时代，7比特ASCII的限制就显得有些不便了——它要求二进制多媒体数据在通过SMTP发送之前必须编码为ASCII编码；它要求在SMTP传输后将相应的ASCII消息解码回二进制。而HTTP协议并不要求多媒体数据在传输前进行ASCII编码。</p>
+<p>这里介绍一下SMTP的一个简单的实验过程，有关STMP协议的更多介绍可以参考文献[1]<sup id="fnref:1"><a href="#fn:1" rel="footnote"><span class="hint--top hint--error hint--medium hint--rounded hint--bounce" aria-label="Computer Networking_ A Top-Down Approach-Pearson (2021) 第2.3.1节 SMTP. By James W. Kurose, Keith W. Ross
+">[1]</span></a></sup>。本实验过程参考了文献[2]<sup id="fnref:2"><a href="#fn:2" rel="footnote"><span class="hint--top hint--error hint--medium hint--rounded hint--bounce" aria-label="[Telnet 使用 SMTP 服务登录邮箱并发送邮件](https://cloud.tencent.com/developer/article/1927198)">[2]</span></a></sup>。</p>
+<hr>
+<h1 id="实验准备">实验准备</h1>
+<p>准备两个163邮箱，并开启SMTP服务。如下图所示。 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-44-24.png" alt="2025-11-27-20-44-24"></p>
+<p>开启IMAP/SMTP服务以及POP3/SMTP服务。 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-44-54.png" alt="2025-11-27-20-44-54"></p>
+<hr>
+<h1 id="实验步骤">实验步骤</h1>
+<ol type="1">
+<li><p>使用telnet连接smtp服务器 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">telnet smtp.163.com  25   //直接进入回显模式</span><br></pre></td></tr></table></figure></p></li>
+<li><p>查看连接是否建立 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">helo localhost</span><br></pre></td></tr></table></figure></p></li>
+<li><p>登录 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">auth login</span><br></pre></td></tr></table></figure>
+输入账号和授权密码，账号和授权密码要以base64编码的形式输入，授权密码不是邮箱密码，要在163邮箱主页开启邮箱的SMTP服务后再获取。</p></li>
+</ol>
+<figure>
+<img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-45-48.png" alt="2025-11-27-20-45-48">
+<figcaption aria-hidden="true">2025-11-27-20-45-48</figcaption>
+</figure>
+<p>邮箱： 18*******32@163.com</p>
+<p>授权密码(在打开IMAP/SMTP服务时会弹出，记下此授权密码，在登录时需要用到该密码)：
+<img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-30.png" alt="2025-11-27-20-46-30"></p>
+<p>若已有授权密码，也可以新增授权密码。 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-38.png" alt="2025-11-27-20-46-38"></p>
+<p>接下来输入邮件信息，其中mail from必须是发送邮箱的账号，rcpt
+to必须是接收邮箱的账号，否则会被认为是无效邮件而无法发送。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#邮件头，必须是正确的</span></span><br><span class="line">mail from: &lt;aa27975599672021@163.com&gt;</span><br><span class="line">rcpt to:  &lt;aa27975599672022@163.com&gt;</span><br><span class="line"><span class="comment">#开始输入邮件正文</span></span><br><span class="line">data</span><br><span class="line">from: &lt;aa27975599672021@163.com&gt;</span><br><span class="line">to:  &lt;aa27975599672022@163.com&gt;</span><br><span class="line">subject:hello,aa27975599672022@163.com</span><br><span class="line"><span class="comment">#空一行</span></span><br><span class="line">hello</span><br><span class="line"><span class="comment">#空一行，后面输入一个点后回车表示结束</span></span><br><span class="line">.</span><br></pre></td></tr></table></figure>
+<p>发送过程 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-49.png" alt="2025-11-27-20-46-49"></p>
+<p>在接收邮箱中查看，可以看到接收到了所发送的邮件 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-58.png" alt="2025-11-27-20-46-58"></p>
+<hr>
+<h1 id="参考">参考</h1>
+<div id="footnotes">
+<hr>
+<div id="footnotelist">
+<ol style="list-style: none; padding-left: 0; margin-left: 40px">
+<li id="fn:1">
+<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">1.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;">Computer
+Networking_ A Top-Down Approach-Pearson (2021) 第2.3.1节 SMTP. By James
+W. Kurose, Keith W. Ross<a href="#fnref:1" rev="footnote"> ↩︎</a></span>
+</li>
+<li id="fn:2">
+<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">2.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;"><a href="https://cloud.tencent.com/developer/article/1927198">Telnet
+使用 SMTP 服务登录邮箱并发送邮件</a><a href="#fnref:2" rev="footnote">
+↩︎</a></span>
+</li>
+</ol>
+</div>
+</div>
+
+]]></content>
+      <categories>
+        <category>计算机网络</category>
+      </categories>
+      <tags>
+        <tag>computer networking</tag>
+        <tag>SMTP</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>在ubuntu20.04编译及安装LLDB</title>
+    <url>/2021/12/16/compile-and-install-lldb/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言">前言</h1>
+<p>在<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>已经介绍了如何在本地编译及安装llvm，但是当时只是编译和安装了<code>llvm;clang;libcxx;libcxxabi</code>这四个库，本文将介绍如何编译及安装lldb。
+<span id="more"></span> # 配置及安装LLDB
+在进行下面的步骤时，假设你已经下载了llvm整个工程，并且安装了所需的依赖工具。如果你还没进行这些操作，可以参考<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/#%E7%AE%80%E4%BB%8B">在ubuntu20.04安装LLVM</a>一文的<code>本地编译安装LLVM</code>一节的<code>前提条件</code>和<code>下载LLVM源文件</code>这两部分内容，先完成这两步。</p>
+<p>完成上述步骤后，输入以下命令。首先cd进入llvm-project工程，然后生成cmake文件。<code>-S llvm</code>表示源文件所在文件夹为当前路径下的llvm文件夹；<code>-B build</code>表示生成的cmake文件将放到当前路径下的build文件夹；<code>-G Ninja</code>表示生成的cmake文件将给Ninja在编译时使用。
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure> 在编译到第[4169/4171]个文件时，会出现以下错误。 <img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-22-28.png" alt="2021-12-18-17-22-28"> 参考<a href="https://blog.csdn.net/Vin_tt/article/details/110421022">这篇文章</a>解决这个问题，输入以下命令:
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project/build</span><br><span class="line">sudo mkdir swapfile</span><br><span class="line">cd /swapfile</span><br><span class="line">sudo dd if=/dev/zero of=swap bs=1024 count=20000000</span><br><span class="line">sudo mkswap -f swap</span><br><span class="line">sudo swapon swap</span><br></pre></td></tr></table></figure> <img src="/2021/12/16/compile-and-install-lldb/2021-12-18-17-56-57.png" alt="2021-12-18-17-56-57">
+可以看到，剩下的三个文件都被成功地编译了。编译出来生成的应用程序位于llvm-project/build/bin路径下，将其拷贝到/usr/local/bin/文件夹下即可。
+<img src="/2021/12/16/compile-and-install-lldb/2021-12-18-18-17-50.png" alt="2021-12-18-18-17-50"> # 后记
+这部分讲的是后续的失败经历，以及没有解决的问题。</p>
+<p>上述编译命令在编译lldb过程中会有debug信息，其体积会很大，而且编译出来的文件在llvm-project/build文件夹下面，还需要<code>ninja install</code>命令将其安装至默认路径下，但是由于体积过大，在安装时容易出问题。最好是编译release版本，并且在生成cmake文件的时候指明安装路径，命令如下：
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd llvm-project</span><br><span class="line">mkdir build #若已经创建build目录此步可以省略</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;clang;lldb&quot;</span> <span class="comment">#1,这条命令与下面这条命令2选1</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cmake -G Ninja -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;clang;lldb&quot;</span> ./llvm <span class="comment">#2,这条命令与上面的命令2选1</span></span></span><br><span class="line">cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_BUILD_TYPE=&quot;Release&quot; -DLLDB_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=&quot;/usr/local/llvm&quot; #1,这条命令与下面这条命令2选1</span><br><span class="line">cmake -B build -G Ninja -DLLVM_ENABLE_PROJECTS=&quot;clang;lldb&quot; -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_BUILD_TYPE=&quot;Release&quot; -DLLDB_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=&quot;/usr/local/llvm&quot; ./llvm #2,这条命令与上面的命令2选1</span><br><span class="line">cd build</span><br><span class="line">ninja lldb</span><br></pre></td></tr></table></figure>
+编译完成后，生成的文件位于llvm-project/build文件夹内，我们要把它们安装到/usr/local/路径下，因此，需要输入以下命令
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ninja install</span><br></pre></td></tr></table></figure>
+然后就会开始将lldb安装到/usr/local/路径下,在安装到第[203/1128]个文件时，出现了<code>fatal error: ld terminated with signal 9 [Killed]</code>错误，参照上面的方法，在build文件夹创建swapfile尝试解决。
+<img src="/2021/12/16/compile-and-install-lldb/2021-12-21-23-18-01.png" alt="2021-12-21-23-18-01">
+在安装剩下的文件时，安装到[375/927]个文件时仍然出现了以上错误。 <img src="/2021/12/16/compile-and-install-lldb/2021-12-22-08-27-51.png" alt="2021-12-22-08-27-51"> 再次尝试用上述方法安装剩下的文件。 <img src="/2021/12/16/compile-and-install-lldb/2021-12-22-08-39-08.png" alt="2021-12-22-08-39-08"> 依旧出现以上问题，最终只得作罢。 <img src="/2021/12/16/compile-and-install-lldb/2021-12-22-09-05-29.png" alt="2021-12-22-09-05-29"></p>
+<h1 id="参考文献">参考文献</h1>
+<ol type="1">
+<li><a href="https://lldb.llvm.org/resources/build.html#building-lldb-with-cmake">Building
+LLDB with CMake</a></li>
+<li><a href="https://blog.csdn.net/Vin_tt/article/details/110421022">LLVM编译collect2:
+fatal error: ld terminated with signal 9</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>编译器</category>
+      </categories>
+      <tags>
+        <tag>开发环境</tag>
+        <tag>工具链</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>LTE网络RLC层的polling机制</title>
     <url>/2022/06/16/LTE%E7%BD%91%E7%BB%9CRLC%E5%B1%82%E7%9A%84polling%E6%9C%BA%E5%88%B6/</url>
     <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><blockquote>
@@ -346,6 +412,27 @@ PDU。<a href="#fnref:2" rev="footnote"> ↩︎</a></span>
       </tags>
   </entry>
   <entry>
+    <title>在ubuntu20.04编译lldb-mi</title>
+    <url>/2021/12/28/compile-lldb-mi/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言">前言</h1>
+<p>lldb-mi(lldb machine
+interface)是一个C/C++调试器，原来是LLVM项目中lldb的一部分，但是由于长时间没有人维护和更新，于是是从LLVM项目的lldb中分了出去，成为单独的一个工程。在linux环境下，使用vscode对C/C++代码进行调试时，常用的调试器是GDB，除此之外，还有个选择就是lldb-mi。本文将介绍如何在本地对lldb-mi工程源码进行编译，从而生成可执行文件。编译lldb-mi，需要一个C++14编译器以及LLDB，而LLDB又依赖于Clang和LLVM，因此，在编译lldb-mi之前，需要先安装Clang，LLVM和LLDB，可以参考<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">这篇博客</a>进行安装。
+<span id="more"></span> # 编译 输入以下命令， <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~/ #进入home目录</span><br><span class="line">mkdir buildspace #在home目录下建立buildspace目录</span><br><span class="line">cd ~/buildspace #进入buildspace目录</span><br><span class="line">mkdir llvm-inst #创建llvm-inst目录</span><br><span class="line">git clone https://github.com/lldb-tools/lldb-mi #将lldb-mi工程下载到当前目录（即buildspace目录）</span><br><span class="line">cd lldb-mi #进入lldb-mi工程目录里</span><br><span class="line">mkdir build #在当前目录（即lldb-mi目录）建立build目录，用来存放编译后生成的文件</span><br><span class="line">cmake -DCMAKE_PREFIX_PATH=~/buildspace/llvm-inst/ -GNinja .. #在当前目录（即build目录）的上一级目录（即lldb-mi目录）下生成cmake文件</span><br><span class="line">ninja #编译</span><br></pre></td></tr></table></figure>
+执行完以上命令后，可以看到，所生成的lldb-mi可执行文件将位于lldb-mi/build/src目录下，这个就是lldb-mi调试器。然后，我们就可以开始在vscode中使用这个调试器对程序进行调试了。
+<img src="/2021/12/28/compile-lldb-mi/2021-12-29-00-49-15.png" alt="2021-12-29-00-49-15"> # 参考文献 1. <a href="https://github.com/lldb-tools/lldb-mi">Building against custom
+LLDB</a> 2. <a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">在ubuntu20.04安装LLVM</a></p>
+]]></content>
+      <categories>
+        <category>编译器</category>
+      </categories>
+      <tags>
+        <tag>开发环境</tag>
+        <tag>工具链</tag>
+        <tag>lldb-mi</tag>
+        <tag>调试器</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Hello World</title>
     <url>/2021/11/27/hello-world/</url>
     <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very
@@ -367,93 +454,6 @@ Quick Start</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
 <p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 ]]></content>
-  </entry>
-  <entry>
-    <title>Telnet使用SMTP服务登录邮箱并发送邮件</title>
-    <url>/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><blockquote>
-<p>本文介绍SMTP协议的一个简单的网络实验。 # SMTP协议简介 SMTP（定义于RFC
-5321）是互联网电子邮件的核心。SMTP将邮件从发件人的邮件服务器传输到收件人的邮件服务器。SMTP的出现比HTTP早得多。（最初的SMTP
-RFC文档可以追溯到1982年，而SMTP协议的出现时间还要早得多。）
-<span id="more"></span></p>
-</blockquote>
-<p>尽管SMTP拥有许多优秀的特性，其在互联网上的普及程度也证明了这一点，但它毕竟是一项具有某些过时特征的遗留技术。例如，它限制所有邮件的正文（而不仅仅是邮件头）只能使用简单的7比特ASCII编码。这种限制在20世纪80年代初期是合理的，当时传输容量有限，而且没有人会通过电子邮件发送大型附件或大型图像、音频或视频文件。但如今，在多媒体时代，7比特ASCII的限制就显得有些不便了——它要求二进制多媒体数据在通过SMTP发送之前必须编码为ASCII编码；它要求在SMTP传输后将相应的ASCII消息解码回二进制。而HTTP协议并不要求多媒体数据在传输前进行ASCII编码。</p>
-<p>这里介绍一下SMTP的一个简单的实验过程，有关STMP协议的更多介绍可以参考文献[1]<sup id="fnref:1"><a href="#fn:1" rel="footnote"><span class="hint--top hint--error hint--medium hint--rounded hint--bounce" aria-label="Computer Networking_ A Top-Down Approach-Pearson (2021) 第2.3.1节 SMTP. By James W. Kurose, Keith W. Ross
-">[1]</span></a></sup>。本实验过程参考了文献[2]<sup id="fnref:2"><a href="#fn:2" rel="footnote"><span class="hint--top hint--error hint--medium hint--rounded hint--bounce" aria-label="[Telnet 使用 SMTP 服务登录邮箱并发送邮件](https://cloud.tencent.com/developer/article/1927198)">[2]</span></a></sup>。</p>
-<hr>
-<h1 id="实验准备">实验准备</h1>
-<p>准备两个163邮箱，并开启SMTP服务。如下图所示。 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-44-24.png" alt="2025-11-27-20-44-24"></p>
-<p>开启IMAP/SMTP服务以及POP3/SMTP服务。 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-44-54.png" alt="2025-11-27-20-44-54"></p>
-<hr>
-<h1 id="实验步骤">实验步骤</h1>
-<ol type="1">
-<li><p>使用telnet连接smtp服务器 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">telnet smtp.163.com  25   //直接进入回显模式</span><br></pre></td></tr></table></figure></p></li>
-<li><p>查看连接是否建立 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">helo localhost</span><br></pre></td></tr></table></figure></p></li>
-<li><p>登录 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">auth login</span><br></pre></td></tr></table></figure>
-输入账号和授权密码，账号和授权密码要以base64编码的形式输入，授权密码不是邮箱密码，要在163邮箱主页开启邮箱的SMTP服务后再获取。</p></li>
-</ol>
-<figure>
-<img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-45-48.png" alt="2025-11-27-20-45-48">
-<figcaption aria-hidden="true">2025-11-27-20-45-48</figcaption>
-</figure>
-<p>邮箱： 18*******32@163.com</p>
-<p>授权密码(在打开IMAP/SMTP服务时会弹出，记下此授权密码，在登录时需要用到该密码)：
-<img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-30.png" alt="2025-11-27-20-46-30"></p>
-<p>若已有授权密码，也可以新增授权密码。 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-38.png" alt="2025-11-27-20-46-38"></p>
-<p>接下来输入邮件信息，其中mail from必须是发送邮箱的账号，rcpt
-to必须是接收邮箱的账号，否则会被认为是无效邮件而无法发送。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#邮件头，必须是正确的</span></span><br><span class="line">mail from: &lt;aa27975599672021@163.com&gt;</span><br><span class="line">rcpt to:  &lt;aa27975599672022@163.com&gt;</span><br><span class="line"><span class="comment">#开始输入邮件正文</span></span><br><span class="line">data</span><br><span class="line">from: &lt;aa27975599672021@163.com&gt;</span><br><span class="line">to:  &lt;aa27975599672022@163.com&gt;</span><br><span class="line">subject:hello,aa27975599672022@163.com</span><br><span class="line"><span class="comment">#空一行</span></span><br><span class="line">hello</span><br><span class="line"><span class="comment">#空一行，后面输入一个点后回车表示结束</span></span><br><span class="line">.</span><br></pre></td></tr></table></figure>
-<p>发送过程 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-49.png" alt="2025-11-27-20-46-49"></p>
-<p>在接收邮箱中查看，可以看到接收到了所发送的邮件 <img src="/2025/11/27/Telnet%E4%BD%BF%E7%94%A8SMTP%E6%9C%8D%E5%8A%A1%E7%99%BB%E5%BD%95%E9%82%AE%E7%AE%B1%E5%B9%B6%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6/2025-11-27-20-46-58.png" alt="2025-11-27-20-46-58"></p>
-<hr>
-<h1 id="参考">参考</h1>
-<div id="footnotes">
-<hr>
-<div id="footnotelist">
-<ol style="list-style: none; padding-left: 0; margin-left: 40px">
-<li id="fn:1">
-<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">1.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;">Computer
-Networking_ A Top-Down Approach-Pearson (2021) 第2.3.1节 SMTP. By James
-W. Kurose, Keith W. Ross<a href="#fnref:1" rev="footnote"> ↩︎</a></span>
-</li>
-<li id="fn:2">
-<span style="display: inline-block; vertical-align: top; padding-right: 10px; margin-left: -40px">2.</span><span style="display: inline-block; vertical-align: top; margin-left: 10px;"><a href="https://cloud.tencent.com/developer/article/1927198">Telnet
-使用 SMTP 服务登录邮箱并发送邮件</a><a href="#fnref:2" rev="footnote">
-↩︎</a></span>
-</li>
-</ol>
-</div>
-</div>
-
-]]></content>
-      <categories>
-        <category>计算机网络</category>
-      </categories>
-      <tags>
-        <tag>computer networking</tag>
-        <tag>SMTP</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>在ubuntu20.04编译lldb-mi</title>
-    <url>/2021/12/28/compile-lldb-mi/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="前言">前言</h1>
-<p>lldb-mi(lldb machine
-interface)是一个C/C++调试器，原来是LLVM项目中lldb的一部分，但是由于长时间没有人维护和更新，于是是从LLVM项目的lldb中分了出去，成为单独的一个工程。在linux环境下，使用vscode对C/C++代码进行调试时，常用的调试器是GDB，除此之外，还有个选择就是lldb-mi。本文将介绍如何在本地对lldb-mi工程源码进行编译，从而生成可执行文件。编译lldb-mi，需要一个C++14编译器以及LLDB，而LLDB又依赖于Clang和LLVM，因此，在编译lldb-mi之前，需要先安装Clang，LLVM和LLDB，可以参考<a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">这篇博客</a>进行安装。
-<span id="more"></span> # 编译 输入以下命令， <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~/ #进入home目录</span><br><span class="line">mkdir buildspace #在home目录下建立buildspace目录</span><br><span class="line">cd ~/buildspace #进入buildspace目录</span><br><span class="line">mkdir llvm-inst #创建llvm-inst目录</span><br><span class="line">git clone https://github.com/lldb-tools/lldb-mi #将lldb-mi工程下载到当前目录（即buildspace目录）</span><br><span class="line">cd lldb-mi #进入lldb-mi工程目录里</span><br><span class="line">mkdir build #在当前目录（即lldb-mi目录）建立build目录，用来存放编译后生成的文件</span><br><span class="line">cmake -DCMAKE_PREFIX_PATH=~/buildspace/llvm-inst/ -GNinja .. #在当前目录（即build目录）的上一级目录（即lldb-mi目录）下生成cmake文件</span><br><span class="line">ninja #编译</span><br></pre></td></tr></table></figure>
-执行完以上命令后，可以看到，所生成的lldb-mi可执行文件将位于lldb-mi/build/src目录下，这个就是lldb-mi调试器。然后，我们就可以开始在vscode中使用这个调试器对程序进行调试了。
-<img src="/2021/12/28/compile-lldb-mi/2021-12-29-00-49-15.png" alt="2021-12-29-00-49-15"> # 参考文献 1. <a href="https://github.com/lldb-tools/lldb-mi">Building against custom
-LLDB</a> 2. <a href="https://yang-yuke.github.io/2021/12/04/ubuntu-install-llvm/">在ubuntu20.04安装LLVM</a></p>
-]]></content>
-      <categories>
-        <category>编译器</category>
-      </categories>
-      <tags>
-        <tag>开发环境</tag>
-        <tag>工具链</tag>
-        <tag>lldb-mi</tag>
-        <tag>调试器</tag>
-      </tags>
   </entry>
   <entry>
     <title>在ubuntu20.04安装最新版GCC</title>
@@ -498,73 +498,6 @@ GCC 10 on Ubuntu Linux</a> 3. <a href="https://blog.csdn.net/21aspnet/article/de
       <tags>
         <tag>开发环境</tag>
         <tag>工具链</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Attach date to filename</title>
-    <url>/2024/01/06/shell_attach_date_to_filename/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="foreword">Foreword</h1>
-<p>Recently I was reading a <a href="https://ryanstutorials.net/bash-scripting-tutorial/bash-variables.php">tutorial
-blog</a> on bash variables, in which there are some challenging
-questions at the end. It took me some time to work it out, so I thought
-it would be worthy for me to write something to take that down.
-<span id="more"></span> # Practice 1 <strong>Issue description</strong>: Create a
-script which will take a filename as its first argument and create a
-dated copy of the file. eg. if our file was named file1.txt it would
-create a copy such as 2024-01-05_file1.txt. (To achieve this you will
-probably want to play with command substitution and the command
-date)</p>
-<p>The solution shell script <code>date_test.sh</code> is as follows.
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">DATE=$( date -I )</span><br><span class="line">COPYNAME=$&#123;DATE&#125;_$&#123;1&#125;</span><br><span class="line">echo &quot; copy name is $COPYNAME&quot;</span><br><span class="line">echo &quot; copy file $1 to $COPYNAME &quot;</span><br><span class="line">cp $1 $COPYNAME</span><br></pre></td></tr></table></figure></p>
-<p>Run the command <code>./date_test.sh mysampledata.txt</code> in the
-terminal, the result will be as follows: <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yukeyang@DESKTOP-QFK2F47:~/myfiles/bash_tutorials$ ./date_test.sh mysampledata.txt</span><br><span class="line"> copy name is 2024-01-06_mysampledata.txt</span><br><span class="line"> copy file mysampledata.txt to 2024-01-06_mysampledata.txt</span><br><span class="line">yukeyang@DESKTOP-QFK2F47:~/myfiles/bash_tutorials$</span><br></pre></td></tr></table></figure></p>
-<p>We will see a new file named <code>2024-01-06_mysampledata.txt</code>
-is created in the current working directory.</p>
-<p>Now, let's take a look at the shell script. The -I option for date
-means we output the date in YY-MM-DD format. # Practice 2 <strong>Issue
-description</strong>: Based on practice 1, the date is after the name of
-the file (eg. file1_2024-01-05.txt (The command basename can be useful
-here.)</p>
-<p>The solution shell script <code>date_test2.sh</code> is as follows.
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">DATE=$(date -I)</span><br><span class="line">filename=$(echo $&#123;1&#125; | cut -d . -f1)</span><br><span class="line">extension=$(echo $&#123;1&#125; | cut -d . -f2)</span><br><span class="line">COPYNAME=$&#123;filename&#125;_$&#123;DATE&#125;.$&#123;extension&#125;</span><br><span class="line">echo &quot;filename is $filename, extension is $extension&quot;</span><br><span class="line">echo &quot;copy name is $COPYNAME&quot;</span><br><span class="line">echo &quot;copy file $1 to $COPYNAME&quot;</span><br><span class="line">cp $1 $COPYNAME</span><br></pre></td></tr></table></figure></p>
-<p>Run the command <code>./date_test2.sh mysampledata.txt</code> in the
-terminal, the result will be as follows: <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yukeyang@DESKTOP-QFK2F47:~/myfiles/bash_tutorials$ ./date_test2.sh mysampledata.txt</span><br><span class="line">filename is mysampledata, extension is txt</span><br><span class="line">copy name is mysampledata_2024-01-06.txt</span><br><span class="line">copy file mysampledata.txt to mysampledata_2024-01-06.txt</span><br></pre></td></tr></table></figure></p>
-<p>Alternatively, we can have the below script as the solution, which
-uses the sed command. <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">DATE=$(date -I)</span><br><span class="line">filename=$(echo $&#123;1&#125; | sed &#x27;s/\.[^.]*$//&#x27;)</span><br><span class="line">extension=$(echo $&#123;1&#125; | sed &#x27;s/^.*\.//&#x27;)</span><br><span class="line">COPYNAME=$&#123;filename&#125;_$&#123;DATE&#125;.$&#123;extension&#125;</span><br><span class="line">echo &quot;filename is $filename, extension is $extension&quot;</span><br><span class="line">echo &quot;copy name is $COPYNAME&quot;</span><br><span class="line">echo &quot;copy file $1 to $COPYNAME&quot;</span><br><span class="line">cp $1 $COPYNAME</span><br></pre></td></tr></table></figure></p>
-<h1 id="practice-3">Practice 3</h1>
-<p><strong>Issue description</strong>: Expand the previous question to
-accept a list of files on the command line and it will create a named
-copy of all of them. (The command xargs may be useful here.)</p>
-<p>The solution shell script <code>xarg_date_test.sh</code> is as
-follows. <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">DATE=$(date -I)</span><br><span class="line">ls $* | xargs -n1 -i basename &#123;&#125; | xargs -n1 -i cp &#123;&#125; $&#123;DATE&#125;_&#123;&#125;</span><br></pre></td></tr></table></figure></p>
-<p>Run the command
-<code>./xarg_date_test.sh mysampledata.txt myoutput.txt</code> in the
-terminal, the result will be as follows: <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yukeyang@DESKTOP-QFK2F47:~/myfiles/bash_tutorials$ ./xarg_date_test.sh mysampledata.txt myoutput.txt</span><br><span class="line">yukeyang@DESKTOP-QFK2F47:~/myfiles/bash_tutorials$ ls</span><br><span class="line">20231231                     image1.JPG  myoutput.txt                 results.data        words.txt</span><br><span class="line">2024-01-06_myoutput.txt      image2.JPG  mysampledata_2024-01-04.txt  script1.sh          xarg_date_test1.sh</span><br><span class="line">2024-01-06_mysampledata.txt  image3.JPG  mysampledata_2024-01-05.txt  script2.sh          xarg_date_test.sh</span><br><span class="line">date_test2.sh                image4.JPG  mysampledata_2024-01-06.txt  script.sh</span><br><span class="line">date_test.sh                 mycopy.sh   mysampledata.txt             shellname_test.sh</span><br><span class="line">file1.data                   myoutput    pipe_test.sh                 simplevariables.sh</span><br><span class="line">yukeyang@DESKTOP-QFK2F47:~/myfiles/bash_tutorials$</span><br></pre></td></tr></table></figure> We can the dated
-copy of the argument files. Now let's take a look at the script. The
-<code>$*</code> means all the command line arguments. The
-<code>-n1</code> xarg option means run the command on each input once.
-The <code>-i</code> indicates we are going to use a replacement string
-in the next command (it defaults to {}). This means, execute the next
-command, substituting every occurrence of {} with what was just read
-through the pipe.</p>
-<h1 id="reference">Reference</h1>
-<ol type="1">
-<li><a href="https://ryanstutorials.net/bash-scripting-tutorial/bash-variables.php">bash
-variables</a></li>
-<li><a href="https://zuyunfei.com/2016/03/23/Shell-Truncate-File-Extension/">Shell
-truncate file extension</a></li>
-<li><a href="https://ryanstutorials.net/linuxtutorial/grep.php">grep</a></li>
-<li><a href="https://www.runoob.com/linux/linux-comm-sed.html">Linux sed
-command</a></li>
-</ol>
-]]></content>
-      <categories>
-        <category>shell</category>
-      </categories>
-      <tags>
-        <tag>shell</tag>
-        <tag>bash</tag>
-        <tag>variables</tag>
       </tags>
   </entry>
   <entry>
@@ -701,6 +634,149 @@ LLVM System(github)</a> 9. <a href="https://getting-started-with-llvm-core-libra
       <tags>
         <tag>开发环境</tag>
         <tag>工具链</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>双口RAM及其VIVADO的IP核的使用</title>
+    <url>/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="双口ram概述">双口RAM概述</h1>
+<p>双口RAM（dual port
+RAM）在异构系统中应用广泛，通过双口RAM，不同硬件架构的芯片可以实现数据的交互，从而实现通信。例如，一般情况下，ARM与DSP之间的通信，可以利用双口RAM实现，ARM通过EBI总线连接到双口RAM的A口，DSP通过EMIF总线（也可以是uPP总线，取决于速度需求）连接到双口RAM的B口，两者对同一块存储区域进行操作，即可实现两者的数据交互。
+<span id="more"></span>
+但是，因为双口RAM的A口和B口都可以对相同的内存地址进行操作，这就引出了一个问题——假如通信双方在两个端口对同一地址同时读写，就会引发冲突。要解决这个问题，办法有二。一是通信双方在时序上保证不会同时读写同一地址，将ARM和DSP可写地址范围进行分区，无论任何一方写完数据后都通过IO发送中断通知对方，对方进行数据读取（乒乓RAM操作），这样是比较可靠的；另外一个办法就是在fpga里设置写busy信号，实现两端写同步<a href="http://blog.csdn.net/DanielLee_ustb/article/details/46446359">1</a>。在FPGA中，构建双口RAM可以通过两种方法，一种是利用distributed
+RAM构建，另一种是利用Block
+RAM构建，关于两者的具体区别，可以参考这两篇文章<a href="http://blog.csdn.net/yzy19900402/article/details/45025901">2</a><a href="http://blog.csdn.net/jbb0523/article/details/6533760">3</a>。简而言之，Block
+RAM是是使用FPGA中的整块双口RAM资源，而distributed
+RAM则是用FPGA中的逻辑资源拼凑形成的。一般的原则是，较大的存储应用，建议用bram；零星的小ram，一般就用dram。</p>
+<p>在Vivado中，RAM IP核在Memories &amp; Strorage Elements&amp; ROMs和RAM
+&amp; ROMs &amp; BRAM文件夹下，如图所示，下面简要介绍一下Vivado的双口RAM
+IP核。 <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-23-22.png#pic_center" title="图1.1" alt="图1.1"> # Vivado 双口RAM IP核 ## Block Memory
+Generator概述     点击图1.1的Block Memory
+Generator项，利用BRAM来构建双口RAM。Block Memory
+Generator窗口如图2.1所示。图中，第1部分，在IP
+symbol选项卡，点击"+"号可以展开端口具体信号，如图2.2所示。第2部分，Component
+Name可以设置IP核的名字。第3部分，Basic选项卡，在Memory
+Type下拉列表中，可以设置内存的类型，如图2.3所示。Block Memory
+Gnerator一共可以产生5种不同类型的内存空间，其中block
+RAM有三种：单口RAM、简化双口RAM和真双口RAM<a href="https://www.xilinx.com/support/documentation/ip_documentation/blk_mem_gen/v8_2/pg058-blk-mem-gen.pdf">4</a>。单口RAM只有一个端口（A端口），可以对A端口进行读写。简化双口RAM有两个端口（A和B端口），但是A端口只能进行写入操作，不能进行读出操作，而B端口则只能进行读出操作，不能进行写入操作。真双口RAM有两个端口（A和B端口），A和B端口都能进行读写操作<a href="http://blog.csdn.net/c602273091/article/details/39694145">5</a>。
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-16.png#pic_center" title="图2.1" alt="图2.1"> <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-48.png#pic_center" title="图2.2" alt="图2.2"> <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-15.png#pic_center" title="图2.3" alt="图2.3"> ## 真双口RAM的设置 ### Basic设置 <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-36.png#pic_center" title="图2.4" alt="图2.4"> ### Port设置 点击Port A
+Options选项卡，对A端口进行设置， 设置Write
+Width为16（即RAM单元为16位），Write
+Width为1024（即内存深度为1024，该端口可读写的RAM单元有1024个），Operating
+Mode（操作模式）一共有三种：Write First，Read First，No Change。在Write
+First模式中，在一个时钟周期里，写入内存单元的数据被同步输出到输出数据总线上；在Read
+First模式中，在一个时钟周期里，写入到内存单元的数据是当前输入数据总线上的数据，而输出到输出数据总线上的数据则是上一个时钟周期存储在内存单元中的数据。细节可参考PG058的49到50页4。Enable
+Port Type设置为Always
+Enabled，一直使能端口A。其它设置使用默认设置。如图2.5所示。 <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-04.png#pic_center" title="图2.5" alt="图2.5"> 端口B设置为与A一致。在Other
+Options选项卡中，保留默认设置。Load Init
+File设置是否用Coe文件对内存区域初始化，这个在初始化ROM的时候会用到，这里不勾选，保持默认。最后，在Summary选项卡会显示消耗的资源。</p>
+<h1 id="双口ram例程">双口RAM例程</h1>
+<p>​例程1，该例程是Altera官方例程<a href="https://www.altera.com.cn/support/support-resources/design-examples/design-software/verilog/ver-true-dual-port-ram-sclk.html">6</a>，采用寄存器构建双口RAM，代码如下：
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> true_dpram_sclk</span><br><span class="line">(</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">7</span>:<span class="number">0</span>] data_a, data_b,</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">5</span>:<span class="number">0</span>] addr_a, addr_b,</span><br><span class="line">    <span class="keyword">input</span> we_a, we_b, clk,</span><br><span class="line">    <span class="keyword">output</span> <span class="keyword">reg</span> [<span class="number">7</span>:<span class="number">0</span>] q_a, q_b</span><br><span class="line">);</span><br><span class="line">    <span class="comment">// Declare the RAM variable</span></span><br><span class="line">    <span class="keyword">reg</span> [<span class="number">7</span>:<span class="number">0</span>] ram[<span class="number">63</span>:<span class="number">0</span>];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Port A</span></span><br><span class="line">    <span class="keyword">always</span> @ (<span class="keyword">posedge</span> clk)</span><br><span class="line">    <span class="keyword">begin</span></span><br><span class="line">        <span class="keyword">if</span> (we_a) </span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">            ram[addr_a] &lt;= data_a;</span><br><span class="line">            q_a &lt;= data_a;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">else</span> </span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">            q_a &lt;= ram[addr_a];</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Port B</span></span><br><span class="line">    <span class="keyword">always</span> @ (<span class="keyword">posedge</span> clk)</span><br><span class="line">    <span class="keyword">begin</span></span><br><span class="line">        <span class="keyword">if</span> (we_b)</span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">            ram[addr_b] &lt;= data_b;</span><br><span class="line">            q_b &lt;= data_b;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">            q_b &lt;= ram[addr_b];</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    </span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure> 例程2，该例程是Xilinx官方例程<a href="https://www.xilinx.com/support/documentation/sw_manuals/xilinx2014_4/ug901-vivado-synthesis.pdf">7</a>，采用寄存器构建真双口RAM，代码如下：
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Dual-Port Block RAM with Two Write Ports</span></span><br><span class="line"><span class="comment">// File: rams_16.v</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">module</span> v_rams_16 (clka,clkb,ena,enb,wea,web,addra,addrb,dia,dib,doa,dob);</span><br><span class="line"></span><br><span class="line"><span class="keyword">input</span> clka,clkb,ena,enb,wea,web;</span><br><span class="line"><span class="keyword">input</span> [<span class="number">9</span>:<span class="number">0</span>] addra,addrb;</span><br><span class="line"><span class="keyword">input</span> [<span class="number">15</span>:<span class="number">0</span>] dia,dib;</span><br><span class="line"><span class="keyword">output</span> [<span class="number">15</span>:<span class="number">0</span>] doa,dob;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">15</span>:<span class="number">0</span>] ram [<span class="number">1023</span>:<span class="number">0</span>];</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">15</span>:<span class="number">0</span>] doa,dob;</span><br><span class="line"></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clka) <span class="keyword">begin</span> <span class="keyword">if</span> (ena)</span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line"> <span class="keyword">if</span> (wea)</span><br><span class="line"> ram[addra] &lt;= dia;</span><br><span class="line"> doa &lt;= ram[addra];</span><br><span class="line"> <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clkb) <span class="keyword">begin</span> <span class="keyword">if</span> (enb)</span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line"> <span class="keyword">if</span> (web)</span><br><span class="line"> ram[addrb] &lt;= dib;</span><br><span class="line"> dob &lt;= ram[addrb];</span><br><span class="line"> <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure> ​例程3，该例程是网友博客中的例程<a href="http://blog.csdn.net/yanglong890124/article/details/32742297">8</a>，代码如下：
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> TOP(  </span><br><span class="line"><span class="keyword">input</span> USER_CLK  </span><br><span class="line">    );  </span><br><span class="line">  </span><br><span class="line"><span class="meta">`<span class="keyword">define</span> DLY #1  </span></span><br><span class="line"><span class="keyword">reg</span> FPGA_Enable=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">3</span>:<span class="number">0</span>] FPGA_Write_Enable=<span class="number">4&#x27;h0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Address=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Write_Data=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data_reg=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">wire</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data;  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">10</span>:<span class="number">0</span>] count=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">always</span> @ (<span class="keyword">posedge</span> USER_CLK)  </span><br><span class="line"><span class="keyword">begin</span>  </span><br><span class="line">    count &lt;= count + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">if</span>(count&lt;=<span class="number">100</span>)  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;h0</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">105</span>)&amp;&amp;(count &gt;<span class="number">100</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;hf</span>;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= FPGA_Write_Data + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">110</span>)&amp;&amp;(count &gt;<span class="number">105</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;h0</span>;  </span><br><span class="line">        FPGA_Address &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= <span class="number">0</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">117</span>)&amp;&amp;(count &gt;<span class="number">110</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;h0</span>;  </span><br><span class="line">        FPGA_Read_Data_reg &lt;= FPGA_Read_Data;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(count == <span class="number">118</span>)  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        count &lt;= count;  </span><br><span class="line">          </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line"><span class="keyword">end</span>  </span><br><span class="line">  </span><br><span class="line">BBBB your_instance_name (  </span><br><span class="line">  <span class="variable">.clka</span>(USER_CLK), <span class="comment">// input clka  </span></span><br><span class="line">  <span class="variable">.ena</span>(FPGA_Enable), <span class="comment">// input ena  </span></span><br><span class="line">  <span class="variable">.wea</span>(FPGA_Write_Enable), <span class="comment">// input [3 : 0] wea  </span></span><br><span class="line">  <span class="variable">.addra</span>(FPGA_Address), <span class="comment">// input [31 : 0] addra  </span></span><br><span class="line">  <span class="variable">.dina</span>(FPGA_Write_Data), <span class="comment">// input [31 : 0] dina  </span></span><br><span class="line">  <span class="variable">.douta</span>(FPGA_Read_Data), <span class="comment">// output [31 : 0] douta  </span></span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">  <span class="variable">.clkb</span>(clkb), <span class="comment">// input clkb  </span></span><br><span class="line">  <span class="variable">.enb</span>(enb), <span class="comment">// input enb  </span></span><br><span class="line">  <span class="variable">.web</span>(web), <span class="comment">// input [3 : 0] web  </span></span><br><span class="line">  <span class="variable">.addrb</span>(addrb), <span class="comment">// input [31 : 0] addrb  </span></span><br><span class="line">  <span class="variable">.dinb</span>(dinb), <span class="comment">// input [31 : 0] dinb  </span></span><br><span class="line">  <span class="variable">.doutb</span>(doutb) <span class="comment">// output [31 : 0] doutb  </span></span><br><span class="line">);  </span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+​该例程中，在count为101（&gt;100）后开始往地址4到20写入1-5，然后在count为111（&gt;110）的时候读出写入的数据。
+# 仿真
+下面利用Modelsim和Vivado进行联合仿真，关于vivado如何与modelsim进行联合仿真可以参考这篇文章：</p>
+<p><a href="http://blog.chinaaet.com/crazybird/p/5100000539">vivado与modelsim的关联以及器件库编译</a></p>
+<p>有一点要注意的是，我用的是Vivado2017.1版本，这个版本只支持Modelsim10.5及以上的版本，如果是低版本的Modelsim，在用Vivado2017.1编译Modelsim的仿真库时，会出错。Modelsim10.5版本可以在这里下载：</p>
+<p><a href="http://bbs.eetop.cn/viewthread.php?tid=629292&amp;extra=&amp;page=1">modelsim
+10.5 适用vivado 2017.1</a></p>
+<p>用Modelsim仿真时，会在sim_1/behav文件夹下产生3个.do文件，分别是xx_compile.do，xx_simulate.do，xx
+_wave.do文件。在设计的verilog文件修改之后，如果在Modelsim中直接restart，仿真的其实还是没有修改前的文件，要使修改的.v文件在Modelsim中生效，可以在Modelsim的命令窗口输入do
+xx_compile.do文件，对仿真的库文件以及设计文件（.v文件）重新编译，然后在输入do
+xx_simulate.do文件，才能仿真修改后的文件。输入do
+xx_compile.do命令对设计文件重新编译的时候，Modelsim会强制退出，这时由最后一句force
+quit命令引起的，只要把它删掉就行了。如果要保存波形文件，可以save
+format，另存为xx_wave.do文件。</p>
+<p>参考上面双口RAM的例程3进行功能仿真，RAM IP使用Write
+First模式，设计文件代码如下： <figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="meta">`<span class="keyword">timescale</span> 1ns / 1ps</span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Company: </span></span><br><span class="line"><span class="comment">// Engineer: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Create Date: 2017/12/09 22:36:48</span></span><br><span class="line"><span class="comment">// Design Name: </span></span><br><span class="line"><span class="comment">// Module Name: dual_port_ram_demo</span></span><br><span class="line"><span class="comment">// Project Name: </span></span><br><span class="line"><span class="comment">// Target Devices: </span></span><br><span class="line"><span class="comment">// Tool Versions: </span></span><br><span class="line"><span class="comment">// Description: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Dependencies: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Revision:</span></span><br><span class="line"><span class="comment">// Revision 0.01 - File Created</span></span><br><span class="line"><span class="comment">// Additional Comments:</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">module</span> dual_port_ram_demo(</span><br><span class="line"><span class="keyword">input</span> USER_CLK</span><br><span class="line">    );</span><br><span class="line">  </span><br><span class="line"><span class="meta">`<span class="keyword">define</span> DLY #1  </span></span><br><span class="line"></span><br><span class="line"><span class="comment">//Port A declaration</span></span><br><span class="line"><span class="keyword">reg</span> FPGA_Enable=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span> FPGA_Write_Enable=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Address=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Write_Data=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data_reg=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">wire</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data;  </span><br><span class="line"></span><br><span class="line"><span class="comment">//Port B declaration</span></span><br><span class="line"><span class="keyword">reg</span> enb=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">3</span>:<span class="number">0</span>] web=<span class="number">4&#x27;h0</span>;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] addrb=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] dinb=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] doutb_reg=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">wire</span>[<span class="number">31</span>:<span class="number">0</span>] doutb=<span class="number">0</span>;</span><br><span class="line">  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">10</span>:<span class="number">0</span>] count=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">always</span> @ (<span class="keyword">posedge</span> USER_CLK)  </span><br><span class="line"><span class="keyword">begin</span>  </span><br><span class="line">    count &lt;= count + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">if</span>(count&lt;=<span class="number">100</span>)  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">105</span>)&amp;&amp;(count &gt;<span class="number">100</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= FPGA_Write_Data + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">110</span>)&amp;&amp;(count &gt;<span class="number">105</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Address &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= <span class="number">0</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">117</span>)&amp;&amp;(count &gt;<span class="number">110</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Read_Data_reg &lt;= FPGA_Read_Data;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(count == <span class="number">118</span>)  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        count &lt;= count;  </span><br><span class="line">          </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line"><span class="keyword">end</span>  </span><br><span class="line">  </span><br><span class="line">dpRAM u1 (  </span><br><span class="line">  <span class="variable">.clka</span>(USER_CLK), <span class="comment">// input clka  </span></span><br><span class="line">  <span class="variable">.ena</span>(FPGA_Enable), <span class="comment">// input ena  </span></span><br><span class="line">  <span class="variable">.wea</span>(FPGA_Write_Enable), <span class="comment">// input [3 : 0] wea  </span></span><br><span class="line">  <span class="variable">.addra</span>(FPGA_Address), <span class="comment">// input [31 : 0] addra  </span></span><br><span class="line">  <span class="variable">.dina</span>(FPGA_Write_Data), <span class="comment">// input [31 : 0] dina  </span></span><br><span class="line">  <span class="variable">.douta</span>(FPGA_Read_Data), <span class="comment">// output [31 : 0] douta  </span></span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">  <span class="variable">.clkb</span>(USER_CLK), <span class="comment">// input clkb  </span></span><br><span class="line">  <span class="variable">.enb</span>(enb), <span class="comment">// input enb  </span></span><br><span class="line">  <span class="variable">.web</span>(web), <span class="comment">// input [3 : 0] web  </span></span><br><span class="line">  <span class="variable">.addrb</span>(addrb), <span class="comment">// input [31 : 0] addrb  </span></span><br><span class="line">  <span class="variable">.dinb</span>(dinb), <span class="comment">// input [31 : 0] dinb  </span></span><br><span class="line">  <span class="variable">.doutb</span>(doutb) <span class="comment">// output [31 : 0] doutb  </span></span><br><span class="line">);  </span><br><span class="line"><span class="keyword">endmodule</span>  </span><br></pre></td></tr></table></figure> ​testbench文件如下：
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="meta">`<span class="keyword">timescale</span> 1ns / 1ps</span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Company: </span></span><br><span class="line"><span class="comment">// Engineer: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Create Date: 2017/12/09 22:47:26</span></span><br><span class="line"><span class="comment">// Design Name: </span></span><br><span class="line"><span class="comment">// Module Name: simu</span></span><br><span class="line"><span class="comment">// Project Name: </span></span><br><span class="line"><span class="comment">// Target Devices: </span></span><br><span class="line"><span class="comment">// Tool Versions: </span></span><br><span class="line"><span class="comment">// Description: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Dependencies: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Revision:</span></span><br><span class="line"><span class="comment">// Revision 0.01 - File Created</span></span><br><span class="line"><span class="comment">// Additional Comments:</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">module</span> simu(</span><br><span class="line"></span><br><span class="line">    );</span><br><span class="line"><span class="comment">//testbench 时钟信号</span></span><br><span class="line"><span class="keyword">reg</span> clk = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">always</span> # <span class="number">10</span> clk &lt;= ~clk;</span><br><span class="line"><span class="comment">//调用dual_port_ram_demo模块</span></span><br><span class="line">dual_port_ram_demo demo1(clk);</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure> 仿真结果如下： <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-41.png#pic_center" title="图4.1" alt="图4.1">
+程序在1时刻准备好地址和要写入RAM的数据，在2时刻写入RAM中，在3时刻端口才会输出2时刻写入RAM的数据，注意与PG058的图稍有不同。
+<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-27-26.png#pic_center" title="图4.2" alt="图4.2"> # 后记
+关于BRAM，推荐一个youtube视频，里面讲的非常清晰易懂。 <a href="https://www.youtube.com/watch?v=fqUuvwl4QJA">What is a Block RAM
+in an FPGA?</a> # 参考文献 [1] <a href="http://blog.csdn.net/DanielLee_ustb/article/details/46446359">基于FPGA的双口RAM设计方法</a>
+[2] <a href="http://blog.csdn.net/yzy19900402/article/details/45025901">关于Xilinx芯片中Block
+RAM和Distributed RAM 的区别</a> [3] <a href="http://blog.csdn.net/jbb0523/article/details/6533760">Block RAM
+和Distributed RAM</a> [4] <a href="https://www.xilinx.com/support/documentation/ip_documentation/blk_mem_gen/v8_2/pg058-blk-mem-gen.pdf">Block
+Memory Generator v8.2 LogiCORE IP Product Guide (PG058)</a> [5] <a href="http://blog.csdn.net/c602273091/article/details/39694145">FPGA开发之RAM
+IP的使用</a> [6] <a href="https://www.altera.com.cn/support/support-resources/design-examples/design-software/verilog/ver-true-dual-port-ram-sclk.html">Verilog
+HDL：具有单时钟的真双端口RAM</a> [7] <a href="https://www.xilinx.com/support/documentation/sw_manuals/xilinx2014_4/ug901-vivado-synthesis.pdf">Vivado
+Design Suite User Guide: Synthesis (UG901)</a> [8] <a href="http://blog.csdn.net/yanglong890124/article/details/32742297">FPGA
+内部双口块RAM 读写实现</a></p>
+]]></content>
+      <categories>
+        <category>FPGA</category>
+      </categories>
+      <tags>
+        <tag>FPAG</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Attach date to filename</title>
+    <url>/2024/01/06/shell_attach_date_to_filename/</url>
+    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="foreword">Foreword</h1>
+<p>Recently I was reading a <a href="https://ryanstutorials.net/bash-scripting-tutorial/bash-variables.php">tutorial
+blog</a> on bash variables, in which there are some challenging
+questions at the end. It took me some time to work it out, so I thought
+it would be worthy for me to write something to take that down.
+<span id="more"></span> # Practice 1 <strong>Issue description</strong>: Create a
+script which will take a filename as its first argument and create a
+dated copy of the file. eg. if our file was named file1.txt it would
+create a copy such as 2024-01-05_file1.txt. (To achieve this you will
+probably want to play with command substitution and the command
+date)</p>
+<p>The solution shell script <code>date_test.sh</code> is as follows.
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">DATE=$( date -I )</span><br><span class="line">COPYNAME=$&#123;DATE&#125;_$&#123;1&#125;</span><br><span class="line">echo &quot; copy name is $COPYNAME&quot;</span><br><span class="line">echo &quot; copy file $1 to $COPYNAME &quot;</span><br><span class="line">cp $1 $COPYNAME</span><br></pre></td></tr></table></figure></p>
+<p>Run the command <code>./date_test.sh mysampledata.txt</code> in the
+terminal, the result will be as follows: <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yukeyang@DESKTOP-QFK2F47:~/myfiles/bash_tutorials$ ./date_test.sh mysampledata.txt</span><br><span class="line"> copy name is 2024-01-06_mysampledata.txt</span><br><span class="line"> copy file mysampledata.txt to 2024-01-06_mysampledata.txt</span><br><span class="line">yukeyang@DESKTOP-QFK2F47:~/myfiles/bash_tutorials$</span><br></pre></td></tr></table></figure></p>
+<p>We will see a new file named <code>2024-01-06_mysampledata.txt</code>
+is created in the current working directory.</p>
+<p>Now, let's take a look at the shell script. The -I option for date
+means we output the date in YY-MM-DD format. # Practice 2 <strong>Issue
+description</strong>: Based on practice 1, the date is after the name of
+the file (eg. file1_2024-01-05.txt (The command basename can be useful
+here.)</p>
+<p>The solution shell script <code>date_test2.sh</code> is as follows.
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">DATE=$(date -I)</span><br><span class="line">filename=$(echo $&#123;1&#125; | cut -d . -f1)</span><br><span class="line">extension=$(echo $&#123;1&#125; | cut -d . -f2)</span><br><span class="line">COPYNAME=$&#123;filename&#125;_$&#123;DATE&#125;.$&#123;extension&#125;</span><br><span class="line">echo &quot;filename is $filename, extension is $extension&quot;</span><br><span class="line">echo &quot;copy name is $COPYNAME&quot;</span><br><span class="line">echo &quot;copy file $1 to $COPYNAME&quot;</span><br><span class="line">cp $1 $COPYNAME</span><br></pre></td></tr></table></figure></p>
+<p>Run the command <code>./date_test2.sh mysampledata.txt</code> in the
+terminal, the result will be as follows: <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yukeyang@DESKTOP-QFK2F47:~/myfiles/bash_tutorials$ ./date_test2.sh mysampledata.txt</span><br><span class="line">filename is mysampledata, extension is txt</span><br><span class="line">copy name is mysampledata_2024-01-06.txt</span><br><span class="line">copy file mysampledata.txt to mysampledata_2024-01-06.txt</span><br></pre></td></tr></table></figure></p>
+<p>Alternatively, we can have the below script as the solution, which
+uses the sed command. <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">DATE=$(date -I)</span><br><span class="line">filename=$(echo $&#123;1&#125; | sed &#x27;s/\.[^.]*$//&#x27;)</span><br><span class="line">extension=$(echo $&#123;1&#125; | sed &#x27;s/^.*\.//&#x27;)</span><br><span class="line">COPYNAME=$&#123;filename&#125;_$&#123;DATE&#125;.$&#123;extension&#125;</span><br><span class="line">echo &quot;filename is $filename, extension is $extension&quot;</span><br><span class="line">echo &quot;copy name is $COPYNAME&quot;</span><br><span class="line">echo &quot;copy file $1 to $COPYNAME&quot;</span><br><span class="line">cp $1 $COPYNAME</span><br></pre></td></tr></table></figure></p>
+<h1 id="practice-3">Practice 3</h1>
+<p><strong>Issue description</strong>: Expand the previous question to
+accept a list of files on the command line and it will create a named
+copy of all of them. (The command xargs may be useful here.)</p>
+<p>The solution shell script <code>xarg_date_test.sh</code> is as
+follows. <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">DATE=$(date -I)</span><br><span class="line">ls $* | xargs -n1 -i basename &#123;&#125; | xargs -n1 -i cp &#123;&#125; $&#123;DATE&#125;_&#123;&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Run the command
+<code>./xarg_date_test.sh mysampledata.txt myoutput.txt</code> in the
+terminal, the result will be as follows: <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yukeyang@DESKTOP-QFK2F47:~/myfiles/bash_tutorials$ ./xarg_date_test.sh mysampledata.txt myoutput.txt</span><br><span class="line">yukeyang@DESKTOP-QFK2F47:~/myfiles/bash_tutorials$ ls</span><br><span class="line">20231231                     image1.JPG  myoutput.txt                 results.data        words.txt</span><br><span class="line">2024-01-06_myoutput.txt      image2.JPG  mysampledata_2024-01-04.txt  script1.sh          xarg_date_test1.sh</span><br><span class="line">2024-01-06_mysampledata.txt  image3.JPG  mysampledata_2024-01-05.txt  script2.sh          xarg_date_test.sh</span><br><span class="line">date_test2.sh                image4.JPG  mysampledata_2024-01-06.txt  script.sh</span><br><span class="line">date_test.sh                 mycopy.sh   mysampledata.txt             shellname_test.sh</span><br><span class="line">file1.data                   myoutput    pipe_test.sh                 simplevariables.sh</span><br><span class="line">yukeyang@DESKTOP-QFK2F47:~/myfiles/bash_tutorials$</span><br></pre></td></tr></table></figure> We can the dated
+copy of the argument files. Now let's take a look at the script. The
+<code>$*</code> means all the command line arguments. The
+<code>-n1</code> xarg option means run the command on each input once.
+The <code>-i</code> indicates we are going to use a replacement string
+in the next command (it defaults to {}). This means, execute the next
+command, substituting every occurrence of {} with what was just read
+through the pipe.</p>
+<h1 id="reference">Reference</h1>
+<ol type="1">
+<li><a href="https://ryanstutorials.net/bash-scripting-tutorial/bash-variables.php">bash
+variables</a></li>
+<li><a href="https://zuyunfei.com/2016/03/23/Shell-Truncate-File-Extension/">Shell
+truncate file extension</a></li>
+<li><a href="https://ryanstutorials.net/linuxtutorial/grep.php">grep</a></li>
+<li><a href="https://www.runoob.com/linux/linux-comm-sed.html">Linux sed
+command</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>shell</category>
+      </categories>
+      <tags>
+        <tag>shell</tag>
+        <tag>bash</tag>
+        <tag>variables</tag>
       </tags>
   </entry>
   <entry>
@@ -861,82 +937,6 @@ block)，要理解比特币网络，首先必须要正确理解这些概念。</
       <tags>
         <tag>比特币</tag>
         <tag>多重签名</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>双口RAM及其VIVADO的IP核的使用</title>
-    <url>/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/</url>
-    <content><![CDATA[<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><h1 id="双口ram概述">双口RAM概述</h1>
-<p>双口RAM（dual port
-RAM）在异构系统中应用广泛，通过双口RAM，不同硬件架构的芯片可以实现数据的交互，从而实现通信。例如，一般情况下，ARM与DSP之间的通信，可以利用双口RAM实现，ARM通过EBI总线连接到双口RAM的A口，DSP通过EMIF总线（也可以是uPP总线，取决于速度需求）连接到双口RAM的B口，两者对同一块存储区域进行操作，即可实现两者的数据交互。
-<span id="more"></span>
-但是，因为双口RAM的A口和B口都可以对相同的内存地址进行操作，这就引出了一个问题——假如通信双方在两个端口对同一地址同时读写，就会引发冲突。要解决这个问题，办法有二。一是通信双方在时序上保证不会同时读写同一地址，将ARM和DSP可写地址范围进行分区，无论任何一方写完数据后都通过IO发送中断通知对方，对方进行数据读取（乒乓RAM操作），这样是比较可靠的；另外一个办法就是在fpga里设置写busy信号，实现两端写同步<a href="http://blog.csdn.net/DanielLee_ustb/article/details/46446359">1</a>。在FPGA中，构建双口RAM可以通过两种方法，一种是利用distributed
-RAM构建，另一种是利用Block
-RAM构建，关于两者的具体区别，可以参考这两篇文章<a href="http://blog.csdn.net/yzy19900402/article/details/45025901">2</a><a href="http://blog.csdn.net/jbb0523/article/details/6533760">3</a>。简而言之，Block
-RAM是是使用FPGA中的整块双口RAM资源，而distributed
-RAM则是用FPGA中的逻辑资源拼凑形成的。一般的原则是，较大的存储应用，建议用bram；零星的小ram，一般就用dram。</p>
-<p>在Vivado中，RAM IP核在Memories &amp; Strorage Elements&amp; ROMs和RAM
-&amp; ROMs &amp; BRAM文件夹下，如图所示，下面简要介绍一下Vivado的双口RAM
-IP核。 <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-23-22.png#pic_center" title="图1.1" alt="图1.1"> # Vivado 双口RAM IP核 ## Block Memory
-Generator概述     点击图1.1的Block Memory
-Generator项，利用BRAM来构建双口RAM。Block Memory
-Generator窗口如图2.1所示。图中，第1部分，在IP
-symbol选项卡，点击"+"号可以展开端口具体信号，如图2.2所示。第2部分，Component
-Name可以设置IP核的名字。第3部分，Basic选项卡，在Memory
-Type下拉列表中，可以设置内存的类型，如图2.3所示。Block Memory
-Gnerator一共可以产生5种不同类型的内存空间，其中block
-RAM有三种：单口RAM、简化双口RAM和真双口RAM<a href="https://www.xilinx.com/support/documentation/ip_documentation/blk_mem_gen/v8_2/pg058-blk-mem-gen.pdf">4</a>。单口RAM只有一个端口（A端口），可以对A端口进行读写。简化双口RAM有两个端口（A和B端口），但是A端口只能进行写入操作，不能进行读出操作，而B端口则只能进行读出操作，不能进行写入操作。真双口RAM有两个端口（A和B端口），A和B端口都能进行读写操作<a href="http://blog.csdn.net/c602273091/article/details/39694145">5</a>。
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-16.png#pic_center" title="图2.1" alt="图2.1"> <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-24-48.png#pic_center" title="图2.2" alt="图2.2"> <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-15.png#pic_center" title="图2.3" alt="图2.3"> ## 真双口RAM的设置 ### Basic设置 <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-25-36.png#pic_center" title="图2.4" alt="图2.4"> ### Port设置 点击Port A
-Options选项卡，对A端口进行设置， 设置Write
-Width为16（即RAM单元为16位），Write
-Width为1024（即内存深度为1024，该端口可读写的RAM单元有1024个），Operating
-Mode（操作模式）一共有三种：Write First，Read First，No Change。在Write
-First模式中，在一个时钟周期里，写入内存单元的数据被同步输出到输出数据总线上；在Read
-First模式中，在一个时钟周期里，写入到内存单元的数据是当前输入数据总线上的数据，而输出到输出数据总线上的数据则是上一个时钟周期存储在内存单元中的数据。细节可参考PG058的49到50页4。Enable
-Port Type设置为Always
-Enabled，一直使能端口A。其它设置使用默认设置。如图2.5所示。 <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-04.png#pic_center" title="图2.5" alt="图2.5"> 端口B设置为与A一致。在Other
-Options选项卡中，保留默认设置。Load Init
-File设置是否用Coe文件对内存区域初始化，这个在初始化ROM的时候会用到，这里不勾选，保持默认。最后，在Summary选项卡会显示消耗的资源。</p>
-<h1 id="双口ram例程">双口RAM例程</h1>
-<p>​例程1，该例程是Altera官方例程<a href="https://www.altera.com.cn/support/support-resources/design-examples/design-software/verilog/ver-true-dual-port-ram-sclk.html">6</a>，采用寄存器构建双口RAM，代码如下：
-<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> true_dpram_sclk</span><br><span class="line">(</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">7</span>:<span class="number">0</span>] data_a, data_b,</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">5</span>:<span class="number">0</span>] addr_a, addr_b,</span><br><span class="line">    <span class="keyword">input</span> we_a, we_b, clk,</span><br><span class="line">    <span class="keyword">output</span> <span class="keyword">reg</span> [<span class="number">7</span>:<span class="number">0</span>] q_a, q_b</span><br><span class="line">);</span><br><span class="line">    <span class="comment">// Declare the RAM variable</span></span><br><span class="line">    <span class="keyword">reg</span> [<span class="number">7</span>:<span class="number">0</span>] ram[<span class="number">63</span>:<span class="number">0</span>];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Port A</span></span><br><span class="line">    <span class="keyword">always</span> @ (<span class="keyword">posedge</span> clk)</span><br><span class="line">    <span class="keyword">begin</span></span><br><span class="line">        <span class="keyword">if</span> (we_a) </span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">            ram[addr_a] &lt;= data_a;</span><br><span class="line">            q_a &lt;= data_a;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">else</span> </span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">            q_a &lt;= ram[addr_a];</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Port B</span></span><br><span class="line">    <span class="keyword">always</span> @ (<span class="keyword">posedge</span> clk)</span><br><span class="line">    <span class="keyword">begin</span></span><br><span class="line">        <span class="keyword">if</span> (we_b)</span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">            ram[addr_b] &lt;= data_b;</span><br><span class="line">            q_b &lt;= data_b;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">            q_b &lt;= ram[addr_b];</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    </span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure> 例程2，该例程是Xilinx官方例程<a href="https://www.xilinx.com/support/documentation/sw_manuals/xilinx2014_4/ug901-vivado-synthesis.pdf">7</a>，采用寄存器构建真双口RAM，代码如下：
-<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Dual-Port Block RAM with Two Write Ports</span></span><br><span class="line"><span class="comment">// File: rams_16.v</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">module</span> v_rams_16 (clka,clkb,ena,enb,wea,web,addra,addrb,dia,dib,doa,dob);</span><br><span class="line"></span><br><span class="line"><span class="keyword">input</span> clka,clkb,ena,enb,wea,web;</span><br><span class="line"><span class="keyword">input</span> [<span class="number">9</span>:<span class="number">0</span>] addra,addrb;</span><br><span class="line"><span class="keyword">input</span> [<span class="number">15</span>:<span class="number">0</span>] dia,dib;</span><br><span class="line"><span class="keyword">output</span> [<span class="number">15</span>:<span class="number">0</span>] doa,dob;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">15</span>:<span class="number">0</span>] ram [<span class="number">1023</span>:<span class="number">0</span>];</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">15</span>:<span class="number">0</span>] doa,dob;</span><br><span class="line"></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clka) <span class="keyword">begin</span> <span class="keyword">if</span> (ena)</span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line"> <span class="keyword">if</span> (wea)</span><br><span class="line"> ram[addra] &lt;= dia;</span><br><span class="line"> doa &lt;= ram[addra];</span><br><span class="line"> <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> clkb) <span class="keyword">begin</span> <span class="keyword">if</span> (enb)</span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line"> <span class="keyword">if</span> (web)</span><br><span class="line"> ram[addrb] &lt;= dib;</span><br><span class="line"> dob &lt;= ram[addrb];</span><br><span class="line"> <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure> ​例程3，该例程是网友博客中的例程<a href="http://blog.csdn.net/yanglong890124/article/details/32742297">8</a>，代码如下：
-<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> TOP(  </span><br><span class="line"><span class="keyword">input</span> USER_CLK  </span><br><span class="line">    );  </span><br><span class="line">  </span><br><span class="line"><span class="meta">`<span class="keyword">define</span> DLY #1  </span></span><br><span class="line"><span class="keyword">reg</span> FPGA_Enable=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">3</span>:<span class="number">0</span>] FPGA_Write_Enable=<span class="number">4&#x27;h0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Address=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Write_Data=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data_reg=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">wire</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data;  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">10</span>:<span class="number">0</span>] count=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">always</span> @ (<span class="keyword">posedge</span> USER_CLK)  </span><br><span class="line"><span class="keyword">begin</span>  </span><br><span class="line">    count &lt;= count + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">if</span>(count&lt;=<span class="number">100</span>)  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;h0</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">105</span>)&amp;&amp;(count &gt;<span class="number">100</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;hf</span>;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= FPGA_Write_Data + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">110</span>)&amp;&amp;(count &gt;<span class="number">105</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;h0</span>;  </span><br><span class="line">        FPGA_Address &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= <span class="number">0</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">117</span>)&amp;&amp;(count &gt;<span class="number">110</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">4&#x27;h0</span>;  </span><br><span class="line">        FPGA_Read_Data_reg &lt;= FPGA_Read_Data;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(count == <span class="number">118</span>)  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        count &lt;= count;  </span><br><span class="line">          </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line"><span class="keyword">end</span>  </span><br><span class="line">  </span><br><span class="line">BBBB your_instance_name (  </span><br><span class="line">  <span class="variable">.clka</span>(USER_CLK), <span class="comment">// input clka  </span></span><br><span class="line">  <span class="variable">.ena</span>(FPGA_Enable), <span class="comment">// input ena  </span></span><br><span class="line">  <span class="variable">.wea</span>(FPGA_Write_Enable), <span class="comment">// input [3 : 0] wea  </span></span><br><span class="line">  <span class="variable">.addra</span>(FPGA_Address), <span class="comment">// input [31 : 0] addra  </span></span><br><span class="line">  <span class="variable">.dina</span>(FPGA_Write_Data), <span class="comment">// input [31 : 0] dina  </span></span><br><span class="line">  <span class="variable">.douta</span>(FPGA_Read_Data), <span class="comment">// output [31 : 0] douta  </span></span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">  <span class="variable">.clkb</span>(clkb), <span class="comment">// input clkb  </span></span><br><span class="line">  <span class="variable">.enb</span>(enb), <span class="comment">// input enb  </span></span><br><span class="line">  <span class="variable">.web</span>(web), <span class="comment">// input [3 : 0] web  </span></span><br><span class="line">  <span class="variable">.addrb</span>(addrb), <span class="comment">// input [31 : 0] addrb  </span></span><br><span class="line">  <span class="variable">.dinb</span>(dinb), <span class="comment">// input [31 : 0] dinb  </span></span><br><span class="line">  <span class="variable">.doutb</span>(doutb) <span class="comment">// output [31 : 0] doutb  </span></span><br><span class="line">);  </span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-​该例程中，在count为101（&gt;100）后开始往地址4到20写入1-5，然后在count为111（&gt;110）的时候读出写入的数据。
-# 仿真
-下面利用Modelsim和Vivado进行联合仿真，关于vivado如何与modelsim进行联合仿真可以参考这篇文章：</p>
-<p><a href="http://blog.chinaaet.com/crazybird/p/5100000539">vivado与modelsim的关联以及器件库编译</a></p>
-<p>有一点要注意的是，我用的是Vivado2017.1版本，这个版本只支持Modelsim10.5及以上的版本，如果是低版本的Modelsim，在用Vivado2017.1编译Modelsim的仿真库时，会出错。Modelsim10.5版本可以在这里下载：</p>
-<p><a href="http://bbs.eetop.cn/viewthread.php?tid=629292&amp;extra=&amp;page=1">modelsim
-10.5 适用vivado 2017.1</a></p>
-<p>用Modelsim仿真时，会在sim_1/behav文件夹下产生3个.do文件，分别是xx_compile.do，xx_simulate.do，xx
-_wave.do文件。在设计的verilog文件修改之后，如果在Modelsim中直接restart，仿真的其实还是没有修改前的文件，要使修改的.v文件在Modelsim中生效，可以在Modelsim的命令窗口输入do
-xx_compile.do文件，对仿真的库文件以及设计文件（.v文件）重新编译，然后在输入do
-xx_simulate.do文件，才能仿真修改后的文件。输入do
-xx_compile.do命令对设计文件重新编译的时候，Modelsim会强制退出，这时由最后一句force
-quit命令引起的，只要把它删掉就行了。如果要保存波形文件，可以save
-format，另存为xx_wave.do文件。</p>
-<p>参考上面双口RAM的例程3进行功能仿真，RAM IP使用Write
-First模式，设计文件代码如下： <figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="meta">`<span class="keyword">timescale</span> 1ns / 1ps</span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Company: </span></span><br><span class="line"><span class="comment">// Engineer: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Create Date: 2017/12/09 22:36:48</span></span><br><span class="line"><span class="comment">// Design Name: </span></span><br><span class="line"><span class="comment">// Module Name: dual_port_ram_demo</span></span><br><span class="line"><span class="comment">// Project Name: </span></span><br><span class="line"><span class="comment">// Target Devices: </span></span><br><span class="line"><span class="comment">// Tool Versions: </span></span><br><span class="line"><span class="comment">// Description: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Dependencies: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Revision:</span></span><br><span class="line"><span class="comment">// Revision 0.01 - File Created</span></span><br><span class="line"><span class="comment">// Additional Comments:</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">module</span> dual_port_ram_demo(</span><br><span class="line"><span class="keyword">input</span> USER_CLK</span><br><span class="line">    );</span><br><span class="line">  </span><br><span class="line"><span class="meta">`<span class="keyword">define</span> DLY #1  </span></span><br><span class="line"></span><br><span class="line"><span class="comment">//Port A declaration</span></span><br><span class="line"><span class="keyword">reg</span> FPGA_Enable=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span> FPGA_Write_Enable=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Address=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Write_Data=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data_reg=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">wire</span>[<span class="number">31</span>:<span class="number">0</span>] FPGA_Read_Data;  </span><br><span class="line"></span><br><span class="line"><span class="comment">//Port B declaration</span></span><br><span class="line"><span class="keyword">reg</span> enb=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">3</span>:<span class="number">0</span>] web=<span class="number">4&#x27;h0</span>;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] addrb=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] dinb=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">reg</span>[<span class="number">31</span>:<span class="number">0</span>] doutb_reg=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">wire</span>[<span class="number">31</span>:<span class="number">0</span>] doutb=<span class="number">0</span>;</span><br><span class="line">  </span><br><span class="line"><span class="keyword">reg</span>[<span class="number">10</span>:<span class="number">0</span>] count=<span class="number">0</span>;  </span><br><span class="line"><span class="keyword">always</span> @ (<span class="keyword">posedge</span> USER_CLK)  </span><br><span class="line"><span class="keyword">begin</span>  </span><br><span class="line">    count &lt;= count + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">if</span>(count&lt;=<span class="number">100</span>)  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">105</span>)&amp;&amp;(count &gt;<span class="number">100</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= FPGA_Write_Data + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">110</span>)&amp;&amp;(count &gt;<span class="number">105</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Address &lt;= <span class="number">0</span>;  </span><br><span class="line">        FPGA_Write_Data &lt;= <span class="number">0</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((count &lt;= <span class="number">117</span>)&amp;&amp;(count &gt;<span class="number">110</span>))  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Write_Enable &lt;= <span class="number">1</span>;  </span><br><span class="line">        FPGA_Read_Data_reg &lt;= FPGA_Read_Data;  </span><br><span class="line">        FPGA_Address &lt;= FPGA_Address + <span class="number">4</span>;  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(count == <span class="number">118</span>)  </span><br><span class="line">    <span class="keyword">begin</span>  </span><br><span class="line">        FPGA_Enable &lt;= <span class="number">0</span>;  </span><br><span class="line">        count &lt;= count;  </span><br><span class="line">          </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line"><span class="keyword">end</span>  </span><br><span class="line">  </span><br><span class="line">dpRAM u1 (  </span><br><span class="line">  <span class="variable">.clka</span>(USER_CLK), <span class="comment">// input clka  </span></span><br><span class="line">  <span class="variable">.ena</span>(FPGA_Enable), <span class="comment">// input ena  </span></span><br><span class="line">  <span class="variable">.wea</span>(FPGA_Write_Enable), <span class="comment">// input [3 : 0] wea  </span></span><br><span class="line">  <span class="variable">.addra</span>(FPGA_Address), <span class="comment">// input [31 : 0] addra  </span></span><br><span class="line">  <span class="variable">.dina</span>(FPGA_Write_Data), <span class="comment">// input [31 : 0] dina  </span></span><br><span class="line">  <span class="variable">.douta</span>(FPGA_Read_Data), <span class="comment">// output [31 : 0] douta  </span></span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">  <span class="variable">.clkb</span>(USER_CLK), <span class="comment">// input clkb  </span></span><br><span class="line">  <span class="variable">.enb</span>(enb), <span class="comment">// input enb  </span></span><br><span class="line">  <span class="variable">.web</span>(web), <span class="comment">// input [3 : 0] web  </span></span><br><span class="line">  <span class="variable">.addrb</span>(addrb), <span class="comment">// input [31 : 0] addrb  </span></span><br><span class="line">  <span class="variable">.dinb</span>(dinb), <span class="comment">// input [31 : 0] dinb  </span></span><br><span class="line">  <span class="variable">.doutb</span>(doutb) <span class="comment">// output [31 : 0] doutb  </span></span><br><span class="line">);  </span><br><span class="line"><span class="keyword">endmodule</span>  </span><br></pre></td></tr></table></figure> ​testbench文件如下：
-<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="meta">`<span class="keyword">timescale</span> 1ns / 1ps</span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Company: </span></span><br><span class="line"><span class="comment">// Engineer: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Create Date: 2017/12/09 22:47:26</span></span><br><span class="line"><span class="comment">// Design Name: </span></span><br><span class="line"><span class="comment">// Module Name: simu</span></span><br><span class="line"><span class="comment">// Project Name: </span></span><br><span class="line"><span class="comment">// Target Devices: </span></span><br><span class="line"><span class="comment">// Tool Versions: </span></span><br><span class="line"><span class="comment">// Description: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Dependencies: </span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// Revision:</span></span><br><span class="line"><span class="comment">// Revision 0.01 - File Created</span></span><br><span class="line"><span class="comment">// Additional Comments:</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">//////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">module</span> simu(</span><br><span class="line"></span><br><span class="line">    );</span><br><span class="line"><span class="comment">//testbench 时钟信号</span></span><br><span class="line"><span class="keyword">reg</span> clk = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">always</span> # <span class="number">10</span> clk &lt;= ~clk;</span><br><span class="line"><span class="comment">//调用dual_port_ram_demo模块</span></span><br><span class="line">dual_port_ram_demo demo1(clk);</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure> 仿真结果如下： <img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-26-41.png#pic_center" title="图4.1" alt="图4.1">
-程序在1时刻准备好地址和要写入RAM的数据，在2时刻写入RAM中，在3时刻端口才会输出2时刻写入RAM的数据，注意与PG058的图稍有不同。
-<img src="/2022/06/17/%E5%8F%8C%E5%8F%A3RAM%E5%8F%8A%E5%85%B6VIVADO%E7%9A%84IP%E6%A0%B8%E7%9A%84%E4%BD%BF%E7%94%A8/2022-06-17-01-27-26.png#pic_center" title="图4.2" alt="图4.2"> # 后记
-关于BRAM，推荐一个youtube视频，里面讲的非常清晰易懂。 <a href="https://www.youtube.com/watch?v=fqUuvwl4QJA">What is a Block RAM
-in an FPGA?</a> # 参考文献 [1] <a href="http://blog.csdn.net/DanielLee_ustb/article/details/46446359">基于FPGA的双口RAM设计方法</a>
-[2] <a href="http://blog.csdn.net/yzy19900402/article/details/45025901">关于Xilinx芯片中Block
-RAM和Distributed RAM 的区别</a> [3] <a href="http://blog.csdn.net/jbb0523/article/details/6533760">Block RAM
-和Distributed RAM</a> [4] <a href="https://www.xilinx.com/support/documentation/ip_documentation/blk_mem_gen/v8_2/pg058-blk-mem-gen.pdf">Block
-Memory Generator v8.2 LogiCORE IP Product Guide (PG058)</a> [5] <a href="http://blog.csdn.net/c602273091/article/details/39694145">FPGA开发之RAM
-IP的使用</a> [6] <a href="https://www.altera.com.cn/support/support-resources/design-examples/design-software/verilog/ver-true-dual-port-ram-sclk.html">Verilog
-HDL：具有单时钟的真双端口RAM</a> [7] <a href="https://www.xilinx.com/support/documentation/sw_manuals/xilinx2014_4/ug901-vivado-synthesis.pdf">Vivado
-Design Suite User Guide: Synthesis (UG901)</a> [8] <a href="http://blog.csdn.net/yanglong890124/article/details/32742297">FPGA
-内部双口块RAM 读写实现</a></p>
-]]></content>
-      <categories>
-        <category>FPGA</category>
-      </categories>
-      <tags>
-        <tag>FPAG</tag>
       </tags>
   </entry>
   <entry>
